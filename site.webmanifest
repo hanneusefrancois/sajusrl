@@ -1,0 +1,21 @@
+{
+  "name": "Saju Srl – Pricing Intelligence",
+  "short_name": "Saju Srl",
+  "description": "Formules de révision des prix pour contrats de long terme",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

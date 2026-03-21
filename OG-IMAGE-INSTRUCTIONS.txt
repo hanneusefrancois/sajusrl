@@ -1,0 +1,9 @@
+Créez une image 1200×630px nommée "og-image.jpg" avec :
+- Fond noir (#0f1117)
+- Votre logo Saju centré
+- Texte : "Saju Srl – Formule de révision des prix"
+- Sous-texte : "Dans 30 ans, votre contrat vaudra combien de fois ?"
+
+Outil gratuit : https://www.canva.com
+
+Cette image apparaîtra quand vous partagez saju.be sur LinkedIn, WhatsApp, etc.
