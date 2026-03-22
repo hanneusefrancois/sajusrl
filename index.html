@@ -1056,7 +1056,7 @@ footer_copy:'© 2026 Saju Srl · 布鲁塞尔，比利时 · fh@saju.be · www.s
 
 var currentLang='fr';
 function setLang(l){currentLang=l;document.documentElement.lang=l;document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-lang')===l)});var d=T[l];if(!d)return;document.querySelectorAll('[data-i]').forEach(function(e){var k=e.getAttribute('data-i');if(d[k]!==undefined){try{e.innerHTML=d[k]}catch(x){e.textContent=d[k]}}});var m=document.getElementById('mobileMenu');if(m)m.classList.remove('open')}
-window.addEventListener('load',function(){if(window.Calendly)Calendly.initInlineWidgets()});
+window.addEventListener('load',function(){setLang('fr');if(window.Calendly)Calendly.initInlineWidgets()});
 </script>
 </body>
 </html>
