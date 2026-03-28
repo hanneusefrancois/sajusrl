@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saju – Simulateur complet | Coûts cumulés, PID, indices sectoriels</title>
+    <title>Saju – Simulateur complet | Coûts cumulés, PID, production, maintenance</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -89,7 +89,16 @@
             color: rgba(255,255,255,0.88);
         }
         .param-label i { color: #d97706; }
-        input[type="range"], input[type="number"] { width: 100%; accent-color: #d97706; margin: 6px 0; background: #1e2330; border: 1px solid #2c2f3a; border-radius: 8px; padding: 6px; color: white; }
+        input[type="range"], input[type="number"], select {
+            width: 100%;
+            accent-color: #d97706;
+            margin: 6px 0;
+            background: #1e2330;
+            border: 1px solid #2c2f3a;
+            border-radius: 8px;
+            padding: 6px;
+            color: white;
+        }
         .param-value { font-size: 0.9rem; font-weight: 500; background: #1e2330; display: inline-block; padding: 0.2rem 0.8rem; border-radius: 2rem; margin-top: 6px; }
         .param-hint { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
         .crisis-group {
@@ -162,30 +171,56 @@
 <div class="container">
     <div class="s-tag">Simulateur avancé – Coûts cumulés</div>
     <h2 class="s-title">Calibrez votre <em>coefficient multiplicateur</em><br>et testez la régulation <em>PID</em> face aux chocs</h2>
-    <p class="s-sub">Les courbes montrent le <strong>coût total cumulé</strong> (somme depuis l’année 0). Le PID lisse les fluctuations sans changer le coût final. Tous les paramètres économiques sont ajustables.</p>
+    <p class="s-sub">Les courbes montrent le <strong>coût total cumulé en millions d’euros</strong>. Le PID lisse les fluctuations sans changer le coût final. Tous les paramètres économiques sont ajustables.</p>
 
     <div class="simu-grid">
         <div class="simu-controls">
-            <!-- Structure de coûts -->
+            <!-- Type de produit et secteur -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-cubes"></i> Structure de coûts</div>
+                <div class="param-label"><i class="fas fa-industry"></i> Produit & secteur</div>
+                <select id="productType">
+                    <option value="locomotive">Locomotive ferroviaire</option>
+                    <option value="avion">Avion civil</option>
+                    <option value="turbine">Turbine éolienne</option>
+                    <option value="usine">Usine clé en main</option>
+                </select>
+                <select id="sector">
+                    <option value="transport">Transport & mobilité</option>
+                    <option value="energie">Énergie</option>
+                    <option value="industrie">Industrie lourde</option>
+                    <option value="defense">Défense</option>
+                </select>
+            </div>
+
+            <!-- Structure de coûts : production et maintenance -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-cubes"></i> Production</div>
                 <div class="inline-group">
                     <div><label>Prix unitaire (M€)</label><input type="number" id="unitPrice" value="10" step="0.5" style="width:80px"></div>
-                    <div><label>Nb unités</label><input type="number" id="units" value="10" step="1" style="width:70px"></div>
-                    <div><label>Maintenance initiale (M€/an)</label><input type="number" id="maintenanceBase" value="5" step="0.5" style="width:90px"></div>
+                    <div><label>Nb unités total</label><input type="number" id="totalUnits" value="10" step="1" style="width:70px"></div>
+                    <div><label>Année début prod</label><input type="number" id="prodStart" value="0" step="1" style="width:70px"></div>
+                    <div><label>Année fin prod</label><input type="number" id="prodEnd" value="5" step="1" style="width:70px"></div>
                 </div>
-                <div class="param-hint">Prix initial total = (prix unitaire × nb unités) + maintenance initiale.</div>
+                <div class="param-hint">Les unités sont produites à rythme constant entre début et fin.</div>
+            </div>
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-tools"></i> Maintenance</div>
+                <div class="inline-group">
+                    <div><label>Coût annuel / unité (M€)</label><input type="number" id="maintPerUnit" value="0.5" step="0.1" style="width:80px"></div>
+                    <div><label>Année début maint</label><input type="number" id="maintStart" value="1" step="1" style="width:70px"></div>
+                    <div><label>Année fin maint</label><input type="number" id="maintEnd" value="40" step="1" style="width:70px"></div>
+                </div>
+                <div class="param-hint">La maintenance s’applique sur les unités déjà livrées.</div>
             </div>
 
             <!-- Indices sectoriels -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-chart-line"></i> Indices & pondérations</div>
+                <div class="param-label"><i class="fas fa-chart-line"></i> Pondérations des indices (somme = 1)</div>
                 <div class="inline-group">
-                    <div><label>Énergie (poids)</label><input type="number" id="wE" value="0.4" step="0.05" style="width:70px"></div>
-                    <div><label>Salaires (poids)</label><input type="number" id="wS" value="0.3" step="0.05" style="width:70px"></div>
-                    <div><label>Matières (poids)</label><input type="number" id="wM" value="0.3" step="0.05" style="width:70px"></div>
+                    <div><label>Énergie</label><input type="number" id="wE" value="0.4" step="0.05" style="width:70px"></div>
+                    <div><label>Salaires</label><input type="number" id="wS" value="0.3" step="0.05" style="width:70px"></div>
+                    <div><label>Matières</label><input type="number" id="wM" value="0.3" step="0.05" style="width:70px"></div>
                 </div>
-                <div class="param-hint">Pondérations utilisées pour l’indice de coût réel (somme = 1).</div>
             </div>
 
             <!-- Coefficient / Montant total (lien bidirectionnel) -->
@@ -193,13 +228,20 @@
                 <div class="param-label"><i class="fas fa-calculator"></i> Coefficient multiplicateur (sur 40 ans)</div>
                 <input type="range" id="coefSlider" min="1.0" max="8.0" step="0.05" value="4.8">
                 <div class="param-value"><span id="coefValue">4.80</span> × prix initial</div>
-                <div class="param-hint">Le prix annuel suit une progression géométrique constante.</div>
+                <div class="param-hint">Le prix annuel (hors indexation) suit une progression géométrique.</div>
             </div>
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-euro-sign"></i> Montant total cible (sur 40 ans)</div>
-                <input type="range" id="totalAmount" min="0.5" max="3.5" step="0.01" value="1.4">
-                <div class="param-value"><span id="totalAmountVal">1.40</span> milliards €</div>
+                <div class="param-label"><i class="fas fa-euro-sign"></i> Montant total cible (millions €)</div>
+                <input type="range" id="totalAmount" min="500" max="3500" step="10" value="1400">
+                <div class="param-value"><span id="totalAmountVal">1400</span> M€</div>
                 <div class="param-hint">Ce curseur ajuste automatiquement le coefficient.</div>
+            </div>
+
+            <!-- Concurrents -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Positionnement concurrents (% d'écart)</div>
+                <div>Concurrent A (sous‑évaluateur) : <input type="range" id="compA" min="-30" max="0" step="1" value="-15"> <span id="compAVal">-15</span> %</div>
+                <div>Concurrent B (sur‑évaluateur) : <input type="range" id="compB" min="0" max="40" step="1" value="25"> <span id="compBVal">+25</span> %</div>
             </div>
 
             <!-- PID -->
@@ -214,7 +256,7 @@
 
             <!-- Volatilité -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-chart-line"></i> Volatilité (bruit)</div>
+                <div class="param-label"><i class="fas fa-chart-line"></i> Volatilité (bruit haute fréquence)</div>
                 <input type="range" id="volatility" min="0" max="2" step="0.1" value="0.8">
                 <span id="volatilityVal">0.8</span>
             </div>
@@ -226,14 +268,14 @@
                 <div>Amplitude : <input type="range" id="majorAmp" min="1.5" max="4.0" step="0.1" value="2.5"> <span id="majorAmpVal">2.5</span>×</div>
             </div>
 
-            <!-- Crise obsolescence (maintenance) -->
+            <!-- Crise obsolescence -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-microchip"></i> Crise obsolescence</div>
+                <div class="param-label"><i class="fas fa-microchip"></i> Crise obsolescence (maintenance)</div>
                 <div>Année : <input type="range" id="obsYear" min="5" max="35" step="1" value="22"> <span id="obsYearVal">22</span></div>
                 <div>Surcoût maintenance : <input type="range" id="obsAmp" min="1.0" max="3.0" step="0.05" value="1.8"> <span id="obsAmpVal">1.8</span>×</div>
             </div>
 
-            <!-- Crises mineures (jusqu'à 7) -->
+            <!-- Crises mineures -->
             <div class="crisis-group">
                 <div class="crisis-header"><span><i class="fas fa-waveform"></i> Crises mineures</span><button id="addMinor">+ Ajouter une crise</button></div>
                 <div id="minorCrisesContainer"></div>
@@ -242,16 +284,9 @@
 
             <!-- Gain technologique -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-chart-line"></i> Gain technologique</div>
+                <div class="param-label"><i class="fas fa-chart-line"></i> Gain technologique (productivité)</div>
                 <div>Année début : <input type="range" id="techYear" min="5" max="35" step="1" value="20"> <span id="techYearVal">20</span></div>
                 <div>Réduction annuelle : <input type="range" id="techAmp" min="0" max="0.03" step="0.001" value="0.015"> <span id="techAmpVal">1.5</span> %/an</div>
-            </div>
-
-            <!-- Concurrents -->
-            <div class="param-card">
-                <div class="param-label"><i class="fas fa-chart-line"></i> Positionnement concurrents</div>
-                <div>Concurrent A (sous‑éval.) : <input type="range" id="compA" min="-30" max="0" step="1" value="-15"> <span id="compAVal">-15</span> %</div>
-                <div>Concurrent B (sur‑éval.) : <input type="range" id="compB" min="0" max="40" step="1" value="25"> <span id="compBVal">+25</span> %</div>
             </div>
 
             <div class="impact-summary" id="impactSummary"></div>
@@ -260,96 +295,126 @@
         <div class="simu-chart">
             <canvas id="simuChart" width="700" height="450"></canvas>
             <div class="chart-legend-custom">
-                <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel cumulé</span>
-                <span><span class="legend-color" style="background:#fbbf24;"></span> Budget cible cumulé</span>
-                <span><span class="legend-color" style="background:#6b7280;"></span> Concurrent A</span>
-                <span><span class="legend-color" style="background:#f97316;"></span> Concurrent B</span>
+                <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel cumulé (M€)</span>
+                <span><span class="legend-color" style="background:#fbbf24;"></span> Budget cible cumulé (M€)</span>
+                <span><span class="legend-color" style="background:#6b7280;"></span> Concurrent A (sous-éval.)</span>
+                <span><span class="legend-color" style="background:#f97316;"></span> Concurrent B (sur-éval.)</span>
                 <span><span class="legend-color" style="background:#10b981;"></span> Saju (PID) cumulé</span>
             </div>
         </div>
     </div>
     <div class="simu-footnote">
-        📊 Le coût annuel réel est calculé à partir des indices énergie, salaires, matières premières (tendance de fond + chocs + bruit).<br>
+        📊 **Coût cumulé en millions d’euros**. Le coût annuel réel est calculé à partir des indices énergie, salaires, matières premières (tendance + chocs + bruit).<br>
         Le PID lisse les fluctuations sans modifier le coût total final. La courbe verte rejoint la rouge en fin de période.
     </div>
 </div>
 
 <script>
     (function(){
-        // Constantes
         const YEARS = 40;
-        const INIT_PRICE_M = 100; // base pour l'indice (100 M€) – sera recalculé avec les paramètres
 
         // Éléments DOM
         const unitPriceInput = document.getElementById('unitPrice');
-        const unitsInput = document.getElementById('units');
-        const maintBaseInput = document.getElementById('maintenanceBase');
+        const totalUnitsInput = document.getElementById('totalUnits');
+        const prodStartInput = document.getElementById('prodStart');
+        const prodEndInput = document.getElementById('prodEnd');
+        const maintPerUnitInput = document.getElementById('maintPerUnit');
+        const maintStartInput = document.getElementById('maintStart');
+        const maintEndInput = document.getElementById('maintEnd');
         const wE = document.getElementById('wE');
         const wS = document.getElementById('wS');
         const wM = document.getElementById('wM');
-
         const coefSlider = document.getElementById('coefSlider');
         const coefValue = document.getElementById('coefValue');
         const totalSlider = document.getElementById('totalAmount');
         const totalVal = document.getElementById('totalAmountVal');
-
         const majorYear = document.getElementById('majorYear');
         const majorYearVal = document.getElementById('majorYearVal');
         const majorAmp = document.getElementById('majorAmp');
         const majorAmpVal = document.getElementById('majorAmpVal');
-
         const obsYear = document.getElementById('obsYear');
         const obsYearVal = document.getElementById('obsYearVal');
         const obsAmp = document.getElementById('obsAmp');
         const obsAmpVal = document.getElementById('obsAmpVal');
-
         const techYear = document.getElementById('techYear');
         const techYearVal = document.getElementById('techYearVal');
         const techAmp = document.getElementById('techAmp');
         const techAmpVal = document.getElementById('techAmpVal');
-
         const compA = document.getElementById('compA');
         const compAVal = document.getElementById('compAVal');
         const compB = document.getElementById('compB');
         const compBVal = document.getElementById('compBVal');
-
         const volatilitySlider = document.getElementById('volatility');
         const volatilityVal = document.getElementById('volatilityVal');
-
-        const minorContainer = document.getElementById('minorCrisesContainer');
-        let minorCrises = [];
-
         const kpSlider = document.getElementById('kp');
         const kiSlider = document.getElementById('ki');
         const kdSlider = document.getElementById('kd');
         const kpVal = document.getElementById('kpVal');
         const kiVal = document.getElementById('kiVal');
         const kdVal = document.getElementById('kdVal');
+        const productSelect = document.getElementById('productType');
+        const sectorSelect = document.getElementById('sector');
+        const minorContainer = document.getElementById('minorCrisesContainer');
+        let minorCrises = [];
 
         let chart;
         let updating = false;
 
-        // Calcul du prix initial total (en millions)
-        function getInitialTotal() {
-            let unit = parseFloat(unitPriceInput.value);
-            let qty = parseFloat(unitsInput.value);
-            let maint = parseFloat(maintBaseInput.value);
-            return unit * qty + maint;
+        // Fonctions de base
+        function getUnitsPerYear() {
+            let total = parseFloat(totalUnitsInput.value);
+            let start = parseInt(prodStartInput.value);
+            let end = parseInt(prodEndInput.value);
+            let units = new Array(YEARS+1).fill(0);
+            if (start >= end) {
+                units[0] = total;
+                return units;
+            }
+            let perYear = total / (end - start);
+            for (let t=start; t<end && t<=YEARS; t++) {
+                units[t] = perYear;
+            }
+            return units;
         }
 
-        // Génération des indices énergie, salaires, matières premières (tendance + chocs + bruit)
+        function getUnitsInService() {
+            let unitsPerYear = getUnitsPerYear();
+            let inService = new Array(YEARS+1).fill(0);
+            let cum = 0;
+            for (let t=0; t<=YEARS; t++) {
+                cum += unitsPerYear[t];
+                inService[t] = cum;
+            }
+            return inService;
+        }
+
+        function getBaseCostAnnual() {
+            let unitPrice = parseFloat(unitPriceInput.value);
+            let unitsPerYear = getUnitsPerYear();
+            let inService = getUnitsInService();
+            let maintPerUnit = parseFloat(maintPerUnitInput.value);
+            let maintStart = parseInt(maintStartInput.value);
+            let maintEnd = parseInt(maintEndInput.value);
+            let base = new Array(YEARS+1).fill(0);
+            for (let t=0; t<=YEARS; t++) {
+                base[t] += unitsPerYear[t] * unitPrice;
+                if (t >= maintStart && t <= maintEnd) {
+                    base[t] += inService[t] * maintPerUnit;
+                }
+            }
+            return base;
+        }
+
         function generateIndices() {
             let E = new Array(YEARS+1);
             let S = new Array(YEARS+1);
             let M = new Array(YEARS+1);
-            // Tendance de fond (signal lent)
             for (let t=0; t<=YEARS; t++) {
-                let trend = 1 + 0.0075 * t; // +0.75% par an
+                let trend = 1 + 0.0075 * t;
                 E[t] = trend;
                 S[t] = trend;
                 M[t] = trend;
             }
-            // Crise majeure (appliquée aux trois indices)
             const mYear = parseInt(majorYear.value);
             const mAmp = parseFloat(majorAmp.value);
             for (let t=mYear; t<=YEARS; t++) {
@@ -357,7 +422,6 @@
                 S[t] *= mAmp;
                 M[t] *= mAmp;
             }
-            // Crises mineures
             minorCrises.forEach(c => {
                 for (let t=c.year; t<=YEARS; t++) {
                     E[t] *= c.amp;
@@ -365,23 +429,18 @@
                     M[t] *= c.amp;
                 }
             });
-            // Bruit haute fréquence (volatilité)
             const vol = parseFloat(volatilitySlider.value);
             if (vol > 0) {
                 for (let t=1; t<=YEARS; t++) {
                     let noise = (Math.sin(t*0.5)*0.05 + Math.sin(t*1.2)*0.03 + (Math.sin(t*3.7)*Math.cos(t*1.9))*0.08) * vol;
-                    let fE = 1 + noise;
-                    let fS = 1 + noise * 0.8; // un peu moins de bruit sur salaires
-                    let fM = 1 + noise * 1.2; // plus de bruit sur matières
-                    E[t] *= fE;
-                    S[t] *= fS;
-                    M[t] *= fM;
+                    E[t] *= (1 + noise);
+                    S[t] *= (1 + noise * 0.8);
+                    M[t] *= (1 + noise * 1.2);
                 }
             }
             return {E, S, M};
         }
 
-        // Calcul de l'indice de coût réel (pondéré)
         function computeRealCostIndex(E, S, M) {
             let w_e = parseFloat(wE.value);
             let w_s = parseFloat(wS.value);
@@ -395,47 +454,33 @@
             return index;
         }
 
-        // Appliquer la crise obsolescence (surcoût maintenance) et le gain technologique
         function applyMaintenanceAndTech(costIndex) {
-            let maintFactor = new Array(YEARS+1).fill(1);
             const oYear = parseInt(obsYear.value);
             const oAmp = parseFloat(obsAmp.value);
-            for (let t=oYear; t<=YEARS; t++) {
-                maintFactor[t] = oAmp;
-            }
             const techY = parseInt(techYear.value);
             const techRed = parseFloat(techAmp.value);
-            let techFactor = 1;
             for (let t=0; t<=YEARS; t++) {
                 let factor = 1;
-                if (t >= oYear) factor *= maintFactor[t];
+                if (t >= oYear) factor *= oAmp;
                 if (t >= techY) {
                     let yearsAfter = t - techY;
                     let red = 1 - techRed * yearsAfter;
                     if (red < 0.6) red = 0.6;
                     factor *= red;
                 }
-                // La maintenance représente une part fixe du coût total (ex: 30% du coût de base)
-                // On suppose que la structure de coûts inclut déjà la maintenance dans l'indice.
-                // Ici, on applique le facteur directement à l'indice global pour simplifier.
                 costIndex[t] *= factor;
+                if (costIndex[t] < 0.05) costIndex[t] = 0.05;
             }
             return costIndex;
         }
 
-        // Génération de l'indice réel complet
         function generateRealIndex() {
             let {E, S, M} = generateIndices();
             let index = computeRealCostIndex(E, S, M);
             index = applyMaintenanceAndTech(index);
-            // Éviter valeurs négatives
-            for (let t=0; t<=YEARS; t++) {
-                if (index[t] < 0.05) index[t] = 0.05;
-            }
             return index;
         }
 
-        // Calcul du prix annuel à partir d'un coefficient total (budget)
         function priceFromBudgetCoef(budgetCoef) {
             let annualFactor = Math.pow(budgetCoef, 1/YEARS);
             let price = new Array(YEARS+1);
@@ -450,9 +495,7 @@
             return price.reduce((a,b)=>a+b,0);
         }
 
-        // PID avec conservation du coût total (lissage)
         function priceWithPID(index, Kp, Ki, Kd) {
-            // Lissage exponentiel pour la consigne
             let smoothed = new Array(YEARS+1);
             smoothed[0] = index[0];
             for (let t=1; t<=YEARS; t++) {
@@ -469,7 +512,6 @@
                 if (price[t] < 0.05) price[t] = 0.05;
                 prevError = error;
             }
-            // Ajustement final pour que la somme soit identique à l'indice réel
             let sumIndex = sumPrice(index);
             let sumPrice = price.reduce((a,b)=>a+b,0);
             if (Math.abs(sumPrice - sumIndex) > 1e-6) {
@@ -490,28 +532,28 @@
             return cum;
         }
 
-        // Synchronisation coefficient <-> montant total (en utilisant le prix initial réel)
         function updateFromCoef() {
             if (updating) return;
             updating = true;
             let coef = parseFloat(coefSlider.value);
             coefValue.innerText = coef.toFixed(2);
-            const budgetPrice = priceFromBudgetCoef(coef);
-            let initTotal = getInitialTotal(); // en millions
-            let totalSum = sumPrice(budgetPrice) * initTotal; // en millions
-            let totalMds = totalSum / 1000;
-            totalSlider.value = totalMds;
-            totalVal.innerText = totalMds.toFixed(2);
+            let baseCostAnnual = getBaseCostAnnual();
+            let initialTotal = baseCostAnnual.reduce((a,b)=>a+b,0);
+            let budgetPrice = priceFromBudgetCoef(coef);
+            let totalSum = sumPrice(budgetPrice) * initialTotal;
+            totalSlider.value = totalSum;
+            totalVal.innerText = totalSum.toFixed(0);
             updating = false;
         }
 
         function updateFromTotal() {
             if (updating) return;
             updating = true;
-            let totalMds = parseFloat(totalSlider.value);
-            totalVal.innerText = totalMds.toFixed(2);
-            let initTotal = getInitialTotal();
-            let targetSumIndex = (totalMds * 1000) / initTotal;
+            let totalM = parseFloat(totalSlider.value);
+            totalVal.innerText = totalM.toFixed(0);
+            let baseCostAnnual = getBaseCostAnnual();
+            let initialTotal = baseCostAnnual.reduce((a,b)=>a+b,0);
+            let targetSumIndex = totalM / initialTotal;
             let low = 1.0, high = 10.0;
             for (let i=0; i<30; i++) {
                 let mid = (low+high)/2;
@@ -526,43 +568,37 @@
             updating = false;
         }
 
-        // Mise à jour complète
         function updateAll() {
-            updateFromCoef(); // synchronisation initiale
+            updateFromCoef();
             let budgetCoef = parseFloat(coefSlider.value);
-            const budgetPrice = priceFromBudgetCoef(budgetCoef);
+            let budgetPrice = priceFromBudgetCoef(budgetCoef);
+            let realIndex = generateRealIndex();
+            let baseCostAnnual = getBaseCostAnnual();
 
-            const realAnnual = generateRealIndex();
+            let realAnnual = baseCostAnnual.map((v, i) => v * realIndex[i]);
+            let budgetAnnual = baseCostAnnual.map((v, i) => v * budgetPrice[i]);
 
-            // Concurrents
             let compACoef = budgetCoef * (1 + parseFloat(compA.value)/100);
             let compBCoef = budgetCoef * (1 + parseFloat(compB.value)/100);
-            const compAPrice = priceFromBudgetCoef(compACoef);
-            const compBPrice = priceFromBudgetCoef(compBCoef);
+            let compAPrice = priceFromBudgetCoef(compACoef);
+            let compBPrice = priceFromBudgetCoef(compBCoef);
+            let compAAnnual = baseCostAnnual.map((v, i) => v * compAPrice[i]);
+            let compBAnnual = baseCostAnnual.map((v, i) => v * compBPrice[i]);
 
-            // PID
-            const Kp = parseFloat(kpSlider.value);
-            const Ki = parseFloat(kiSlider.value);
-            const Kd = parseFloat(kdSlider.value);
+            let Kp = parseFloat(kpSlider.value);
+            let Ki = parseFloat(kiSlider.value);
+            let Kd = parseFloat(kdSlider.value);
             kpVal.innerText = Kp.toFixed(2);
             kiVal.innerText = Ki.toFixed(2);
             kdVal.innerText = Kd.toFixed(2);
-            const pidAnnual = priceWithPID(realAnnual, Kp, Ki, Kd);
+            let pidIndex = priceWithPID(realIndex, Kp, Ki, Kd);
+            let pidAnnual = baseCostAnnual.map((v, i) => v * pidIndex[i]);
 
-            // Multiplier par le prix initial réel (en millions) pour obtenir les montants absolus
-            let initTotal = getInitialTotal(); // en millions
-            let realAbsolute = realAnnual.map(v => v * initTotal);
-            let budgetAbsolute = budgetPrice.map(v => v * initTotal);
-            let compAAbsolute = compAPrice.map(v => v * initTotal);
-            let compBAbsolute = compBPrice.map(v => v * initTotal);
-            let pidAbsolute = pidAnnual.map(v => v * initTotal);
-
-            // Cumulés
-            let realCumul = cumulative(realAbsolute);
-            let budgetCumul = cumulative(budgetAbsolute);
-            let compACumul = cumulative(compAAbsolute);
-            let compBCumul = cumulative(compBAbsolute);
-            let pidCumul = cumulative(pidAbsolute);
+            let realCumul = cumulative(realAnnual);
+            let budgetCumul = cumulative(budgetAnnual);
+            let compACumul = cumulative(compAAnnual);
+            let compBCumul = cumulative(compBAnnual);
+            let pidCumul = cumulative(pidAnnual);
 
             let realTotal = realCumul[YEARS];
             let budgetTotal = budgetCumul[YEARS];
@@ -576,14 +612,14 @@
             let diffCompB = (compBTotal - realTotal) / realTotal * 100;
 
             document.getElementById('impactSummary').innerHTML = `
-                <div>💰 Coût réel total : <strong class="impact-number">${(realTotal/1000).toFixed(2)}</strong> Mds€</div>
-                <div>🎯 Budget cible (coeff ${budgetCoef.toFixed(2)}×) : <strong class="impact-number">${(budgetTotal/1000).toFixed(2)}</strong> Mds€ → écart <strong style="color:${diffBudget>0?'#ef4444':'#10b981'}">${diffBudget.toFixed(1)}%</strong></div>
-                <div>⚠️ Concurrent A : <strong class="impact-number">${(compATotal/1000).toFixed(2)}</strong> Mds€ → écart ${diffCompA.toFixed(1)}%</div>
-                <div>⚠️ Concurrent B : <strong class="impact-number">${(compBTotal/1000).toFixed(2)}</strong> Mds€ → écart +${diffCompB.toFixed(1)}%</div>
-                <div>🔧 Saju (PID) : <strong class="impact-number">${(pidTotal/1000).toFixed(2)}</strong> Mds€ → écart <strong style="color:${diffPid>0?'#ef4444':'#10b981'}">${diffPid.toFixed(1)}%</strong></div>
+                <div>💰 Coût réel total : <strong class="impact-number">${realTotal.toFixed(0)}</strong> M€</div>
+                <div>🎯 Budget cible (coeff ${budgetCoef.toFixed(2)}×) : <strong class="impact-number">${budgetTotal.toFixed(0)}</strong> M€ → écart <strong style="color:${diffBudget>0?'#ef4444':'#10b981'}">${diffBudget.toFixed(1)}%</strong></div>
+                <div>⚠️ Concurrent A : <strong class="impact-number">${compATotal.toFixed(0)}</strong> M€ → écart ${diffCompA.toFixed(1)}%</div>
+                <div>⚠️ Concurrent B : <strong class="impact-number">${compBTotal.toFixed(0)}</strong> M€ → écart +${diffCompB.toFixed(1)}%</div>
+                <div>🔧 Saju (PID) : <strong class="impact-number">${pidTotal.toFixed(0)}</strong> M€ → écart <strong style="color:${diffPid>0?'#ef4444':'#10b981'}">${diffPid.toFixed(1)}%</strong></div>
             `;
 
-            const labels = Array.from({length: YEARS+1}, (_,i)=>i);
+            let labels = Array.from({length: YEARS+1}, (_,i)=>i);
             if (chart) {
                 chart.data.datasets[0].data = realCumul;
                 chart.data.datasets[1].data = budgetCumul;
@@ -592,7 +628,7 @@
                 chart.data.datasets[4].data = pidCumul;
                 chart.update();
             } else {
-                const ctx = document.getElementById('simuChart').getContext('2d');
+                let ctx = document.getElementById('simuChart').getContext('2d');
                 chart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -618,7 +654,6 @@
             }
         }
 
-        // Gestion des crises mineures (jusqu'à 7)
         function renderMinorCrises() {
             minorContainer.innerHTML = '';
             minorCrises.forEach((c, idx) => {
@@ -671,12 +706,30 @@
             }
         });
 
+        function setDefaultWeights() {
+            let product = productSelect.value;
+            if (product === 'locomotive') {
+                wE.value = 0.4; wS.value = 0.3; wM.value = 0.3;
+            } else if (product === 'avion') {
+                wE.value = 0.35; wS.value = 0.4; wM.value = 0.25;
+            } else if (product === 'turbine') {
+                wE.value = 0.5; wS.value = 0.2; wM.value = 0.3;
+            } else if (product === 'usine') {
+                wE.value = 0.3; wS.value = 0.4; wM.value = 0.3;
+            }
+            updateAll();
+        }
+
         // Écouteurs
         coefSlider.addEventListener('input', () => { updateFromCoef(); updateAll(); });
         totalSlider.addEventListener('input', () => { updateFromTotal(); updateAll(); });
-        unitPriceInput.addEventListener('input', () => { updateFromCoef(); updateAll(); });
-        unitsInput.addEventListener('input', () => { updateFromCoef(); updateAll(); });
-        maintBaseInput.addEventListener('input', () => { updateFromCoef(); updateAll(); });
+        unitPriceInput.addEventListener('input', updateAll);
+        totalUnitsInput.addEventListener('input', updateAll);
+        prodStartInput.addEventListener('input', updateAll);
+        prodEndInput.addEventListener('input', updateAll);
+        maintPerUnitInput.addEventListener('input', updateAll);
+        maintStartInput.addEventListener('input', updateAll);
+        maintEndInput.addEventListener('input', updateAll);
         wE.addEventListener('input', updateAll);
         wS.addEventListener('input', updateAll);
         wM.addEventListener('input', updateAll);
@@ -692,11 +745,16 @@
         kpSlider.addEventListener('input', updateAll);
         kiSlider.addEventListener('input', updateAll);
         kdSlider.addEventListener('input', updateAll);
+        productSelect.addEventListener('change', setDefaultWeights);
+        sectorSelect.addEventListener('change', updateAll);
 
         // Initialisation
+        setDefaultWeights();
         renderMinorCrises();
         updateFromCoef();
         updateAll();
+        // Petit délai pour s'assurer que le canvas est prêt
+        setTimeout(() => { if (chart) chart.update(); }, 100);
     })();
 </script>
 </body>
