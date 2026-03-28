@@ -74,7 +74,6 @@
             padding: 1rem;
             border: 1px solid rgba(255,255,255,0.13);
         }
-        /* Correction importante pour le canvas */
         .simu-chart canvas {
             max-width: 100% !important;
             height: auto !important;
@@ -177,7 +176,7 @@
 <div class="container">
     <div class="s-tag">Simulateur avancé – Coûts cumulés</div>
     <h2 class="s-title">Calibrez votre <em>coefficient multiplicateur</em><br>et testez la régulation <em>PID</em> face aux chocs</h2>
-    <p class="s-sub">Les courbes montrent le <strong>coût total cumulé en millions d’euros</strong>. Le PID lisse les fluctuations sans changer le coût final. Tous les paramètres économiques sont ajustables.</p>
+    <p class="s-sub">Les courbes montrent le <strong>coût total cumulé en millions d’euros</strong>. Le coefficient multiplicateur = paiement annuel année 40 / paiement annuel année 0. Il est maintenant calculé correctement avec la rampe de production + maintenance cumulative. Le PID lisse les fluctuations sans changer le coût final.</p>
 
     <div class="simu-grid">
         <div class="simu-controls">
@@ -203,16 +202,16 @@
                 <div class="param-label"><i class="fas fa-cubes"></i> Production</div>
                 <div class="inline-group">
                     <div><label>Prix unitaire (M€)</label><input type="number" id="unitPrice" value="10" step="0.5" style="width:80px"></div>
-                    <div><label>Nb unités total</label><input type="number" id="totalUnits" value="10" step="1" style="width:70px"></div>
+                    <div><label>Nb unités total</label><input type="number" id="totalUnits" value="90" step="1" style="width:70px"></div>
                     <div><label>Année début prod</label><input type="number" id="prodStart" value="0" step="1" style="width:70px"></div>
-                    <div><label>Année fin prod</label><input type="number" id="prodEnd" value="5" step="1" style="width:70px"></div>
+                    <div><label>Année fin prod</label><input type="number" id="prodEnd" value="40" step="1" style="width:70px"></div>
                 </div>
                 <div class="param-hint">Les unités sont produites à rythme constant entre début et fin.</div>
             </div>
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-tools"></i> Maintenance</div>
                 <div class="inline-group">
-                    <div><label>Coût annuel / unité (M€)</label><input type="number" id="maintPerUnit" value="0.5" step="0.1" style="width:80px"></div>
+                    <div><label>Coût annuel / unité (M€)</label><input type="number" id="maintPerUnit" value="5" step="0.1" style="width:80px"></div>
                     <div><label>Année début maint</label><input type="number" id="maintStart" value="1" step="1" style="width:70px"></div>
                     <div><label>Année fin maint</label><input type="number" id="maintEnd" value="40" step="1" style="width:70px"></div>
                 </div>
@@ -232,15 +231,15 @@
             <!-- Coefficient / Montant total -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-calculator"></i> Coefficient multiplicateur (sur 40 ans)</div>
-                <input type="range" id="coefSlider" min="1.0" max="8.0" step="0.05" value="4.8">
-                <div class="param-value"><span id="coefValue">4.80</span> × prix initial</div>
-                <div class="param-hint">Le prix annuel (hors indexation) suit une progression géométrique.</div>
+                <input type="range" id="coefSlider" min="1.0" max="8.0" step="0.05" value="5.82">
+                <div class="param-value"><span id="coefValue">5.82</span> × (paiement annuel année 40 / année 0)</div>
+                <div class="param-hint">Le coefficient est maintenant le vrai ratio paiement annuel année 40 / paiement annuel année 0 (prise en compte de la rampe production + maintenance cumulative).</div>
             </div>
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-euro-sign"></i> Montant total cible (millions €)</div>
-                <input type="range" id="totalAmount" min="500" max="3500" step="10" value="1400">
-                <div class="param-value"><span id="totalAmountVal">1400</span> M€</div>
-                <div class="param-hint">Ce curseur ajuste automatiquement le coefficient.</div>
+                <input type="range" id="totalAmount" min="500" max="3500" step="10" value="1300">
+                <div class="param-value"><span id="totalAmountVal">1300</span> M€</div>
+                <div class="param-hint">Ajuste automatiquement le coefficient (logique cumulative complexe).</div>
             </div>
 
             <!-- Concurrents -->
@@ -299,7 +298,6 @@
         </div>
 
         <div class="simu-chart">
-            <!-- Canvas corrigé -->
             <canvas id="simuChart" width="700" height="450" style="width:100%; height:auto;"></canvas>
             <div class="chart-legend-custom">
                 <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel cumulé (M€)</span>
@@ -311,8 +309,7 @@
         </div>
     </div>
     <div class="simu-footnote">
-        📊 <strong>Coût cumulé en millions d’euros</strong>. Le coût annuel réel est calculé à partir des indices énergie, salaires, matières premières (tendance + chocs + bruit).<br>
-        Le PID lisse les fluctuations sans modifier le coût total final. La courbe verte rejoint la rouge en fin de période.
+        📊 <strong>Coût cumulé en millions d’euros</strong>. Coefficient multiplicateur = paiement annuel année 40 / paiement annuel année 0 (logique cumulative avec production + maintenance). Le PID lisse les fluctuations sans modifier le coût total final. La courbe verte rejoint la rouge en fin de période.
     </div>
 </div>
 
@@ -371,10 +368,10 @@
         function getUnitsPerYear() {
             let total = parseFloat(totalUnitsInput.value) || 0;
             let start = parseInt(prodStartInput.value) || 0;
-            let end = parseInt(prodEndInput.value) || 5;
+            let end = parseInt(prodEndInput.value) || 40;
             let units = new Array(YEARS+1).fill(0);
             if (start >= end) {
-                units[0] = total;
+                units[Math.min(start, YEARS)] = total;
                 return units;
             }
             let perYear = total / (end - start);
@@ -455,8 +452,7 @@
             let w_e = parseFloat(wE.value) || 0;
             let w_s = parseFloat(wS.value) || 0;
             let w_m = parseFloat(wM.value) || 0;
-            let sum = w_e + w_s + w_m;
-            if (sum === 0) sum = 1;
+            let sum = w_e + w_s + w_m || 1;
             let index = new Array(YEARS+1);
             for (let t = 0; t <= YEARS; t++) {
                 index[t] = (w_e * E[t] + w_s * S[t] + w_m * M[t]) / sum;
@@ -491,18 +487,22 @@
             return index;
         }
 
-        function priceFromBudgetCoef(budgetCoef) {
-            let annualFactor = Math.pow(budgetCoef, 1/YEARS);
-            let price = new Array(YEARS+1);
-            price[0] = 1;
-            for (let t = 1; t <= YEARS; t++) {
-                price[t] = price[t-1] * annualFactor;
+        // === NOUVELLE FONCTION : Coefficient = vrai ratio paiement annuel année 40 / année 0 ===
+        function getBudgetAnnualFromMultiplier(multiplier, base) {
+            if (base[0] <= 0 || base[YEARS] <= 0) {
+                // fallback (cas rare où base année 0 ou 40 = 0)
+                const g = Math.pow(multiplier, 1 / YEARS);
+                return base.map((b, t) => b * Math.pow(g, t));
             }
-            return price;
+            // Calcul du facteur géométrique g tel que (base[40] * g^40) / base[0] = multiplier
+            const targetRatioAtEnd = multiplier;
+            const g40 = targetRatioAtEnd * base[0] / base[YEARS];
+            const g = Math.pow(g40, 1 / YEARS);
+            return base.map((b, t) => b * Math.pow(g, t));
         }
 
         function sumPrice(price) {
-            return price.reduce((a,b)=>a+b,0);
+            return price.reduce((a, b) => a + b, 0);
         }
 
         function priceWithPID(index, Kp, Ki, Kd) {
@@ -517,18 +517,16 @@
                 error = smoothed[t] - index[t];
                 integral += error;
                 let derivative = error - prevError;
-                let correction = Kp*error + Ki*integral + Kd*derivative;
+                let correction = Kp * error + Ki * integral + Kd * derivative;
                 price[t] = index[t] + correction;
                 if (price[t] < 0.05) price[t] = 0.05;
                 prevError = error;
             }
             let sumIndex = sumPrice(index);
-            let sumPriceVal = price.reduce((a,b)=>a+b,0);
+            let sumPriceVal = sumPrice(price);
             if (Math.abs(sumPriceVal - sumIndex) > 1e-6) {
                 let factor = sumIndex / sumPriceVal;
-                for (let t = 0; t <= YEARS; t++) {
-                    price[t] *= factor;
-                }
+                for (let t = 0; t <= YEARS; t++) price[t] *= factor;
             }
             return price;
         }
@@ -547,10 +545,9 @@
             updating = true;
             let coef = parseFloat(coefSlider.value);
             coefValue.innerText = coef.toFixed(2);
-            let baseCostAnnual = getBaseCostAnnual();
-            let initialTotal = baseCostAnnual.reduce((a,b)=>a+b,0);
-            let budgetPrice = priceFromBudgetCoef(coef);
-            let totalSum = sumPrice(budgetPrice) * initialTotal;
+            let base = getBaseCostAnnual();
+            let budgetAnnual = getBudgetAnnualFromMultiplier(coef, base);
+            let totalSum = sumPrice(budgetAnnual);
             totalSlider.value = Math.round(totalSum);
             totalVal.innerText = Math.round(totalSum);
             updating = false;
@@ -559,17 +556,15 @@
         function updateFromTotal() {
             if (updating) return;
             updating = true;
-            let totalM = parseFloat(totalSlider.value);
-            totalVal.innerText = Math.round(totalM);
-            let baseCostAnnual = getBaseCostAnnual();
-            let initialTotal = baseCostAnnual.reduce((a,b)=>a+b,0);
-            let targetSumIndex = totalM / initialTotal;
-            let low = 1.0, high = 10.0;
-            for (let i = 0; i < 30; i++) {
+            let targetTotal = parseFloat(totalSlider.value);
+            totalVal.innerText = Math.round(targetTotal);
+            let base = getBaseCostAnnual();
+            let low = 1.0, high = 15.0;
+            for (let i = 0; i < 40; i++) {
                 let mid = (low + high) / 2;
-                let price = priceFromBudgetCoef(mid);
-                let sum = sumPrice(price);
-                if (sum < targetSumIndex) low = mid;
+                let budgetAnnual = getBudgetAnnualFromMultiplier(mid, base);
+                let sum = sumPrice(budgetAnnual);
+                if (sum < targetTotal) low = mid;
                 else high = mid;
             }
             let coef = (low + high) / 2;
@@ -581,19 +576,16 @@
         function updateAll() {
             updateFromCoef();
             let budgetCoef = parseFloat(coefSlider.value);
-            let budgetPrice = priceFromBudgetCoef(budgetCoef);
+            let base = getBaseCostAnnual();
             let realIndex = generateRealIndex();
-            let baseCostAnnual = getBaseCostAnnual();
 
-            let realAnnual = baseCostAnnual.map((v, i) => v * realIndex[i]);
-            let budgetAnnual = baseCostAnnual.map((v, i) => v * budgetPrice[i]);
+            let realAnnual = base.map((v, i) => v * realIndex[i]);
+            let budgetAnnual = getBudgetAnnualFromMultiplier(budgetCoef, base);
 
-            let compACoef = budgetCoef * (1 + parseFloat(compA.value)/100);
-            let compBCoef = budgetCoef * (1 + parseFloat(compB.value)/100);
-            let compAPrice = priceFromBudgetCoef(compACoef);
-            let compBPrice = priceFromBudgetCoef(compBCoef);
-            let compAAnnual = baseCostAnnual.map((v, i) => v * compAPrice[i]);
-            let compBAnnual = baseCostAnnual.map((v, i) => v * compBPrice[i]);
+            let compACoef = budgetCoef * (1 + parseFloat(compA.value) / 100);
+            let compBCoef = budgetCoef * (1 + parseFloat(compB.value) / 100);
+            let compAAnnual = getBudgetAnnualFromMultiplier(compACoef, base);
+            let compBAnnual = getBudgetAnnualFromMultiplier(compBCoef, base);
 
             let Kp = parseFloat(kpSlider.value);
             let Ki = parseFloat(kiSlider.value);
@@ -603,7 +595,7 @@
             kdVal.innerText = Kd.toFixed(2);
 
             let pidIndex = priceWithPID(realIndex, Kp, Ki, Kd);
-            let pidAnnual = baseCostAnnual.map((v, i) => v * pidIndex[i]);
+            let pidAnnual = base.map((v, i) => v * pidIndex[i]);
 
             let realCumul = cumulative(realAnnual);
             let budgetCumul = cumulative(budgetAnnual);
@@ -665,7 +657,7 @@
             }
         }
 
-        // Gestion des crises mineures
+        // Gestion des crises mineures (inchangé)
         function renderMinorCrises() {
             minorContainer.innerHTML = '';
             minorCrises.forEach((c, idx) => {
@@ -684,7 +676,7 @@
             });
 
             document.querySelectorAll('.removeMinor').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', () => {
                     let idx = parseInt(btn.getAttribute('data-idx'));
                     minorCrises.splice(idx, 1);
                     renderMinorCrises();
@@ -693,7 +685,7 @@
             });
 
             document.querySelectorAll('.minorYear').forEach(slider => {
-                slider.addEventListener('input', (e) => {
+                slider.addEventListener('input', () => {
                     let idx = parseInt(slider.getAttribute('data-idx'));
                     minorCrises[idx].year = parseInt(slider.value);
                     slider.nextElementSibling.innerText = minorCrises[idx].year;
@@ -702,7 +694,7 @@
             });
 
             document.querySelectorAll('.minorAmp').forEach(slider => {
-                slider.addEventListener('input', (e) => {
+                slider.addEventListener('input', () => {
                     let idx = parseInt(slider.getAttribute('data-idx'));
                     minorCrises[idx].amp = parseFloat(slider.value);
                     slider.nextElementSibling.innerText = minorCrises[idx].amp.toFixed(2);
@@ -723,19 +715,14 @@
 
         function setDefaultWeights() {
             let product = productSelect.value;
-            if (product === 'locomotive') {
-                wE.value = 0.4; wS.value = 0.3; wM.value = 0.3;
-            } else if (product === 'avion') {
-                wE.value = 0.35; wS.value = 0.4; wM.value = 0.25;
-            } else if (product === 'turbine') {
-                wE.value = 0.5; wS.value = 0.2; wM.value = 0.3;
-            } else if (product === 'usine') {
-                wE.value = 0.3; wS.value = 0.4; wM.value = 0.3;
-            }
+            if (product === 'locomotive') { wE.value = 0.4; wS.value = 0.3; wM.value = 0.3; }
+            else if (product === 'avion') { wE.value = 0.35; wS.value = 0.4; wM.value = 0.25; }
+            else if (product === 'turbine') { wE.value = 0.5; wS.value = 0.2; wM.value = 0.3; }
+            else if (product === 'usine') { wE.value = 0.3; wS.value = 0.4; wM.value = 0.3; }
             updateAll();
         }
 
-        // Écouteurs d'événements
+        // Écouteurs
         coefSlider.addEventListener('input', () => { updateFromCoef(); updateAll(); });
         totalSlider.addEventListener('input', () => { updateFromTotal(); updateAll(); });
         unitPriceInput.addEventListener('input', updateAll);
@@ -763,13 +750,11 @@
         productSelect.addEventListener('change', setDefaultWeights);
         sectorSelect.addEventListener('change', updateAll);
 
-        // Initialisation
+        // Initialisation avec l’exemple utilisateur (90 locos, maintenance 5 M€/an)
         setDefaultWeights();
         renderMinorCrises();
         updateFromCoef();
         updateAll();
-
-        // Mise à jour finale du chart après chargement
         setTimeout(() => { if (chart) chart.update(); }, 150);
     })();
 </script>
