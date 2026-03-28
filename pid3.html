@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saju – Simulateur complet | Coûts cumulés, PID, production, maintenance</title>
+    <title>Saju – Simulateur avancé | Coûts cumulés, PID, production, maintenance</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -73,6 +73,12 @@
             border-radius: 1.2rem;
             padding: 1rem;
             border: 1px solid rgba(255,255,255,0.13);
+        }
+        /* Correction importante pour le canvas */
+        .simu-chart canvas {
+            max-width: 100% !important;
+            height: auto !important;
+            display: block;
         }
         .param-card {
             margin-bottom: 1.5rem;
@@ -223,7 +229,7 @@
                 </div>
             </div>
 
-            <!-- Coefficient / Montant total (lien bidirectionnel) -->
+            <!-- Coefficient / Montant total -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-calculator"></i> Coefficient multiplicateur (sur 40 ans)</div>
                 <input type="range" id="coefSlider" min="1.0" max="8.0" step="0.05" value="4.8">
@@ -293,7 +299,8 @@
         </div>
 
         <div class="simu-chart">
-            <canvas id="simuChart" width="700" height="450"></canvas>
+            <!-- Canvas corrigé -->
+            <canvas id="simuChart" width="700" height="450" style="width:100%; height:auto;"></canvas>
             <div class="chart-legend-custom">
                 <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel cumulé (M€)</span>
                 <span><span class="legend-color" style="background:#fbbf24;"></span> Budget cible cumulé (M€)</span>
@@ -304,7 +311,7 @@
         </div>
     </div>
     <div class="simu-footnote">
-        📊 **Coût cumulé en millions d’euros**. Le coût annuel réel est calculé à partir des indices énergie, salaires, matières premières (tendance + chocs + bruit).<br>
+        📊 <strong>Coût cumulé en millions d’euros</strong>. Le coût annuel réel est calculé à partir des indices énergie, salaires, matières premières (tendance + chocs + bruit).<br>
         Le PID lisse les fluctuations sans modifier le coût total final. La courbe verte rejoint la rouge en fin de période.
     </div>
 </div>
@@ -360,18 +367,18 @@
         let chart;
         let updating = false;
 
-        // Fonctions de base
+        // === Fonctions de calcul ===
         function getUnitsPerYear() {
-            let total = parseFloat(totalUnitsInput.value);
-            let start = parseInt(prodStartInput.value);
-            let end = parseInt(prodEndInput.value);
+            let total = parseFloat(totalUnitsInput.value) || 0;
+            let start = parseInt(prodStartInput.value) || 0;
+            let end = parseInt(prodEndInput.value) || 5;
             let units = new Array(YEARS+1).fill(0);
             if (start >= end) {
                 units[0] = total;
                 return units;
             }
             let perYear = total / (end - start);
-            for (let t=start; t<end && t<=YEARS; t++) {
+            for (let t = start; t < end && t <= YEARS; t++) {
                 units[t] = perYear;
             }
             return units;
@@ -381,7 +388,7 @@
             let unitsPerYear = getUnitsPerYear();
             let inService = new Array(YEARS+1).fill(0);
             let cum = 0;
-            for (let t=0; t<=YEARS; t++) {
+            for (let t = 0; t <= YEARS; t++) {
                 cum += unitsPerYear[t];
                 inService[t] = cum;
             }
@@ -389,14 +396,14 @@
         }
 
         function getBaseCostAnnual() {
-            let unitPrice = parseFloat(unitPriceInput.value);
+            let unitPrice = parseFloat(unitPriceInput.value) || 0;
             let unitsPerYear = getUnitsPerYear();
             let inService = getUnitsInService();
-            let maintPerUnit = parseFloat(maintPerUnitInput.value);
-            let maintStart = parseInt(maintStartInput.value);
-            let maintEnd = parseInt(maintEndInput.value);
+            let maintPerUnit = parseFloat(maintPerUnitInput.value) || 0;
+            let maintStart = parseInt(maintStartInput.value) || 1;
+            let maintEnd = parseInt(maintEndInput.value) || 40;
             let base = new Array(YEARS+1).fill(0);
-            for (let t=0; t<=YEARS; t++) {
+            for (let t = 0; t <= YEARS; t++) {
                 base[t] += unitsPerYear[t] * unitPrice;
                 if (t >= maintStart && t <= maintEnd) {
                     base[t] += inService[t] * maintPerUnit;
@@ -409,29 +416,32 @@
             let E = new Array(YEARS+1);
             let S = new Array(YEARS+1);
             let M = new Array(YEARS+1);
-            for (let t=0; t<=YEARS; t++) {
+            for (let t = 0; t <= YEARS; t++) {
                 let trend = 1 + 0.0075 * t;
                 E[t] = trend;
                 S[t] = trend;
                 M[t] = trend;
             }
+            // Crise majeure
             const mYear = parseInt(majorYear.value);
             const mAmp = parseFloat(majorAmp.value);
-            for (let t=mYear; t<=YEARS; t++) {
+            for (let t = mYear; t <= YEARS; t++) {
                 E[t] *= mAmp;
                 S[t] *= mAmp;
                 M[t] *= mAmp;
             }
+            // Crises mineures
             minorCrises.forEach(c => {
-                for (let t=c.year; t<=YEARS; t++) {
+                for (let t = c.year; t <= YEARS; t++) {
                     E[t] *= c.amp;
                     S[t] *= c.amp;
                     M[t] *= c.amp;
                 }
             });
+            // Volatilité
             const vol = parseFloat(volatilitySlider.value);
             if (vol > 0) {
-                for (let t=1; t<=YEARS; t++) {
+                for (let t = 1; t <= YEARS; t++) {
                     let noise = (Math.sin(t*0.5)*0.05 + Math.sin(t*1.2)*0.03 + (Math.sin(t*3.7)*Math.cos(t*1.9))*0.08) * vol;
                     E[t] *= (1 + noise);
                     S[t] *= (1 + noise * 0.8);
@@ -442,13 +452,13 @@
         }
 
         function computeRealCostIndex(E, S, M) {
-            let w_e = parseFloat(wE.value);
-            let w_s = parseFloat(wS.value);
-            let w_m = parseFloat(wM.value);
+            let w_e = parseFloat(wE.value) || 0;
+            let w_s = parseFloat(wS.value) || 0;
+            let w_m = parseFloat(wM.value) || 0;
             let sum = w_e + w_s + w_m;
             if (sum === 0) sum = 1;
             let index = new Array(YEARS+1);
-            for (let t=0; t<=YEARS; t++) {
+            for (let t = 0; t <= YEARS; t++) {
                 index[t] = (w_e * E[t] + w_s * S[t] + w_m * M[t]) / sum;
             }
             return index;
@@ -459,7 +469,7 @@
             const oAmp = parseFloat(obsAmp.value);
             const techY = parseInt(techYear.value);
             const techRed = parseFloat(techAmp.value);
-            for (let t=0; t<=YEARS; t++) {
+            for (let t = 0; t <= YEARS; t++) {
                 let factor = 1;
                 if (t >= oYear) factor *= oAmp;
                 if (t >= techY) {
@@ -485,7 +495,7 @@
             let annualFactor = Math.pow(budgetCoef, 1/YEARS);
             let price = new Array(YEARS+1);
             price[0] = 1;
-            for (let t=1; t<=YEARS; t++) {
+            for (let t = 1; t <= YEARS; t++) {
                 price[t] = price[t-1] * annualFactor;
             }
             return price;
@@ -498,12 +508,12 @@
         function priceWithPID(index, Kp, Ki, Kd) {
             let smoothed = new Array(YEARS+1);
             smoothed[0] = index[0];
-            for (let t=1; t<=YEARS; t++) {
+            for (let t = 1; t <= YEARS; t++) {
                 smoothed[t] = 0.2 * index[t] + 0.8 * smoothed[t-1];
             }
             let price = new Array(YEARS+1);
             let error = 0, integral = 0, prevError = 0;
-            for (let t=0; t<=YEARS; t++) {
+            for (let t = 0; t <= YEARS; t++) {
                 error = smoothed[t] - index[t];
                 integral += error;
                 let derivative = error - prevError;
@@ -513,10 +523,10 @@
                 prevError = error;
             }
             let sumIndex = sumPrice(index);
-            let sumPrice = price.reduce((a,b)=>a+b,0);
-            if (Math.abs(sumPrice - sumIndex) > 1e-6) {
-                let factor = sumIndex / sumPrice;
-                for (let t=0; t<=YEARS; t++) {
+            let sumPriceVal = price.reduce((a,b)=>a+b,0);
+            if (Math.abs(sumPriceVal - sumIndex) > 1e-6) {
+                let factor = sumIndex / sumPriceVal;
+                for (let t = 0; t <= YEARS; t++) {
                     price[t] *= factor;
                 }
             }
@@ -526,7 +536,7 @@
         function cumulative(annual) {
             let cum = new Array(annual.length);
             cum[0] = annual[0];
-            for (let t=1; t<annual.length; t++) {
+            for (let t = 1; t < annual.length; t++) {
                 cum[t] = cum[t-1] + annual[t];
             }
             return cum;
@@ -541,8 +551,8 @@
             let initialTotal = baseCostAnnual.reduce((a,b)=>a+b,0);
             let budgetPrice = priceFromBudgetCoef(coef);
             let totalSum = sumPrice(budgetPrice) * initialTotal;
-            totalSlider.value = totalSum;
-            totalVal.innerText = totalSum.toFixed(0);
+            totalSlider.value = Math.round(totalSum);
+            totalVal.innerText = Math.round(totalSum);
             updating = false;
         }
 
@@ -550,19 +560,19 @@
             if (updating) return;
             updating = true;
             let totalM = parseFloat(totalSlider.value);
-            totalVal.innerText = totalM.toFixed(0);
+            totalVal.innerText = Math.round(totalM);
             let baseCostAnnual = getBaseCostAnnual();
             let initialTotal = baseCostAnnual.reduce((a,b)=>a+b,0);
             let targetSumIndex = totalM / initialTotal;
             let low = 1.0, high = 10.0;
-            for (let i=0; i<30; i++) {
-                let mid = (low+high)/2;
+            for (let i = 0; i < 30; i++) {
+                let mid = (low + high) / 2;
                 let price = priceFromBudgetCoef(mid);
                 let sum = sumPrice(price);
                 if (sum < targetSumIndex) low = mid;
                 else high = mid;
             }
-            let coef = (low+high)/2;
+            let coef = (low + high) / 2;
             coefSlider.value = coef;
             coefValue.innerText = coef.toFixed(2);
             updating = false;
@@ -591,6 +601,7 @@
             kpVal.innerText = Kp.toFixed(2);
             kiVal.innerText = Ki.toFixed(2);
             kdVal.innerText = Kd.toFixed(2);
+
             let pidIndex = priceWithPID(realIndex, Kp, Ki, Kd);
             let pidAnnual = baseCostAnnual.map((v, i) => v * pidIndex[i]);
 
@@ -654,6 +665,7 @@
             }
         }
 
+        // Gestion des crises mineures
         function renderMinorCrises() {
             minorContainer.innerHTML = '';
             minorCrises.forEach((c, idx) => {
@@ -670,6 +682,7 @@
                 `;
                 minorContainer.appendChild(div);
             });
+
             document.querySelectorAll('.removeMinor').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     let idx = parseInt(btn.getAttribute('data-idx'));
@@ -678,6 +691,7 @@
                     updateAll();
                 });
             });
+
             document.querySelectorAll('.minorYear').forEach(slider => {
                 slider.addEventListener('input', (e) => {
                     let idx = parseInt(slider.getAttribute('data-idx'));
@@ -686,6 +700,7 @@
                     updateAll();
                 });
             });
+
             document.querySelectorAll('.minorAmp').forEach(slider => {
                 slider.addEventListener('input', (e) => {
                     let idx = parseInt(slider.getAttribute('data-idx'));
@@ -720,7 +735,7 @@
             updateAll();
         }
 
-        // Écouteurs
+        // Écouteurs d'événements
         coefSlider.addEventListener('input', () => { updateFromCoef(); updateAll(); });
         totalSlider.addEventListener('input', () => { updateFromTotal(); updateAll(); });
         unitPriceInput.addEventListener('input', updateAll);
@@ -753,8 +768,9 @@
         renderMinorCrises();
         updateFromCoef();
         updateAll();
-        // Petit délai pour s'assurer que le canvas est prêt
-        setTimeout(() => { if (chart) chart.update(); }, 100);
+
+        // Mise à jour finale du chart après chargement
+        setTimeout(() => { if (chart) chart.update(); }, 150);
     })();
 </script>
 </body>
