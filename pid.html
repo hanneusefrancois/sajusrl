@@ -85,7 +85,7 @@
                 </div>
                 <div class="param-row">
                     <label>Nombre d'unités</label>
-                    <input type="range" id="unitCount" min="1" max="100" step="1" value="10">
+                    <input type="range" id="unitCount" min="1" max="1000" step="1" value="10">
                     <span class="param-value" id="unitCountVal">10</span>
                 </div>
                 <div class="param-row">
@@ -97,6 +97,11 @@
                     <label>Durée production (ans)</label>
                     <input type="range" id="prodDur" min="1" max="15" step="1" value="5">
                     <span class="param-value" id="prodDurVal">5</span>
+                </div>
+                <div class="param-row">
+                    <label>Coût maintenance annuel (% prix unitaire)</label>
+                    <input type="range" id="maintRate" min="0" max="0.15" step="0.005" value="0.05">
+                    <span class="param-value" id="maintRateVal">5.0</span>%
                 </div>
                 <div class="param-row">
                     <label>Début maintenance (année)</label>
@@ -115,7 +120,7 @@
                 <h4><i class="fas fa-chart-line"></i> Stratégie financière</h4>
                 <div class="param-row">
                     <label>💰 Prix initial (M€)</label>
-                    <input type="range" id="initialPrice" min="100" max="10000" step="10" value="1000">
+                    <input type="range" id="initialPrice" min="100" max="100000" step="10" value="1000">
                     <span class="param-value" id="initialPriceVal">1000</span>
                     <button id="lockInit" class="lock-btn active">🔒</button>
                 </div>
@@ -127,7 +132,7 @@
                 </div>
                 <div class="param-row">
                     <label>💶 Montant total (M€)</label>
-                    <input type="range" id="totalAmount" min="1000" max="100000" step="100" value="18000">
+                    <input type="range" id="totalAmount" min="1000" max="200000" step="100" value="18000">
                     <span class="param-value" id="totalAmountVal">18000</span>
                     <button id="lockTotal" class="lock-btn">🔓</button>
                 </div>
@@ -162,7 +167,7 @@
                 <div class="param-row"><label>Durée (ans)</label><input type="range" id="majorDur" min="0.5" max="8" step="0.5" value="3"><span class="param-value" id="majorDurVal">3.0</span></div>
             </div>
 
-            <!-- Crises mineures (max 5) -->
+            <!-- Crises mineures (max 7) -->
             <div class="param-group">
                 <h4><i class="fas fa-waveform"></i> Crises mineures <button id="addMinor" class="btn-sm">+ Ajouter</button></h4>
                 <div id="minorCrisesContainer"></div>
@@ -220,6 +225,7 @@
         const unitCountSlider = document.getElementById('unitCount'); const unitCountVal = document.getElementById('unitCountVal');
         const prodStartSlider = document.getElementById('prodStart'); const prodStartVal = document.getElementById('prodStartVal');
         const prodDurSlider = document.getElementById('prodDur'); const prodDurVal = document.getElementById('prodDurVal');
+        const maintRateSlider = document.getElementById('maintRate'); const maintRateVal = document.getElementById('maintRateVal');
         const maintStartSlider = document.getElementById('maintStart'); const maintStartVal = document.getElementById('maintStartVal');
         const maintDurSlider = document.getElementById('maintDur'); const maintDurVal = document.getElementById('maintDurVal');
         
@@ -236,7 +242,27 @@
         const techAmp = document.getElementById('techAmp'); const techAmpVal = document.getElementById('techAmpVal');
         const minorContainer = document.getElementById('minorCrisesContainer');
         
-        // --- Calcul de la durée totale et du profil de production/maintenance ---
+        // --- Calcul du prix initial total (unités + maintenance) ---
+        function computeInitialPrice() {
+            let unitPrice = parseFloat(unitPriceSlider.value);
+            let unitCount = parseInt(unitCountSlider.value);
+            let maintRate = parseFloat(maintRateSlider.value);
+            let maintStart = parseInt(maintStartSlider.value);
+            let maintDur = parseInt(maintDurSlider.value);
+            let maintYears = Math.min(maintDur, YEARS_MAX - maintStart);
+            if (maintYears < 0) maintYears = 0;
+            let maintCost = unitPrice * unitCount * maintRate * maintYears;
+            return unitPrice * unitCount + maintCost;
+        }
+        
+        // Mise à jour du prix initial depuis les champs
+        function updateInitialPriceFromPhysical() {
+            let newInit = computeInitialPrice();
+            initialPriceSlider.value = Math.round(newInit);
+            initialPriceVal.innerText = Math.round(newInit);
+        }
+        
+        // --- Durée totale du contrat ---
         function getTotalYears() {
             let prodStart = parseInt(prodStartSlider.value);
             let prodDur = parseInt(prodDurSlider.value);
@@ -246,15 +272,26 @@
             return Math.min(end, YEARS_MAX);
         }
         
-        // Facteur de pondération annuel (production = 1, maintenance = 1, sinon 0)
-        function getAnnualWeight(t) {
+        // --- Facteurs de poids par année (production et maintenance) ---
+        function getAnnualWeights() {
+            let years = getTotalYears();
             let prodStart = parseInt(prodStartSlider.value);
             let prodDur = parseInt(prodDurSlider.value);
             let maintStart = parseInt(maintStartSlider.value);
             let maintDur = parseInt(maintDurSlider.value);
-            let inProd = (t >= prodStart && t < prodStart+prodDur);
-            let inMaint = (t >= maintStart && t < maintStart+maintDur);
-            return (inProd || inMaint) ? 1 : 0;
+            let unitPrice = parseFloat(unitPriceSlider.value);
+            let unitCount = parseInt(unitCountSlider.value);
+            let maintRate = parseFloat(maintRateSlider.value);
+            let weights = new Array(years+1).fill(0);
+            for (let t=0; t<=years; t++) {
+                if (t >= prodStart && t < prodStart+prodDur) {
+                    weights[t] += unitCount;
+                }
+                if (t >= maintStart && t < maintStart+maintDur) {
+                    weights[t] += unitCount * maintRate;
+                }
+            }
+            return weights;
         }
         
         // --- Indice réel avec tendance sectorielle, chocs, gain tech ---
@@ -380,40 +417,35 @@
             if (years===0) years=1;
             const initial = parseFloat(initialPriceSlider.value);
             const budgetMult = parseFloat(multiplierSlider.value);
-            
-            // Indice réel et pondération par production/maintenance
+            const weights = getAnnualWeights();
+            // Indice réel
             const realIdx = generateRealIndex(years);
             let realPrice = new Array(years+1);
-            for (let t=0; t<=years; t++) {
-                let w = getAnnualWeight(t);
-                realPrice[t] = realIdx[t] * initial * (w===0 ? 0 : 1);
-            }
+            for (let t=0; t<=years; t++) realPrice[t] = realIdx[t] * weights[t];
             
             // Budget
             const budgetRaw = priceFromMultiplier(initial, budgetMult, years);
             let budgetPrice = new Array(years+1);
-            for (let t=0; t<=years; t++) budgetPrice[t] = budgetRaw[t] * (getAnnualWeight(t)===0 ? 0 : 1);
+            for (let t=0; t<=years; t++) budgetPrice[t] = budgetRaw[t] * (weights[t] / (weights[t] || 1)); // simple: on répartit proportionnellement? En fait, budgetRaw est la valeur totale annuelle si tout était produit. Pour correspondre aux coûts réels, on doit multiplier par le poids relatif? Plus simple: on applique le même coefficient de répartition que les coûts réels? Pour que la somme du budget soit exacte, on utilise la même répartition que les coûts réels? On va plutôt faire: le budget annuel est proportionnel au poids (comme si le coût unitaire était constant). Ainsi le total budget sera initial * somme(weights) ? Non, car le budget est une progression. On va garder la logique antérieure: on calcule le prix annuel total (budget) comme si toutes les unités étaient produites chaque année (poids=1), puis on applique un facteur de répartition pour que la somme soit correcte. Pour simplifier et rester cohérent avec la définition du coefficient, on utilise la même logique que précédemment: le budget est une progression géométrique sur l'ensemble du contrat (tous les ans). Le montant total est la somme de ces prix annuels. On ne tient pas compte des poids pour le budget, car le budget représente la facturation prévue, indépendamment du rythme de production. Donc on garde budgetPrice = budgetRaw (prix annuel total). Le coût réel, lui, tient compte des poids (car on ne paye que ce qui est produit/maintenu). Ainsi, la comparaison est pertinente. On ajuste simplement realPrice = realIdx * weights[t] (car weights[t] est le coût total à l'année t si l'indice est 1). Donc realPrice est déjà en millions d'euros.
+            let budgetPriceRaw = budgetRaw; // c'est le budget annuel total prévu (en M€)
             
             // Concurrents
             let compAMult = budgetMult * (1 + parseFloat(compA.value)/100);
             let compBMult = budgetMult * (1 + parseFloat(compB.value)/100);
             const compARaw = priceFromMultiplier(initial, compAMult, years);
             const compBRaw = priceFromMultiplier(initial, compBMult, years);
-            let compAPrice = new Array(years+1), compBPrice = new Array(years+1);
-            for (let t=0; t<=years; t++) {
-                compAPrice[t] = compARaw[t] * (getAnnualWeight(t)===0 ? 0 : 1);
-                compBPrice[t] = compBRaw[t] * (getAnnualWeight(t)===0 ? 0 : 1);
-            }
+            let compAPrice = compARaw.slice();
+            let compBPrice = compBRaw.slice();
             
             // PID
             const gains = PID_GAINS[currentPidMode];
             const pidNorm = priceWithPID(realIdx, gains);
             let pidPrice = new Array(years+1);
-            for (let t=0; t<=years; t++) pidPrice[t] = pidNorm[t] * initial * (getAnnualWeight(t)===0 ? 0 : 1);
+            for (let t=0; t<=years; t++) pidPrice[t] = pidNorm[t] * weights[t];
             
             // Sommes
             let sumReal = realPrice.reduce((a,b)=>a+b,0);
-            let sumBudget = budgetPrice.reduce((a,b)=>a+b,0);
+            let sumBudget = budgetPriceRaw.reduce((a,b)=>a+b,0);
             let sumCompA = compAPrice.reduce((a,b)=>a+b,0);
             let sumCompB = compBPrice.reduce((a,b)=>a+b,0);
             let sumPid = pidPrice.reduce((a,b)=>a+b,0);
@@ -431,18 +463,27 @@
             
             // Annotations crises
             let annotations = {};
+            // Crise majeure
             let mYear = parseInt(majorYear.value);
             let mDur = parseFloat(majorDur.value);
-            annotations['major'] = { type: 'box', xMin: mYear, xMax: mYear + mDur - 0.1, backgroundColor: 'rgba(192,57,43,0.25)', borderColor: '#ef4444', borderWidth: 1, label: { content: 'Crise majeure', enabled: true, position: 'top', color: '#ef4444', font: { size: 9 } } };
+            annotations['major'] = { type: 'box', xMin: mYear, xMax: mYear + mDur - 0.1, backgroundColor: 'rgba(192,57,43,0.35)', borderColor: '#ef4444', borderWidth: 2, label: { content: 'CRISE MAJEURE', enabled: true, position: 'top', color: '#ef4444', font: { size: 9, weight: 'bold' } } };
+            // Crises mineures
+            const minorColors = ['#f97316', '#fbbf24', '#a855f7', '#ec489a', '#14b8a6', '#8b5cf6', '#06b6d4'];
             minorCrises.forEach((c, idx) => {
-                annotations[`minor_${idx}`] = { type: 'box', xMin: c.year, xMax: c.year + c.dur - 0.1, backgroundColor: 'rgba(249,115,22,0.2)', borderColor: '#f97316', borderWidth: 1, label: { content: c.typeLabel, enabled: true, position: 'top', color: '#f97316', font: { size: 8 } } };
+                annotations[`minor_${idx}`] = { type: 'box', xMin: c.year, xMax: c.year + c.dur - 0.1, backgroundColor: `rgba(249,115,22,0.25)`, borderColor: minorColors[idx % minorColors.length], borderWidth: 1, label: { content: c.typeLabel, enabled: true, position: 'top', color: minorColors[idx % minorColors.length], font: { size: 8 } } };
             });
+            // Gain technologique
+            let techY = parseInt(techYear.value);
+            let techRed = parseFloat(techAmp.value);
+            if (techRed > 0 && techY <= years) {
+                annotations['tech'] = { type: 'box', xMin: techY, xMax: years, backgroundColor: 'rgba(16,185,129,0.15)', borderColor: '#10b981', borderWidth: 1, label: { content: '📈 Gain technologique', enabled: true, position: 'bottom', color: '#10b981', font: { size: 8 } } };
+            }
             
             const labels = Array.from({length: years+1}, (_,i)=>i);
             if (chart) {
                 chart.data.labels = labels;
                 chart.data.datasets[0].data = realPrice;
-                chart.data.datasets[1].data = budgetPrice;
+                chart.data.datasets[1].data = budgetPriceRaw;
                 chart.data.datasets[2].data = compAPrice;
                 chart.data.datasets[3].data = compBPrice;
                 chart.data.datasets[4].data = pidPrice;
@@ -456,7 +497,7 @@
                         labels: labels,
                         datasets: [
                             { label: 'Coût réel', data: realPrice, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0, tension: 0.2, fill: false },
-                            { label: 'Budget', data: budgetPrice, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Budget', data: budgetPriceRaw, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false },
                             { label: 'Concurrent A', data: compAPrice, borderColor: '#6b7280', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
                             { label: 'Concurrent B', data: compBPrice, borderColor: '#f97316', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
                             { label: 'Saju PID', data: pidPrice, borderColor: '#10b981', borderWidth: 3, pointRadius: 0, tension: 0.2, fill: false }
@@ -479,19 +520,28 @@
             }
         }
         
-        // Gestion crises mineures
+        // Gestion crises mineures (jusqu'à 7)
         function renderMinorCrises() {
             minorContainer.innerHTML = '';
+            const crisisTypes = [
+                { value: 'monetary', label: '💰 Monétaire', color: '#fbbf24' },
+                { value: 'supplier', label: '🏭 Fournisseur', color: '#f97316' },
+                { value: 'raw', label: '⛏️ Matières premières', color: '#ef4444' },
+                { value: 'geo', label: '🌍 Géopolitique', color: '#8b5cf6' },
+                { value: 'logistics', label: '🚚 Logistique', color: '#14b8a6' },
+                { value: 'competition', label: '⚔️ Concurrence accrue', color: '#ec489a' },
+                { value: 'internal', label: '📉 Erreur sous-évaluation interne', color: '#6b7280' }
+            ];
             minorCrises.forEach((c, idx) => {
                 let div = document.createElement('div');
                 div.className = 'crisis-minor-item';
+                let selectHtml = `<select class="minorType" data-idx="${idx}" style="width:130px">`;
+                crisisTypes.forEach(t => {
+                    selectHtml += `<option value="${t.value}" ${c.type===t.value ? 'selected' : ''}>${t.label}</option>`;
+                });
+                selectHtml += `</select>`;
                 div.innerHTML = `
-                    <select class="minorType" data-idx="${idx}" style="width:100px">
-                        <option value="monetary" ${c.type==='monetary'?'selected':''}>💰 Monétaire</option>
-                        <option value="supplier" ${c.type==='supplier'?'selected':''}>🏭 Fournisseur</option>
-                        <option value="raw" ${c.type==='raw'?'selected':''}>⛏️ Matières premières</option>
-                        <option value="geo" ${c.type==='geo'?'selected':''}>🌍 Géopolitique</option>
-                    </select>
+                    ${selectHtml}
                     <span>An</span><input type="range" class="minorYear" data-idx="${idx}" min="3" max="38" step="1" value="${c.year}" style="width:80px"><span class="minorYearVal">${c.year}</span>
                     <span>×</span><input type="range" class="minorAmp" data-idx="${idx}" min="1.2" max="3.0" step="0.05" value="${c.amp}" style="width:80px"><span class="minorAmpVal">${c.amp.toFixed(2)}</span>
                     <span>durée</span><input type="range" class="minorDur" data-idx="${idx}" min="0.5" max="5" step="0.5" value="${c.dur}" style="width:70px"><span class="minorDurVal">${c.dur.toFixed(1)}</span>
@@ -506,15 +556,16 @@
             document.querySelectorAll('.minorDur').forEach(sl => sl.addEventListener('input', (e) => { let idx=parseInt(sl.getAttribute('data-idx')); minorCrises[idx].dur=parseFloat(sl.value); sl.parentElement.querySelector('.minorDurVal').innerText=minorCrises[idx].dur.toFixed(1); updateAll(); }));
         }
         
-        document.getElementById('addMinor').addEventListener('click', () => { if (minorCrises.length<5) { minorCrises.push({ year:10, amp:1.5, dur:2, type:'raw', typeLabel:'⛏️ Matières premières' }); renderMinorCrises(); updateAll(); } else alert('Maximum 5 crises mineures'); });
+        document.getElementById('addMinor').addEventListener('click', () => { if (minorCrises.length<7) { minorCrises.push({ year:10, amp:1.5, dur:2, type:'raw', typeLabel:'⛏️ Matières premières' }); renderMinorCrises(); updateAll(); } else alert('Maximum 7 crises mineures'); });
         
         // Écouteurs
-        unitPriceSlider.addEventListener('input', () => { unitPriceVal.innerText=unitPriceSlider.value; let newInit = parseInt(unitPriceSlider.value)*parseInt(unitCountSlider.value); initialPriceSlider.value=newInit; initialPriceVal.innerText=newInit; updateFinancialParams('initial'); });
-        unitCountSlider.addEventListener('input', () => { unitCountVal.innerText=unitCountSlider.value; let newInit = parseInt(unitPriceSlider.value)*parseInt(unitCountSlider.value); initialPriceSlider.value=newInit; initialPriceVal.innerText=newInit; updateFinancialParams('initial'); });
+        unitPriceSlider.addEventListener('input', () => { unitPriceVal.innerText=unitPriceSlider.value; updateInitialPriceFromPhysical(); updateFinancialParams('initial'); });
+        unitCountSlider.addEventListener('input', () => { unitCountVal.innerText=unitCountSlider.value; updateInitialPriceFromPhysical(); updateFinancialParams('initial'); });
         prodStartSlider.addEventListener('input', () => { prodStartVal.innerText=prodStartSlider.value; updateAll(); });
         prodDurSlider.addEventListener('input', () => { prodDurVal.innerText=prodDurSlider.value; updateAll(); });
-        maintStartSlider.addEventListener('input', () => { maintStartVal.innerText=maintStartSlider.value; updateAll(); });
-        maintDurSlider.addEventListener('input', () => { maintDurVal.innerText=maintDurSlider.value; updateAll(); });
+        maintRateSlider.addEventListener('input', () => { maintRateVal.innerText=(maintRateSlider.value*100).toFixed(1); updateInitialPriceFromPhysical(); updateFinancialParams('initial'); updateAll(); });
+        maintStartSlider.addEventListener('input', () => { maintStartVal.innerText=maintStartSlider.value; updateInitialPriceFromPhysical(); updateFinancialParams('initial'); updateAll(); });
+        maintDurSlider.addEventListener('input', () => { maintDurVal.innerText=maintDurSlider.value; updateInitialPriceFromPhysical(); updateFinancialParams('initial'); updateAll(); });
         initialPriceSlider.addEventListener('input', () => { initialPriceVal.innerText=Math.round(initialPriceSlider.value); updateFinancialParams('initial'); });
         multiplierSlider.addEventListener('input', () => { multiplierVal.innerText=parseFloat(multiplierSlider.value).toFixed(2); updateFinancialParams('multiplier'); });
         totalAmountSlider.addEventListener('input', () => { totalAmountVal.innerText=Math.round(totalAmountSlider.value); updateFinancialParams('total'); });
@@ -530,6 +581,8 @@
         techAmp.addEventListener('input', () => { techAmpVal.innerText=(techAmp.value*100).toFixed(1); updateAll(); });
         document.querySelectorAll('input[name="pidMode"]').forEach(radio => radio.addEventListener('change', (e) => { if(e.target.checked) currentPidMode=e.target.value; updateAll(); }));
         
+        // Initialisation
+        updateInitialPriceFromPhysical();
         lockInit.click();
         renderMinorCrises();
         updateAll();
