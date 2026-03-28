@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saju – Simulateur avancé | Contrats longs, crises, PID</title>
+    <title>Saju – Simulateur avancé | Contrats longs, crises, PID paramétrable</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -20,197 +21,101 @@
             max-width: 1600px;
             margin: 0 auto;
             background: #0f1117;
-            border-radius: 2rem;
+            border-radius: 1.5rem;
             padding: 1.5rem;
         }
-        .s-tag {
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #14b8a6;
-        }
-        .s-tag::before { content: ''; width: 20px; height: 1px; background: #14b8a6; }
-        .s-title {
-            font-size: clamp(1.6rem, 2.5vw, 2.2rem);
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 12px;
-        }
-        .s-title em { font-style: italic; color: #d97706; }
-        .s-sub {
-            font-size: 0.9rem;
-            font-weight: 300;
-            color: rgba(255,255,255,0.7);
-            max-width: 800px;
-            margin-bottom: 24px;
-        }
-        .simu-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.2rem;
-        }
-        .controls-panel {
-            flex: 1;
-            min-width: 320px;
-            background: #171b24;
-            border-radius: 1rem;
-            padding: 1.2rem;
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .chart-panel {
-            flex: 2;
-            min-width: 500px;
-            background: #171b24;
-            border-radius: 1rem;
-            padding: 1rem;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .param-group {
-            background: rgba(0,0,0,0.3);
-            border-radius: 0.8rem;
-            padding: 0.8rem;
-        }
-        .param-group h4 {
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #d97706;
-        }
-        .param-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 8px;
-            align-items: center;
-        }
-        .param-row label {
-            font-size: 0.7rem;
-            width: 100px;
-            font-weight: 500;
-        }
-        input[type="range"] {
-            flex: 1;
-            accent-color: #d97706;
-        }
-        .param-value {
-            width: 55px;
-            text-align: right;
-            font-size: 0.7rem;
-            background: #0f1117;
-            padding: 2px 6px;
-            border-radius: 1rem;
-        }
-        .lock-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 6px;
-        }
-        .lock-btn {
-            background: #2d3748;
-            border: none;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 1rem;
-            font-size: 0.65rem;
-            cursor: pointer;
-        }
-        .lock-btn.active {
-            background: #d97706;
-            color: #000;
-        }
-        .crisis-minor-item {
-            background: rgba(0,0,0,0.4);
-            border-radius: 0.5rem;
-            padding: 6px 8px;
-            margin-bottom: 6px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-        }
-        .crisis-minor-item select, .crisis-minor-item input {
-            background: #0f1117;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 0.3rem;
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 4px;
-        }
-        .btn-sm {
-            background: #d97706;
-            border: none;
-            color: #000;
-            padding: 2px 8px;
-            border-radius: 1rem;
-            font-size: 0.65rem;
-            cursor: pointer;
-        }
-        .impact-summary {
-            background: #0f1117;
-            border-radius: 0.8rem;
-            padding: 0.8rem;
-            margin-top: 8px;
-            font-size: 0.7rem;
-            text-align: center;
-        }
+        h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; }
+        h1 em { font-style: italic; color: #d97706; }
+        .subhead { font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-bottom: 1.5rem; border-left: 3px solid #d97706; padding-left: 1rem; }
+        .simu-wrapper { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+        .controls-panel { flex: 1.2; min-width: 340px; background: #171b24; border-radius: 1rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 1rem; max-height: 85vh; overflow-y: auto; }
+        .chart-panel { flex: 2; min-width: 550px; background: #171b24; border-radius: 1rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); }
+        .param-group { background: rgba(0,0,0,0.25); border-radius: 0.8rem; padding: 0.8rem; border-left: 2px solid #d97706; }
+        .param-group h4 { font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; color: #d97706; }
+        .param-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .param-row label { font-size: 0.7rem; width: 110px; font-weight: 500; }
+        input[type="range"] { flex: 1; accent-color: #d97706; min-width: 100px; }
+        select { background: #0f1117; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 0.3rem; padding: 4px; font-size: 0.7rem; }
+        .param-value { width: 55px; text-align: right; font-size: 0.7rem; background: #0f1117; padding: 2px 6px; border-radius: 1rem; }
+        .lock-group { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .lock-btn { background: #2d3748; border: none; color: white; padding: 2px 8px; border-radius: 1rem; font-size: 0.65rem; cursor: pointer; }
+        .lock-btn.active { background: #d97706; color: #000; }
+        .pid-selector { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+        .pid-selector label { display: flex; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; }
+        .crisis-minor-item { background: rgba(0,0,0,0.4); border-radius: 0.5rem; padding: 6px; margin-bottom: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.7rem; }
+        .btn-sm { background: #d97706; border: none; color: #000; padding: 2px 8px; border-radius: 1rem; font-size: 0.65rem; cursor: pointer; }
+        .impact-summary { background: #0f1117; border-radius: 0.8rem; padding: 0.8rem; margin-top: 8px; font-size: 0.7rem; text-align: center; }
         .impact-number { font-size: 1rem; font-weight: 700; color: #d97706; }
-        .chart-legend {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 12px;
-            flex-wrap: wrap;
-            font-size: 0.65rem;
-        }
-        .legend-color {
-            display: inline-block;
-            width: 16px;
-            height: 3px;
-            vertical-align: middle;
-            margin-right: 4px;
-            border-radius: 2px;
-        }
-        .marketing-note {
-            background: linear-gradient(135deg, #1a2a2a 0%, #0f1a1f 100%);
-            border-left: 3px solid #d97706;
-            border-radius: 0.8rem;
-            padding: 0.8rem 1rem;
-            margin-top: 1rem;
-            font-size: 0.75rem;
-        }
-        @media (max-width: 900px) {
-            .controls-panel, .chart-panel { flex: 1 1 100%; }
-            .param-row label { width: 80px; }
-        }
+        .chart-legend { display: flex; justify-content: center; gap: 1rem; margin-top: 12px; flex-wrap: wrap; font-size: 0.65rem; }
+        .legend-color { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 4px; border-radius: 2px; }
+        .marketing-note { background: linear-gradient(135deg, #1a2a2a 0%, #0f1a1f 100%); border-left: 3px solid #d97706; border-radius: 0.8rem; padding: 0.8rem; margin-top: 1rem; font-size: 0.7rem; }
+        @media (max-width: 1000px) { .controls-panel, .chart-panel { flex: 1 1 100%; } .controls-panel { max-height: none; } }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="s-tag">SIMULATEUR AVANCÉ SAJU</div>
-    <h2 class="s-title">Visualisez l’impact des crises <em>et du PID</em><br>sur vos coûts réels</h2>
-    <p class="s-sub">Ajustez les paramètres, ajoutez des crises, comparez les stratégies. La courbe Saju (PID) lisse les chocs sans modifier le coût total cumulé.</p>
+    <h1>Simulateur Saju · <em>Contrats longs & crises</em></h1>
+    <div class="subhead">Configurez votre contrat, ajoutez des crises, comparez les stratégies. Le PID lisse les chocs sans modifier le coût total cumulé.</div>
 
     <div class="simu-wrapper">
-        <!-- PANEL DE CONTRÔLE COMPACT -->
+        <!-- PANEL DE CONTRÔLE -->
         <div class="controls-panel">
-            <!-- Paramètres de base -->
+            <!-- Secteur et équipement -->
             <div class="param-group">
-                <h4><i class="fas fa-chart-line"></i> Contrat & stratégie</h4>
+                <h4><i class="fas fa-industry"></i> Secteur & équipement</h4>
+                <div class="param-row">
+                    <label>Secteur</label>
+                    <select id="sector" style="flex:1">
+                        <option value="train">🚆 Ferroviaire (train/rame)</option>
+                        <option value="avion">✈️ Aéronautique (avion)</option>
+                        <option value="bateau">🚢 Naval (bateau/navire)</option>
+                        <option value="sousmarin">⚓ Sous-marin</option>
+                        <option value="four">🔥 Four industriel</option>
+                        <option value="irm">🖥️ Scanner IRM</option>
+                        <option value="cuve">☢️ Cuve nucléaire</option>
+                        <option value="gaz">⚡ Centrale à gaz</option>
+                        <option value="substation">🔌 Sous-station électrique</option>
+                        <option value="raffinerie">🏭 Module de raffinerie</option>
+                    </select>
+                </div>
+                <div class="param-row">
+                    <label>Prix unitaire (M€)</label>
+                    <input type="range" id="unitPrice" min="1" max="500" step="1" value="100">
+                    <span class="param-value" id="unitPriceVal">100</span>
+                </div>
+                <div class="param-row">
+                    <label>Nombre d'unités</label>
+                    <input type="range" id="unitCount" min="1" max="100" step="1" value="10">
+                    <span class="param-value" id="unitCountVal">10</span>
+                </div>
+                <div class="param-row">
+                    <label>Début production (année)</label>
+                    <input type="range" id="prodStart" min="0" max="10" step="1" value="0">
+                    <span class="param-value" id="prodStartVal">0</span>
+                </div>
+                <div class="param-row">
+                    <label>Durée production (ans)</label>
+                    <input type="range" id="prodDur" min="1" max="15" step="1" value="5">
+                    <span class="param-value" id="prodDurVal">5</span>
+                </div>
+                <div class="param-row">
+                    <label>Début maintenance (année)</label>
+                    <input type="range" id="maintStart" min="5" max="25" step="1" value="10">
+                    <span class="param-value" id="maintStartVal">10</span>
+                </div>
+                <div class="param-row">
+                    <label>Durée maintenance (ans)</label>
+                    <input type="range" id="maintDur" min="5" max="35" step="1" value="20">
+                    <span class="param-value" id="maintDurVal">20</span>
+                </div>
+            </div>
+
+            <!-- Paramètres financiers avec cadenas -->
+            <div class="param-group">
+                <h4><i class="fas fa-chart-line"></i> Stratégie financière</h4>
                 <div class="param-row">
                     <label>💰 Prix initial (M€)</label>
-                    <input type="range" id="initialPrice" min="100" max="5000" step="10" value="1000">
+                    <input type="range" id="initialPrice" min="100" max="10000" step="10" value="1000">
                     <span class="param-value" id="initialPriceVal">1000</span>
                     <button id="lockInit" class="lock-btn active">🔒</button>
                 </div>
@@ -222,62 +127,52 @@
                 </div>
                 <div class="param-row">
                     <label>💶 Montant total (M€)</label>
-                    <input type="range" id="totalAmount" min="1000" max="50000" step="100" value="18000">
+                    <input type="range" id="totalAmount" min="1000" max="100000" step="100" value="18000">
                     <span class="param-value" id="totalAmountVal">18000</span>
                     <button id="lockTotal" class="lock-btn">🔓</button>
                 </div>
                 <div class="param-row">
                     <label>🏭 Concurrent A (sous-éval.)</label>
-                    <input type="range" id="compA" min="-30" max="0" step="1" value="-15">
+                    <input type="range" id="compA" min="-40" max="0" step="1" value="-15">
                     <span class="param-value" id="compAVal">-15</span>%
                 </div>
                 <div class="param-row">
                     <label>⚡ Concurrent B (sur-éval.)</label>
-                    <input type="range" id="compB" min="0" max="40" step="1" value="25">
+                    <input type="range" id="compB" min="0" max="50" step="1" value="25">
                     <span class="param-value" id="compBVal">+25</span>%
+                </div>
+            </div>
+
+            <!-- Niveau PID -->
+            <div class="param-group">
+                <h4><i class="fas fa-microchip"></i> Niveau de régulation PID</h4>
+                <div class="pid-selector" id="pidSelector">
+                    <label><input type="radio" name="pidMode" value="strong"> Fort (lissage rapide)</label>
+                    <label><input type="radio" name="pidMode" value="medium" checked> Moyen (équilibré)</label>
+                    <label><input type="radio" name="pidMode" value="weak"> Faible (lissage doux)</label>
+                    <label><input type="radio" name="pidMode" value="none"> Aucun (sans PID)</label>
                 </div>
             </div>
 
             <!-- Crise majeure -->
             <div class="param-group">
                 <h4><i class="fas fa-skull-crosswalk"></i> Crise majeure</h4>
-                <div class="param-row">
-                    <label>Année début</label>
-                    <input type="range" id="majorYear" min="3" max="35" step="1" value="15">
-                    <span class="param-value" id="majorYearVal">15</span>
-                </div>
-                <div class="param-row">
-                    <label>Amplitude (×)</label>
-                    <input type="range" id="majorAmp" min="1.3" max="4.0" step="0.05" value="2.5">
-                    <span class="param-value" id="majorAmpVal">2.50</span>
-                </div>
-                <div class="param-row">
-                    <label>Durée (ans)</label>
-                    <input type="range" id="majorDur" min="0.5" max="8" step="0.5" value="3">
-                    <span class="param-value" id="majorDurVal">3.0</span>
-                </div>
+                <div class="param-row"><label>Année début</label><input type="range" id="majorYear" min="3" max="38" step="1" value="15"><span class="param-value" id="majorYearVal">15</span></div>
+                <div class="param-row"><label>Amplitude (×)</label><input type="range" id="majorAmp" min="1.3" max="4.0" step="0.05" value="2.5"><span class="param-value" id="majorAmpVal">2.50</span></div>
+                <div class="param-row"><label>Durée (ans)</label><input type="range" id="majorDur" min="0.5" max="8" step="0.5" value="3"><span class="param-value" id="majorDurVal">3.0</span></div>
             </div>
 
             <!-- Crises mineures (max 5) -->
             <div class="param-group">
                 <h4><i class="fas fa-waveform"></i> Crises mineures <button id="addMinor" class="btn-sm">+ Ajouter</button></h4>
                 <div id="minorCrisesContainer"></div>
-                <div class="param-hint" style="font-size:0.65rem; margin-top:4px;">Jusqu'à 5 chocs supplémentaires</div>
             </div>
 
             <!-- Gain technologique -->
             <div class="param-group">
                 <h4><i class="fas fa-microchip"></i> Gain technologique (IA)</h4>
-                <div class="param-row">
-                    <label>Année début</label>
-                    <input type="range" id="techYear" min="5" max="35" step="1" value="20">
-                    <span class="param-value" id="techYearVal">20</span>
-                </div>
-                <div class="param-row">
-                    <label>Réduction annuelle</label>
-                    <input type="range" id="techAmp" min="0" max="0.03" step="0.001" value="0.015">
-                    <span class="param-value" id="techAmpVal">1.5</span>%
-                </div>
+                <div class="param-row"><label>Année début</label><input type="range" id="techYear" min="5" max="35" step="1" value="20"><span class="param-value" id="techYearVal">20</span></div>
+                <div class="param-row"><label>Réduction annuelle</label><input type="range" id="techAmp" min="0" max="0.03" step="0.001" value="0.015"><span class="param-value" id="techAmpVal">1.5</span>%</div>
             </div>
 
             <div class="impact-summary" id="impactSummary"></div>
@@ -291,90 +186,96 @@
                 <span><span class="legend-color" style="background:#fbbf24;"></span> Budget (coeff choisi)</span>
                 <span><span class="legend-color" style="background:#6b7280;"></span> Concurrent A (sous-éval.)</span>
                 <span><span class="legend-color" style="background:#f97316;"></span> Concurrent B (sur-éval.)</span>
-                <span><span class="legend-color" style="background:#10b981;"></span> Saju (PID – lissage)</span>
+                <span><span class="legend-color" style="background:#10b981;"></span> Saju (PID)</span>
             </div>
         </div>
     </div>
 
     <div class="marketing-note">
-        <strong><i class="fas fa-chart-line"></i> Pourquoi cette simulation ?</strong> Elle montre comment les chocs et les choix stratégiques impactent les coûts. <strong>Saju ne se contente pas de simuler</strong> : notre expertise calibre chaque paramètre sur <strong>125 ans de données réelles</strong> pour fournir une formule de révision optimale et un PID sur mesure. Vous obtenez un contrat auto‑stabilisé, sans renégociation, et une visibilité budgétaire exacte sur 40 ans.
+        <strong><i class="fas fa-chart-line"></i> Pourquoi cette simulation ?</strong> Elle montre comment les chocs et les choix stratégiques impactent les coûts. <strong>Saju ne se contente pas de simuler</strong> : notre expertise calibre chaque paramètre sur <strong>125 ans de données réelles</strong> pour fournir une formule de révision optimale et un PID sur mesure.
     </div>
 </div>
 
 <script>
     (function(){
-        // --- Éléments DOM ---
-        const initialPriceSlider = document.getElementById('initialPrice');
-        const initialPriceVal = document.getElementById('initialPriceVal');
-        const multiplierSlider = document.getElementById('multiplier');
-        const multiplierVal = document.getElementById('multiplierVal');
-        const totalAmountSlider = document.getElementById('totalAmount');
-        const totalAmountVal = document.getElementById('totalAmountVal');
-        const lockInit = document.getElementById('lockInit');
-        const lockMult = document.getElementById('lockMult');
-        const lockTotal = document.getElementById('lockTotal');
-        const compA = document.getElementById('compA');
-        const compAVal = document.getElementById('compAVal');
-        const compB = document.getElementById('compB');
-        const compBVal = document.getElementById('compBVal');
-        const majorYear = document.getElementById('majorYear');
-        const majorYearVal = document.getElementById('majorYearVal');
-        const majorAmp = document.getElementById('majorAmp');
-        const majorAmpVal = document.getElementById('majorAmpVal');
-        const majorDur = document.getElementById('majorDur');
-        const majorDurVal = document.getElementById('majorDurVal');
-        const techYear = document.getElementById('techYear');
-        const techYearVal = document.getElementById('techYearVal');
-        const techAmp = document.getElementById('techAmp');
-        const techAmpVal = document.getElementById('techAmpVal');
-        const minorContainer = document.getElementById('minorCrisesContainer');
-        
+        // --- Configuration ---
+        const YEARS_MAX = 40;
         let minorCrises = [];
         let lockedVar = 'initial';
         let updating = false;
         let chart;
-        const YEARS_MAX = 40;
         
-        // --- Calcul des prix ---
-        function priceFromMultiplier(initial, multiplier, years) {
-            let annualFactor = Math.pow(multiplier, 1/years);
-            let price = new Array(years+1);
-            price[0] = initial;
-            for (let t=1; t<=years; t++) price[t] = price[t-1] * annualFactor;
-            return price;
+        // Gains PID selon niveau
+        const PID_GAINS = {
+            strong: { Kp: 0.55, Ki: 0.15, Kd: 0.22 },
+            medium: { Kp: 0.38, Ki: 0.10, Kd: 0.14 },
+            weak: { Kp: 0.22, Ki: 0.06, Kd: 0.08 },
+            none: { Kp: 0, Ki: 0, Kd: 0 }
+        };
+        let currentPidMode = 'medium';
+        
+        // Éléments DOM
+        const sectorSelect = document.getElementById('sector');
+        const unitPriceSlider = document.getElementById('unitPrice'); const unitPriceVal = document.getElementById('unitPriceVal');
+        const unitCountSlider = document.getElementById('unitCount'); const unitCountVal = document.getElementById('unitCountVal');
+        const prodStartSlider = document.getElementById('prodStart'); const prodStartVal = document.getElementById('prodStartVal');
+        const prodDurSlider = document.getElementById('prodDur'); const prodDurVal = document.getElementById('prodDurVal');
+        const maintStartSlider = document.getElementById('maintStart'); const maintStartVal = document.getElementById('maintStartVal');
+        const maintDurSlider = document.getElementById('maintDur'); const maintDurVal = document.getElementById('maintDurVal');
+        
+        const initialPriceSlider = document.getElementById('initialPrice'); const initialPriceVal = document.getElementById('initialPriceVal');
+        const multiplierSlider = document.getElementById('multiplier'); const multiplierVal = document.getElementById('multiplierVal');
+        const totalAmountSlider = document.getElementById('totalAmount'); const totalAmountVal = document.getElementById('totalAmountVal');
+        const lockInit = document.getElementById('lockInit'); const lockMult = document.getElementById('lockMult'); const lockTotal = document.getElementById('lockTotal');
+        const compA = document.getElementById('compA'); const compAVal = document.getElementById('compAVal');
+        const compB = document.getElementById('compB'); const compBVal = document.getElementById('compBVal');
+        const majorYear = document.getElementById('majorYear'); const majorYearVal = document.getElementById('majorYearVal');
+        const majorAmp = document.getElementById('majorAmp'); const majorAmpVal = document.getElementById('majorAmpVal');
+        const majorDur = document.getElementById('majorDur'); const majorDurVal = document.getElementById('majorDurVal');
+        const techYear = document.getElementById('techYear'); const techYearVal = document.getElementById('techYearVal');
+        const techAmp = document.getElementById('techAmp'); const techAmpVal = document.getElementById('techAmpVal');
+        const minorContainer = document.getElementById('minorCrisesContainer');
+        
+        // --- Calcul de la durée totale et du profil de production/maintenance ---
+        function getTotalYears() {
+            let prodStart = parseInt(prodStartSlider.value);
+            let prodDur = parseInt(prodDurSlider.value);
+            let maintStart = parseInt(maintStartSlider.value);
+            let maintDur = parseInt(maintDurSlider.value);
+            let end = Math.max(prodStart+prodDur, maintStart+maintDur);
+            return Math.min(end, YEARS_MAX);
         }
         
-        function totalFromParams(initial, multiplier, years) {
-            return priceFromMultiplier(initial, multiplier, years).reduce((a,b)=>a+b,0);
+        // Facteur de pondération annuel (production = 1, maintenance = 1, sinon 0)
+        function getAnnualWeight(t) {
+            let prodStart = parseInt(prodStartSlider.value);
+            let prodDur = parseInt(prodDurSlider.value);
+            let maintStart = parseInt(maintStartSlider.value);
+            let maintDur = parseInt(maintDurSlider.value);
+            let inProd = (t >= prodStart && t < prodStart+prodDur);
+            let inMaint = (t >= maintStart && t < maintStart+maintDur);
+            return (inProd || inMaint) ? 1 : 0;
         }
         
-        function multiplierFromTotal(initial, total, years) {
-            let low=1, high=10;
-            for (let i=0;i<40;i++) {
-                let mid=(low+high)/2;
-                if (totalFromParams(initial, mid, years) < total) low=mid;
-                else high=mid;
-            }
-            return (low+high)/2;
-        }
-        
-        function initialFromTotal(multiplier, total, years) {
-            let low=1, high=100000;
-            for (let i=0;i<40;i++) {
-                let mid=(low+high)/2;
-                if (totalFromParams(mid, multiplier, years) < total) low=mid;
-                else high=mid;
-            }
-            return (low+high)/2;
-        }
-        
-        // --- Génération de l'indice réel (volatile, avec chocs) ---
+        // --- Indice réel avec tendance sectorielle, chocs, gain tech ---
         function generateRealIndex(years) {
             let index = new Array(years+1);
-            // Tendance de fond
+            let sectorTrend = 0.0075;
+            switch(sectorSelect.value) {
+                case 'train': sectorTrend = 0.0065; break;
+                case 'avion': sectorTrend = 0.008; break;
+                case 'bateau': sectorTrend = 0.0075; break;
+                case 'sousmarin': sectorTrend = 0.006; break;
+                case 'four': sectorTrend = 0.007; break;
+                case 'irm': sectorTrend = 0.0045; break;
+                case 'cuve': sectorTrend = 0.0055; break;
+                case 'gaz': sectorTrend = 0.007; break;
+                case 'substation': sectorTrend = 0.0065; break;
+                case 'raffinerie': sectorTrend = 0.006; break;
+            }
             for (let t=0; t<=years; t++) {
-                let trend = 1 + 0.0075 * t;
-                let noise = 1 + 0.10 * Math.sin(t*1.2) + 0.06 * Math.cos(t*2.3) + 0.04 * Math.sin(t*4.7);
+                let trend = 1 + sectorTrend * t;
+                let noise = 1 + 0.09 * Math.sin(t*1.2) + 0.05 * Math.cos(t*2.3) + 0.03 * Math.sin(t*4.7);
                 noise += 0.02 * (Math.sin(t*11.3) + Math.cos(t*7.9));
                 index[t] = trend * noise;
             }
@@ -382,14 +283,10 @@
             let mYear = parseInt(majorYear.value);
             let mAmp = parseFloat(majorAmp.value);
             let mDur = parseFloat(majorDur.value);
-            for (let t=mYear; t<=Math.min(years, mYear+mDur-0.1); t++) {
-                index[t] *= mAmp;
-            }
+            for (let t=mYear; t<=Math.min(years, mYear+mDur-0.1); t++) index[t] *= mAmp;
             // Crises mineures
             minorCrises.forEach(c => {
-                for (let t=c.year; t<=Math.min(years, c.year+c.dur-0.1); t++) {
-                    index[t] *= c.amp;
-                }
+                for (let t=c.year; t<=Math.min(years, c.year+c.dur-0.1); t++) index[t] *= c.amp;
             });
             // Gain technologique
             let techY = parseInt(techYear.value);
@@ -404,9 +301,9 @@
             return index;
         }
         
-        // PID avec respect du coût total
-        function priceWithPID(index) {
-            const Kp=0.35, Ki=0.08, Kd=0.10;
+        // PID avec respect du coût total et gains paramétrables
+        function priceWithPID(index, gains) {
+            if (gains.Kp===0 && gains.Ki===0 && gains.Kd===0) return index.slice();
             let price = new Array(index.length);
             let error=0, integral=0, prevError=0;
             let target = new Array(index.length);
@@ -419,7 +316,7 @@
                 error = target[t] - index[t];
                 integral += error;
                 let derivative = error - prevError;
-                let correction = Kp*error + Ki*integral + Kd*derivative;
+                let correction = gains.Kp*error + gains.Ki*integral + gains.Kd*derivative;
                 price[t] = index[t] + correction;
                 prevError = error;
                 if (price[t]<0.2) price[t]=0.2;
@@ -430,10 +327,34 @@
             return price;
         }
         
+        // Prix à partir d'un coefficient (progression géométrique)
+        function priceFromMultiplier(initial, multiplier, years) {
+            let annualFactor = Math.pow(multiplier, 1/years);
+            let price = new Array(years+1);
+            price[0] = initial;
+            for (let t=1; t<=years; t++) price[t] = price[t-1] * annualFactor;
+            return price;
+        }
+        
+        function totalFromParams(initial, multiplier, years) {
+            return priceFromMultiplier(initial, multiplier, years).reduce((a,b)=>a+b,0);
+        }
+        function multiplierFromTotal(initial, total, years) {
+            let low=1, high=10;
+            for (let i=0;i<40;i++) { let mid=(low+high)/2; if (totalFromParams(initial, mid, years) < total) low=mid; else high=mid; }
+            return (low+high)/2;
+        }
+        function initialFromTotal(multiplier, total, years) {
+            let low=1, high=100000;
+            for (let i=0;i<40;i++) { let mid=(low+high)/2; if (totalFromParams(mid, multiplier, years) < total) low=mid; else high=mid; }
+            return (low+high)/2;
+        }
+        
         function updateFinancialParams(source) {
             if (updating) return;
             updating=true;
-            let years = YEARS_MAX;
+            let years = getTotalYears();
+            if (years===0) years=1;
             let init = parseFloat(initialPriceSlider.value);
             let mult = parseFloat(multiplierSlider.value);
             let total = parseFloat(totalAmountSlider.value);
@@ -455,26 +376,40 @@
         }
         
         function updateAll() {
-            const years = YEARS_MAX;
+            let years = getTotalYears();
+            if (years===0) years=1;
             const initial = parseFloat(initialPriceSlider.value);
             const budgetMult = parseFloat(multiplierSlider.value);
             
-            // Indice réel
+            // Indice réel et pondération par production/maintenance
             const realIdx = generateRealIndex(years);
-            const realPrice = realIdx.map(p => p * initial);
+            let realPrice = new Array(years+1);
+            for (let t=0; t<=years; t++) {
+                let w = getAnnualWeight(t);
+                realPrice[t] = realIdx[t] * initial * (w===0 ? 0 : 1);
+            }
             
             // Budget
-            const budgetPrice = priceFromMultiplier(initial, budgetMult, years);
+            const budgetRaw = priceFromMultiplier(initial, budgetMult, years);
+            let budgetPrice = new Array(years+1);
+            for (let t=0; t<=years; t++) budgetPrice[t] = budgetRaw[t] * (getAnnualWeight(t)===0 ? 0 : 1);
             
             // Concurrents
             let compAMult = budgetMult * (1 + parseFloat(compA.value)/100);
             let compBMult = budgetMult * (1 + parseFloat(compB.value)/100);
-            const compAPrice = priceFromMultiplier(initial, compAMult, years);
-            const compBPrice = priceFromMultiplier(initial, compBMult, years);
+            const compARaw = priceFromMultiplier(initial, compAMult, years);
+            const compBRaw = priceFromMultiplier(initial, compBMult, years);
+            let compAPrice = new Array(years+1), compBPrice = new Array(years+1);
+            for (let t=0; t<=years; t++) {
+                compAPrice[t] = compARaw[t] * (getAnnualWeight(t)===0 ? 0 : 1);
+                compBPrice[t] = compBRaw[t] * (getAnnualWeight(t)===0 ? 0 : 1);
+            }
             
             // PID
-            const pidNorm = priceWithPID(realIdx);
-            const pidPrice = pidNorm.map(p => p * initial);
+            const gains = PID_GAINS[currentPidMode];
+            const pidNorm = priceWithPID(realIdx, gains);
+            let pidPrice = new Array(years+1);
+            for (let t=0; t<=years; t++) pidPrice[t] = pidNorm[t] * initial * (getAnnualWeight(t)===0 ? 0 : 1);
             
             // Sommes
             let sumReal = realPrice.reduce((a,b)=>a+b,0);
@@ -489,20 +424,18 @@
             const formatM = v => v>=1000 ? (v/1000).toFixed(2)+" Mds€" : Math.round(v)+" M€";
             document.getElementById('impactSummary').innerHTML = `
                 <div>💰 Coût réel : <strong class="impact-number">${formatM(sumReal)}</strong></div>
-                <div>🎯 Budget (coeff ${budgetMult.toFixed(2)}×) : <strong class="impact-number">${formatM(sumBudget)}</strong> → écart ${diffBudget.toFixed(1)}%</div>
-                <div>⚠️ Concurrent A : ${formatM(sumCompA)} (sous-éval.)  |  ⚡ Concurrent B : ${formatM(sumCompB)} (sur-éval.)</div>
-                <div>🔧 <strong>Saju (PID)</strong> : ${formatM(sumPid)} → écart ${diffPid.toFixed(1)}% <span style="font-size:0.65rem;">(coût total identique)</span></div>
+                <div>🎯 Budget (coeff ${budgetMult.toFixed(2)}×) : ${formatM(sumBudget)} → écart ${diffBudget.toFixed(1)}%</div>
+                <div>⚠️ Concurrent A : ${formatM(sumCompA)} (sous-éval.) | ⚡ Concurrent B : ${formatM(sumCompB)} (sur-éval.)</div>
+                <div>🔧 Saju (PID ${currentPidMode}) : ${formatM(sumPid)} → écart ${diffPid.toFixed(1)}% <span style="font-size:0.65rem;">(coût total identique)</span></div>
             `;
             
-            // Préparer les annotations pour les crises
+            // Annotations crises
             let annotations = {};
-            // Crise majeure
             let mYear = parseInt(majorYear.value);
             let mDur = parseFloat(majorDur.value);
-            annotations['major'] = { type: 'box', xMin: mYear, xMax: mYear + mDur - 0.1, backgroundColor: 'rgba(192,57,43,0.2)', borderColor: '#ef4444', borderWidth: 1, label: { content: 'Crise majeure', enabled: true, position: 'top', color: '#ef4444', font: { size: 9 } } };
-            // Crises mineures
+            annotations['major'] = { type: 'box', xMin: mYear, xMax: mYear + mDur - 0.1, backgroundColor: 'rgba(192,57,43,0.25)', borderColor: '#ef4444', borderWidth: 1, label: { content: 'Crise majeure', enabled: true, position: 'top', color: '#ef4444', font: { size: 9 } } };
             minorCrises.forEach((c, idx) => {
-                annotations[`minor_${idx}`] = { type: 'box', xMin: c.year, xMax: c.year + c.dur - 0.1, backgroundColor: 'rgba(249,115,22,0.15)', borderColor: '#f97316', borderWidth: 1, label: { content: c.typeLabel, enabled: true, position: 'top', color: '#f97316', font: { size: 8 } } };
+                annotations[`minor_${idx}`] = { type: 'box', xMin: c.year, xMax: c.year + c.dur - 0.1, backgroundColor: 'rgba(249,115,22,0.2)', borderColor: '#f97316', borderWidth: 1, label: { content: c.typeLabel, enabled: true, position: 'top', color: '#f97316', font: { size: 8 } } };
             });
             
             const labels = Array.from({length: years+1}, (_,i)=>i);
@@ -523,10 +456,10 @@
                         labels: labels,
                         datasets: [
                             { label: 'Coût réel', data: realPrice, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0, tension: 0.2, fill: false },
-                            { label: 'Budget (coeff choisi)', data: budgetPrice, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false },
-                            { label: 'Concurrent A (sous-éval.)', data: compAPrice, borderColor: '#6b7280', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
-                            { label: 'Concurrent B (sur-éval.)', data: compBPrice, borderColor: '#f97316', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
-                            { label: 'Saju (PID)', data: pidPrice, borderColor: '#10b981', borderWidth: 3, pointRadius: 0, tension: 0.2, fill: false }
+                            { label: 'Budget', data: budgetPrice, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Concurrent A', data: compAPrice, borderColor: '#6b7280', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Concurrent B', data: compBPrice, borderColor: '#f97316', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Saju PID', data: pidPrice, borderColor: '#10b981', borderWidth: 3, pointRadius: 0, tension: 0.2, fill: false }
                         ]
                     },
                     options: {
@@ -553,92 +486,52 @@
                 let div = document.createElement('div');
                 div.className = 'crisis-minor-item';
                 div.innerHTML = `
-                    <select class="minorType" data-idx="${idx}" style="width:90px">
+                    <select class="minorType" data-idx="${idx}" style="width:100px">
                         <option value="monetary" ${c.type==='monetary'?'selected':''}>💰 Monétaire</option>
                         <option value="supplier" ${c.type==='supplier'?'selected':''}>🏭 Fournisseur</option>
                         <option value="raw" ${c.type==='raw'?'selected':''}>⛏️ Matières premières</option>
                         <option value="geo" ${c.type==='geo'?'selected':''}>🌍 Géopolitique</option>
                     </select>
-                    <span>Année</span>
-                    <input type="range" class="minorYear" data-idx="${idx}" min="3" max="35" step="1" value="${c.year}" style="width:90px">
-                    <span class="minorYearVal">${c.year}</span>
-                    <span>×</span>
-                    <input type="range" class="minorAmp" data-idx="${idx}" min="1.2" max="3.0" step="0.05" value="${c.amp}" style="width:80px">
-                    <span class="minorAmpVal">${c.amp.toFixed(2)}</span>
-                    <span>durée</span>
-                    <input type="range" class="minorDur" data-idx="${idx}" min="0.5" max="5" step="0.5" value="${c.dur}" style="width:70px">
-                    <span class="minorDurVal">${c.dur.toFixed(1)}</span>
-                    <button class="removeMinor" data-idx="${idx}" style="background:#444; padding:2px 6px;">✖</button>
+                    <span>An</span><input type="range" class="minorYear" data-idx="${idx}" min="3" max="38" step="1" value="${c.year}" style="width:80px"><span class="minorYearVal">${c.year}</span>
+                    <span>×</span><input type="range" class="minorAmp" data-idx="${idx}" min="1.2" max="3.0" step="0.05" value="${c.amp}" style="width:80px"><span class="minorAmpVal">${c.amp.toFixed(2)}</span>
+                    <span>durée</span><input type="range" class="minorDur" data-idx="${idx}" min="0.5" max="5" step="0.5" value="${c.dur}" style="width:70px"><span class="minorDurVal">${c.dur.toFixed(1)}</span>
+                    <button class="removeMinor" data-idx="${idx}" style="background:#444;">✖</button>
                 `;
                 minorContainer.appendChild(div);
             });
-            document.querySelectorAll('.removeMinor').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    let idx = parseInt(btn.getAttribute('data-idx'));
-                    minorCrises.splice(idx,1);
-                    renderMinorCrises();
-                    updateAll();
-                });
-            });
-            document.querySelectorAll('.minorType').forEach(sel => {
-                sel.addEventListener('change', (e) => {
-                    let idx = parseInt(sel.getAttribute('data-idx'));
-                    minorCrises[idx].type = sel.value;
-                    minorCrises[idx].typeLabel = sel.options[sel.selectedIndex].text;
-                    updateAll();
-                });
-            });
-            document.querySelectorAll('.minorYear').forEach(sl => {
-                sl.addEventListener('input', (e) => {
-                    let idx = parseInt(sl.getAttribute('data-idx'));
-                    minorCrises[idx].year = parseFloat(sl.value);
-                    sl.parentElement.querySelector('.minorYearVal').innerText = minorCrises[idx].year;
-                    updateAll();
-                });
-            });
-            document.querySelectorAll('.minorAmp').forEach(sl => {
-                sl.addEventListener('input', (e) => {
-                    let idx = parseInt(sl.getAttribute('data-idx'));
-                    minorCrises[idx].amp = parseFloat(sl.value);
-                    sl.parentElement.querySelector('.minorAmpVal').innerText = minorCrises[idx].amp.toFixed(2);
-                    updateAll();
-                });
-            });
-            document.querySelectorAll('.minorDur').forEach(sl => {
-                sl.addEventListener('input', (e) => {
-                    let idx = parseInt(sl.getAttribute('data-idx'));
-                    minorCrises[idx].dur = parseFloat(sl.value);
-                    sl.parentElement.querySelector('.minorDurVal').innerText = minorCrises[idx].dur.toFixed(1);
-                    updateAll();
-                });
-            });
+            document.querySelectorAll('.removeMinor').forEach(btn => btn.addEventListener('click', (e) => { let idx=parseInt(btn.getAttribute('data-idx')); minorCrises.splice(idx,1); renderMinorCrises(); updateAll(); }));
+            document.querySelectorAll('.minorType').forEach(sel => sel.addEventListener('change', (e) => { let idx=parseInt(sel.getAttribute('data-idx')); minorCrises[idx].type=sel.value; minorCrises[idx].typeLabel=sel.options[sel.selectedIndex].text; updateAll(); }));
+            document.querySelectorAll('.minorYear').forEach(sl => sl.addEventListener('input', (e) => { let idx=parseInt(sl.getAttribute('data-idx')); minorCrises[idx].year=parseFloat(sl.value); sl.parentElement.querySelector('.minorYearVal').innerText=minorCrises[idx].year; updateAll(); }));
+            document.querySelectorAll('.minorAmp').forEach(sl => sl.addEventListener('input', (e) => { let idx=parseInt(sl.getAttribute('data-idx')); minorCrises[idx].amp=parseFloat(sl.value); sl.parentElement.querySelector('.minorAmpVal').innerText=minorCrises[idx].amp.toFixed(2); updateAll(); }));
+            document.querySelectorAll('.minorDur').forEach(sl => sl.addEventListener('input', (e) => { let idx=parseInt(sl.getAttribute('data-idx')); minorCrises[idx].dur=parseFloat(sl.value); sl.parentElement.querySelector('.minorDurVal').innerText=minorCrises[idx].dur.toFixed(1); updateAll(); }));
         }
         
-        document.getElementById('addMinor').addEventListener('click', () => {
-            if (minorCrises.length < 5) {
-                minorCrises.push({ year: 10, amp: 1.5, dur: 2, type: 'raw', typeLabel: '⛏️ Matières premières' });
-                renderMinorCrises();
-                updateAll();
-            } else alert('Maximum 5 crises mineures');
-        });
+        document.getElementById('addMinor').addEventListener('click', () => { if (minorCrises.length<5) { minorCrises.push({ year:10, amp:1.5, dur:2, type:'raw', typeLabel:'⛏️ Matières premières' }); renderMinorCrises(); updateAll(); } else alert('Maximum 5 crises mineures'); });
         
         // Écouteurs
-        initialPriceSlider.addEventListener('input', () => { initialPriceVal.innerText = Math.round(initialPriceSlider.value); updateFinancialParams('initial'); });
-        multiplierSlider.addEventListener('input', () => { multiplierVal.innerText = parseFloat(multiplierSlider.value).toFixed(2); updateFinancialParams('multiplier'); });
-        totalAmountSlider.addEventListener('input', () => { totalAmountVal.innerText = Math.round(totalAmountSlider.value); updateFinancialParams('total'); });
-        lockInit.addEventListener('click', () => { lockedVar='initial'; lockInit.classList.add('active'); lockMult.classList.remove('active'); lockTotal.classList.remove('active'); });
-        lockMult.addEventListener('click', () => { lockedVar='multiplier'; lockInit.classList.remove('active'); lockMult.classList.add('active'); lockTotal.classList.remove('active'); });
-        lockTotal.addEventListener('click', () => { lockedVar='total'; lockInit.classList.remove('active'); lockMult.classList.remove('active'); lockTotal.classList.add('active'); });
-        compA.addEventListener('input', () => { compAVal.innerText = compA.value; updateAll(); });
-        compB.addEventListener('input', () => { compBVal.innerText = compB.value; updateAll(); });
-        majorYear.addEventListener('input', () => { majorYearVal.innerText = majorYear.value; updateAll(); });
-        majorAmp.addEventListener('input', () => { majorAmpVal.innerText = parseFloat(majorAmp.value).toFixed(2); updateAll(); });
-        majorDur.addEventListener('input', () => { majorDurVal.innerText = parseFloat(majorDur.value).toFixed(1); updateAll(); });
-        techYear.addEventListener('input', () => { techYearVal.innerText = techYear.value; updateAll(); });
-        techAmp.addEventListener('input', () => { techAmpVal.innerText = (techAmp.value*100).toFixed(1); updateAll(); });
+        unitPriceSlider.addEventListener('input', () => { unitPriceVal.innerText=unitPriceSlider.value; let newInit = parseInt(unitPriceSlider.value)*parseInt(unitCountSlider.value); initialPriceSlider.value=newInit; initialPriceVal.innerText=newInit; updateFinancialParams('initial'); });
+        unitCountSlider.addEventListener('input', () => { unitCountVal.innerText=unitCountSlider.value; let newInit = parseInt(unitPriceSlider.value)*parseInt(unitCountSlider.value); initialPriceSlider.value=newInit; initialPriceVal.innerText=newInit; updateFinancialParams('initial'); });
+        prodStartSlider.addEventListener('input', () => { prodStartVal.innerText=prodStartSlider.value; updateAll(); });
+        prodDurSlider.addEventListener('input', () => { prodDurVal.innerText=prodDurSlider.value; updateAll(); });
+        maintStartSlider.addEventListener('input', () => { maintStartVal.innerText=maintStartSlider.value; updateAll(); });
+        maintDurSlider.addEventListener('input', () => { maintDurVal.innerText=maintDurSlider.value; updateAll(); });
+        initialPriceSlider.addEventListener('input', () => { initialPriceVal.innerText=Math.round(initialPriceSlider.value); updateFinancialParams('initial'); });
+        multiplierSlider.addEventListener('input', () => { multiplierVal.innerText=parseFloat(multiplierSlider.value).toFixed(2); updateFinancialParams('multiplier'); });
+        totalAmountSlider.addEventListener('input', () => { totalAmountVal.innerText=Math.round(totalAmountSlider.value); updateFinancialParams('total'); });
+        lockInit.onclick=()=>{ lockedVar='initial'; lockInit.classList.add('active'); lockMult.classList.remove('active'); lockTotal.classList.remove('active'); };
+        lockMult.onclick=()=>{ lockedVar='multiplier'; lockInit.classList.remove('active'); lockMult.classList.add('active'); lockTotal.classList.remove('active'); };
+        lockTotal.onclick=()=>{ lockedVar='total'; lockInit.classList.remove('active'); lockMult.classList.remove('active'); lockTotal.classList.add('active'); };
+        compA.addEventListener('input', () => { compAVal.innerText=compA.value; updateAll(); });
+        compB.addEventListener('input', () => { compBVal.innerText=compB.value; updateAll(); });
+        majorYear.addEventListener('input', () => { majorYearVal.innerText=majorYear.value; updateAll(); });
+        majorAmp.addEventListener('input', () => { majorAmpVal.innerText=parseFloat(majorAmp.value).toFixed(2); updateAll(); });
+        majorDur.addEventListener('input', () => { majorDurVal.innerText=parseFloat(majorDur.value).toFixed(1); updateAll(); });
+        techYear.addEventListener('input', () => { techYearVal.innerText=techYear.value; updateAll(); });
+        techAmp.addEventListener('input', () => { techAmpVal.innerText=(techAmp.value*100).toFixed(1); updateAll(); });
+        document.querySelectorAll('input[name="pidMode"]').forEach(radio => radio.addEventListener('change', (e) => { if(e.target.checked) currentPidMode=e.target.value; updateAll(); }));
         
-        renderMinorCrises();
         lockInit.click();
+        renderMinorCrises();
         updateAll();
     })();
 </script>
