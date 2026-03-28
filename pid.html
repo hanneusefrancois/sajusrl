@@ -1,376 +1,424 @@
-<!-- ========== SIMULATEUR SAJU – COEFFICIENT MULTIPLICATEUR & PID ========== -->
-<section class="section fi" style="background:var(--black);">
-  <div class="container">
-    <div class="s-tag teal">Simulateur avancé</div>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saju – Simulateur avancé | Coefficient multiplicateur & PID</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Google Fonts + Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1117;
+            color: #ffffff;
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: #0f1117;
+            border-radius: 2rem;
+            overflow: hidden;
+            padding: 2rem 1.8rem 2.5rem;
+        }
+        .s-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #14b8a6;
+        }
+        .s-tag::before {
+            content: '';
+            width: 20px;
+            height: 1px;
+            background: #14b8a6;
+        }
+        .s-title {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 14px;
+            color: #ffffff;
+        }
+        .s-title em {
+            font-style: italic;
+            color: #d97706;
+        }
+        .s-sub {
+            font-size: clamp(1rem, 1.5vw, 1.1rem);
+            font-weight: 300;
+            color: rgba(255,255,255,0.72);
+            max-width: 640px;
+            line-height: 1.85;
+            margin-bottom: 48px;
+        }
+        .simu-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .simu-controls {
+            flex: 1.2;
+            min-width: 260px;
+            background: #171b24;
+            border-radius: 1.2rem;
+            padding: 1.8rem;
+            border: 1px solid rgba(255,255,255,0.13);
+        }
+        .simu-chart {
+            flex: 2.5;
+            min-width: 300px;
+            background: #171b24;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.13);
+        }
+        .param-card {
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1.2rem;
+        }
+        .param-card:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .param-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: rgba(255,255,255,0.88);
+        }
+        .param-label i {
+            color: #d97706;
+            font-size: 1rem;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #d97706;
+            margin: 8px 0;
+        }
+        .param-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: #1e2330;
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+            margin-top: 6px;
+        }
+        .param-hint {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 6px;
+        }
+        .pid-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 10px 0 4px;
+        }
+        .pid-selector label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .pid-selector input {
+            accent-color: #d97706;
+            width: auto;
+        }
+        .impact-summary {
+            background: #1e2330;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.2rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .impact-summary div {
+            margin: 6px 0;
+        }
+        .impact-number {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #d97706;
+        }
+        .chart-legend-custom {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.75rem;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 3px;
+            vertical-align: middle;
+            margin-right: 4px;
+            border-radius: 2px;
+        }
+        .simu-footnote {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        @media (max-width: 680px) {
+            .simu-controls, .simu-chart {
+                flex: 1 1 100%;
+            }
+            .pid-selector {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="s-tag">Simulateur avancé</div>
     <h2 class="s-title">Visualisez l’impact de <em>votre coefficient</em><br>et de la <em>régulation PID</em></h2>
     <p class="s-sub">Ajustez le coefficient que vous aviez budgété et le niveau de régulation. Découvrez l’écart avec la réalité et la protection apportée par Saju.</p>
 
     <div class="simu-grid">
-      <!-- Colonne de contrôle -->
-      <div class="simu-controls">
-        <div class="param-card">
-          <div class="param-label">
-            <i class="fas fa-calculator"></i>
-            <span>Votre coefficient prévisionnel (budget)</span>
-          </div>
-          <input type="range" id="budgetCoef" min="1.0" max="7.0" step="0.05" value="4.0">
-          <div class="param-value">
-            <span id="budgetCoefVal">4.00</span> × prix initial
-          </div>
-          <div class="param-hint">Le multiplicateur que vous aviez estimé en début de contrat</div>
+        <div class="simu-controls">
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-calculator"></i> Votre coefficient prévisionnel (budget)</div>
+                <input type="range" id="budgetCoef" min="1.0" max="7.0" step="0.05" value="4.0">
+                <div class="param-value"><span id="budgetCoefVal">4.00</span> × prix initial</div>
+                <div class="param-hint">Le multiplicateur que vous aviez estimé en début de contrat</div>
+            </div>
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-tachometer-alt"></i> Niveau de régulation PID</div>
+                <div class="pid-selector">
+                    <label><input type="radio" name="pidMode" value="strong"> <span>Forte</span></label>
+                    <label><input type="radio" name="pidMode" value="medium" checked> <span>Moyenne</span></label>
+                    <label><input type="radio" name="pidMode" value="weak"> <span>Faible</span></label>
+                    <label><input type="radio" name="pidMode" value="none"> <span>Aucune (sans PID)</span></label>
+                </div>
+                <div class="param-hint">Plus la régulation est forte, plus le prix revient rapidement à l’équilibre après un choc.</div>
+            </div>
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Prime de risque (ajout facultatif)</div>
+                <input type="range" id="riskPremium" min="0" max="15" step="0.5" value="0">
+                <div class="param-value"><span id="riskPremiumVal">0</span> % en plus sur le coefficient budgété</div>
+                <div class="param-hint">Simulez l’ajout d’une marge de sécurité sur votre prévision.</div>
+            </div>
+            <div class="impact-summary" id="impactSummary">
+                <!-- Rempli par JavaScript -->
+            </div>
         </div>
 
-        <div class="param-card">
-          <div class="param-label">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>Niveau de régulation PID</span>
-          </div>
-          <div class="pid-selector">
-            <label><input type="radio" name="pidMode" value="strong"> <span>Forte</span></label>
-            <label><input type="radio" name="pidMode" value="medium" checked> <span>Moyenne</span></label>
-            <label><input type="radio" name="pidMode" value="weak"> <span>Faible</span></label>
-            <label><input type="radio" name="pidMode" value="none"> <span>Aucune (sans PID)</span></label>
-          </div>
-          <div class="param-hint">Plus la régulation est forte, plus le prix revient rapidement à l’équilibre après un choc.</div>
+        <div class="simu-chart">
+            <canvas id="simuChart" width="600" height="400"></canvas>
+            <div class="chart-legend-custom">
+                <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel (indice seul)</span>
+                <span><span class="legend-color" style="background:#fbbf24;"></span> Budget basé sur votre coefficient</span>
+                <span><span class="legend-color" style="background:#10b981;"></span> Saju (selon PID sélectionné)</span>
+            </div>
         </div>
-
-        <div class="param-card">
-          <div class="param-label">
-            <i class="fas fa-chart-line"></i>
-            <span>Prime de risque (ajout facultatif)</span>
-          </div>
-          <input type="range" id="riskPremium" min="0" max="15" step="0.5" value="0">
-          <div class="param-value">
-            <span id="riskPremiumVal">0</span> % en plus sur le coefficient budgété
-          </div>
-          <div class="param-hint">Simulez l’ajout d’une marge de sécurité sur votre prévision.</div>
-        </div>
-
-        <div class="impact-summary" id="impactSummary">
-          <!-- affiché par JS -->
-        </div>
-      </div>
-
-      <!-- Graphique -->
-      <div class="simu-chart">
-        <canvas id="simuChart" width="600" height="400"></canvas>
-        <div class="chart-legend-custom">
-          <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel (indice seul)</span>
-          <span><span class="legend-color" style="background:#fbbf24;"></span> Budget basé sur votre coefficient</span>
-          <span><span class="legend-color" style="background:#10b981;"></span> Saju (selon PID sélectionné)</span>
-        </div>
-      </div>
     </div>
-
     <div class="simu-footnote">
-      📊 Simulation basée sur 40 ans d’indices historiques reconstitués (énergie, salaires, matières premières) avec choc majeur en année 15. La courbe Saju intègre la correction automatique PID pour stabiliser le prix. Le coefficient budgété est appliqué comme une révision annuelle linéaire à partir du prix initial.
+        📊 Simulation basée sur 40 ans d’indices historiques reconstitués (énergie, salaires, matières premières) avec choc majeur en année 15. La courbe Saju intègre la correction automatique PID pour stabiliser le prix. Le coefficient budgété est appliqué comme une révision annuelle linéaire à partir du prix initial.
     </div>
-  </div>
-</section>
-
-<style>
-  .simu-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-    margin: 2rem 0;
-  }
-  .simu-controls {
-    flex: 1.2;
-    min-width: 260px;
-    background: var(--card);
-    border-radius: 1.2rem;
-    padding: 1.8rem;
-    border: 1px solid var(--border);
-  }
-  .simu-chart {
-    flex: 2.5;
-    min-width: 300px;
-    background: var(--card);
-    border-radius: 1.2rem;
-    padding: 1rem;
-    border: 1px solid var(--border);
-  }
-  .param-card {
-    margin-bottom: 1.8rem;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 1.2rem;
-  }
-  .param-card:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-  .param-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: var(--blanc-dim);
-  }
-  .param-label i {
-    color: var(--or-p);
-    font-size: 1rem;
-  }
-  input[type="range"] {
-    width: 100%;
-    accent-color: var(--or);
-    margin: 8px 0;
-  }
-  .param-value {
-    font-size: 0.9rem;
-    font-weight: 500;
-    background: var(--card-light);
-    display: inline-block;
-    padding: 0.2rem 0.8rem;
-    border-radius: 2rem;
-    margin-top: 6px;
-  }
-  .param-hint {
-    font-size: 0.7rem;
-    color: var(--blanc-low);
-    margin-top: 6px;
-  }
-  .pid-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin: 10px 0 4px;
-  }
-  .pid-selector label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    cursor: pointer;
-  }
-  .pid-selector input {
-    accent-color: var(--or);
-    width: auto;
-  }
-  .impact-summary {
-    background: var(--card2);
-    border-radius: 1rem;
-    padding: 1rem;
-    margin-top: 1.2rem;
-    text-align: center;
-    font-size: 0.85rem;
-  }
-  .impact-summary div {
-    margin: 6px 0;
-  }
-  .impact-number {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--or-p);
-  }
-  .chart-legend-custom {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-    font-size: 0.75rem;
-  }
-  .legend-color {
-    display: inline-block;
-    width: 20px;
-    height: 3px;
-    vertical-align: middle;
-    margin-right: 4px;
-    border-radius: 2px;
-  }
-  .simu-footnote {
-    font-size: 0.7rem;
-    color: var(--blanc-low);
-    text-align: center;
-    border-top: 1px solid var(--border);
-    padding-top: 1.5rem;
-    margin-top: 0.5rem;
-  }
-  @media (max-width: 680px) {
-    .simu-controls, .simu-chart {
-      flex: 1 1 100%;
-    }
-    .pid-selector {
-      gap: 10px;
-    }
-  }
-</style>
+</div>
 
 <script>
-  (function() {
-    // Paramètres de simulation
-    const YEARS = 40;
-    // Indices de coût réels simulés (choc à l’année 15, puis persistant)
-    let realIndex = new Array(YEARS + 1);
-    for (let t = 0; t <= YEARS; t++) {
-      let base = 1 + 0.0075 * t;      // tendance de fond +0,75%/an
-      if (t >= 15) base = base * 2.5; // choc majeur en année 15 (multiplication par 2,5)
-      realIndex[t] = base;
-    }
-    // Gains PID pré-définis pour chaque mode
-    const PID_GAINS = {
-      strong: { Kp: 0.70, Ki: 0.18, Kd: 0.25 },
-      medium: { Kp: 0.48, Ki: 0.12, Kd: 0.18 },
-      weak:   { Kp: 0.25, Ki: 0.06, Kd: 0.08 },
-      none:   { Kp: 0,    Ki: 0,    Kd: 0 }
-    };
-    let currentPID = 'medium';
-    let budgetCoef = 4.0;
-    let riskPremium = 0;
-
-    // Références DOM
-    const budgetSlider = document.getElementById('budgetCoef');
-    const budgetVal = document.getElementById('budgetCoefVal');
-    const riskSlider = document.getElementById('riskPremium');
-    const riskVal = document.getElementById('riskPremiumVal');
-    const pidRadios = document.querySelectorAll('input[name="pidMode"]');
-    const impactDiv = document.getElementById('impactSummary');
-
-    let chart;
-
-    // Calcul du prix avec PID
-    function priceWithPID(index, Kp, Ki, Kd) {
-      let price = new Array(YEARS + 1);
-      let e = 0, integral = 0, prev_e = 0;
-      const target = 1.0;
-      for (let t = 0; t <= YEARS; t++) {
-        e = target - index[t];
-        integral += e;
-        let derivative = e - prev_e;
-        let correction = Kp * e + Ki * integral + Kd * derivative;
-        price[t] = index[t] + correction;
-        prev_e = e;
-      }
-      return price;
-    }
-
-    // Calcul du prix budgété (basé sur coefficient constant multiplié chaque année)
-    function priceFromBudgetCoef(budgetCoef) {
-      // On suppose que le coefficient annuel est la racine 40e du coefficient total
-      let annualFactor = Math.pow(budgetCoef, 1 / YEARS);
-      let price = new Array(YEARS + 1);
-      price[0] = 1.0;
-      for (let t = 1; t <= YEARS; t++) {
-        price[t] = price[t-1] * annualFactor;
-      }
-      return price;
-    }
-
-    // Mise à jour du graphique et des stats
-    function update() {
-      // Récupérer les valeurs
-      budgetCoef = parseFloat(budgetSlider.value);
-      riskPremium = parseFloat(riskSlider.value);
-      budgetVal.innerText = budgetCoef.toFixed(2);
-      riskVal.innerText = riskPremium.toFixed(1);
-
-      // Appliquer la prime de risque sur le coefficient budgété
-      let finalBudgetCoef = budgetCoef * (1 + riskPremium / 100);
-      const budgetPrice = priceFromBudgetCoef(finalBudgetCoef);
-
-      // Sélectionner les gains PID
-      let gains = PID_GAINS[currentPID];
-      const sajuPrice = priceWithPID(realIndex, gains.Kp, gains.Ki, gains.Kd);
-
-      // Calcul des totaux sur 40 ans (somme des prix)
-      let sumReal = realIndex.reduce((a,b) => a + b, 0);
-      let sumBudget = budgetPrice.reduce((a,b) => a + b, 0);
-      let sumSaju = sajuPrice.reduce((a,b) => a + b, 0);
-      let diffBudget = ((sumBudget - sumReal) / sumReal * 100).toFixed(1);
-      let diffSaju = ((sumSaju - sumReal) / sumReal * 100).toFixed(1);
-
-      // Mise à jour du texte d'impact
-      impactDiv.innerHTML = `
-        <div>📊 Coût total réel : <strong class="impact-number">${sumReal.toFixed(2)}</strong> (indice cumulé)</div>
-        <div>💰 Budget (coeff. ${finalBudgetCoef.toFixed(2)}×) : <strong class="impact-number">${sumBudget.toFixed(2)}</strong> → écart <strong style="color:${diffBudget>0?'#ef4444':'#10b981'}">${diffBudget}%</strong></div>
-        <div>🔧 Saju (régulation ${currentPID}) : <strong class="impact-number">${sumSaju.toFixed(2)}</strong> → écart <strong style="color:${diffSaju>0?'#ef4444':'#10b981'}">${diffSaju}%</strong></div>
-      `;
-
-      // Préparer les labels
-      const labels = Array.from({ length: YEARS + 1 }, (_, i) => i);
-
-      if (chart) {
-        chart.data.datasets[0].data = realIndex;
-        chart.data.datasets[1].data = budgetPrice;
-        chart.data.datasets[2].data = sajuPrice;
-        chart.update();
-      } else {
-        const ctx = document.getElementById('simuChart').getContext('2d');
-        chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: 'Coût réel (indice seul)',
-                data: realIndex,
-                borderColor: '#ef4444',
-                borderWidth: 2,
-                borderDash: [3, 3],
-                pointRadius: 0,
-                tension: 0.2,
-                fill: false
-              },
-              {
-                label: 'Budget (coefficient estimé)',
-                data: budgetPrice,
-                borderColor: '#fbbf24',
-                borderWidth: 2.5,
-                pointRadius: 0,
-                tension: 0.2,
-                fill: false
-              },
-              {
-                label: 'Saju (PID)',
-                data: sajuPrice,
-                borderColor: '#10b981',
-                borderWidth: 3,
-                pointRadius: 0,
-                tension: 0.2,
-                fill: false
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-              tooltip: { mode: 'index', intersect: false },
-              legend: { display: false }
-            },
-            scales: {
-              y: {
-                title: { display: true, text: 'Prix normalisé (base 1 en année 0)', color: 'rgba(255,255,255,0.6)' },
-                grid: { color: 'rgba(255,255,255,0.1)' },
-                ticks: { color: 'rgba(255,255,255,0.7)' }
-              },
-              x: {
-                title: { display: true, text: 'Années du contrat', color: 'rgba(255,255,255,0.6)' },
-                grid: { display: false },
-                ticks: { color: 'rgba(255,255,255,0.7)' }
-              }
-            }
-          }
-        });
-      }
-    }
-
-    // Événements
-    budgetSlider.addEventListener('input', update);
-    riskSlider.addEventListener('input', update);
-    pidRadios.forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        if (e.target.checked) {
-          currentPID = e.target.value;
-          update();
+    (function() {
+        // Paramètres de simulation
+        const YEARS = 40;
+        // Indices de coût réels simulés (choc à l’année 15, puis persistant)
+        let realIndex = new Array(YEARS + 1);
+        for (let t = 0; t <= YEARS; t++) {
+            let base = 1 + 0.0075 * t;      // tendance de fond +0,75%/an
+            if (t >= 15) base = base * 2.5; // choc majeur en année 15 (multiplication par 2,5)
+            realIndex[t] = base;
         }
-      });
-    });
+        // Gains PID pré-définis pour chaque mode
+        const PID_GAINS = {
+            strong: { Kp: 0.70, Ki: 0.18, Kd: 0.25 },
+            medium: { Kp: 0.48, Ki: 0.12, Kd: 0.18 },
+            weak:   { Kp: 0.25, Ki: 0.06, Kd: 0.08 },
+            none:   { Kp: 0,    Ki: 0,    Kd: 0 }
+        };
+        let currentPID = 'medium';
+        let budgetCoef = 4.0;
+        let riskPremium = 0;
 
-    // Initialisation
-    update();
-  })();
+        // Références DOM
+        const budgetSlider = document.getElementById('budgetCoef');
+        const budgetVal = document.getElementById('budgetCoefVal');
+        const riskSlider = document.getElementById('riskPremium');
+        const riskVal = document.getElementById('riskPremiumVal');
+        const pidRadios = document.querySelectorAll('input[name="pidMode"]');
+        const impactDiv = document.getElementById('impactSummary');
+
+        let chart;
+
+        // Calcul du prix avec PID
+        function priceWithPID(index, Kp, Ki, Kd) {
+            let price = new Array(YEARS + 1);
+            let e = 0, integral = 0, prev_e = 0;
+            const target = 1.0;
+            for (let t = 0; t <= YEARS; t++) {
+                e = target - index[t];
+                integral += e;
+                let derivative = e - prev_e;
+                let correction = Kp * e + Ki * integral + Kd * derivative;
+                price[t] = index[t] + correction;
+                prev_e = e;
+            }
+            return price;
+        }
+
+        // Calcul du prix budgété (basé sur coefficient constant multiplié chaque année)
+        function priceFromBudgetCoef(budgetCoef) {
+            let annualFactor = Math.pow(budgetCoef, 1 / YEARS);
+            let price = new Array(YEARS + 1);
+            price[0] = 1.0;
+            for (let t = 1; t <= YEARS; t++) {
+                price[t] = price[t-1] * annualFactor;
+            }
+            return price;
+        }
+
+        // Mise à jour du graphique et des stats
+        function update() {
+            // Récupérer les valeurs
+            budgetCoef = parseFloat(budgetSlider.value);
+            riskPremium = parseFloat(riskSlider.value);
+            budgetVal.innerText = budgetCoef.toFixed(2);
+            riskVal.innerText = riskPremium.toFixed(1);
+
+            // Appliquer la prime de risque sur le coefficient budgété
+            let finalBudgetCoef = budgetCoef * (1 + riskPremium / 100);
+            const budgetPrice = priceFromBudgetCoef(finalBudgetCoef);
+
+            // Sélectionner les gains PID
+            let gains = PID_GAINS[currentPID];
+            const sajuPrice = priceWithPID(realIndex, gains.Kp, gains.Ki, gains.Kd);
+
+            // Calcul des totaux sur 40 ans (somme des prix)
+            let sumReal = realIndex.reduce((a,b) => a + b, 0);
+            let sumBudget = budgetPrice.reduce((a,b) => a + b, 0);
+            let sumSaju = sajuPrice.reduce((a,b) => a + b, 0);
+            let diffBudget = ((sumBudget - sumReal) / sumReal * 100).toFixed(1);
+            let diffSaju = ((sumSaju - sumReal) / sumReal * 100).toFixed(1);
+
+            // Mise à jour du texte d'impact
+            impactDiv.innerHTML = `
+                <div>📊 Coût total réel : <strong class="impact-number">${sumReal.toFixed(2)}</strong> (indice cumulé)</div>
+                <div>💰 Budget (coeff. ${finalBudgetCoef.toFixed(2)}×) : <strong class="impact-number">${sumBudget.toFixed(2)}</strong> → écart <strong style="color:${diffBudget>0?'#ef4444':'#10b981'}">${diffBudget}%</strong></div>
+                <div>🔧 Saju (régulation ${currentPID}) : <strong class="impact-number">${sumSaju.toFixed(2)}</strong> → écart <strong style="color:${diffSaju>0?'#ef4444':'#10b981'}">${diffSaju}%</strong></div>
+            `;
+
+            // Préparer les labels
+            const labels = Array.from({ length: YEARS + 1 }, (_, i) => i);
+
+            if (chart) {
+                chart.data.datasets[0].data = realIndex;
+                chart.data.datasets[1].data = budgetPrice;
+                chart.data.datasets[2].data = sajuPrice;
+                chart.update();
+            } else {
+                const ctx = document.getElementById('simuChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Coût réel (indice seul)',
+                                data: realIndex,
+                                borderColor: '#ef4444',
+                                borderWidth: 2,
+                                borderDash: [3, 3],
+                                pointRadius: 0,
+                                tension: 0.2,
+                                fill: false
+                            },
+                            {
+                                label: 'Budget (coefficient estimé)',
+                                data: budgetPrice,
+                                borderColor: '#fbbf24',
+                                borderWidth: 2.5,
+                                pointRadius: 0,
+                                tension: 0.2,
+                                fill: false
+                            },
+                            {
+                                label: 'Saju (PID)',
+                                data: sajuPrice,
+                                borderColor: '#10b981',
+                                borderWidth: 3,
+                                pointRadius: 0,
+                                tension: 0.2,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            tooltip: { mode: 'index', intersect: false },
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                title: { display: true, text: 'Prix normalisé (base 1 en année 0)', color: 'rgba(255,255,255,0.6)' },
+                                grid: { color: 'rgba(255,255,255,0.1)' },
+                                ticks: { color: 'rgba(255,255,255,0.7)' }
+                            },
+                            x: {
+                                title: { display: true, text: 'Années du contrat', color: 'rgba(255,255,255,0.6)' },
+                                grid: { display: false },
+                                ticks: { color: 'rgba(255,255,255,0.7)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Événements
+        budgetSlider.addEventListener('input', update);
+        riskSlider.addEventListener('input', update);
+        pidRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    currentPID = e.target.value;
+                    update();
+                }
+            });
+        });
+
+        // Initialisation
+        update();
+    })();
 </script>
+</body>
+</html>
