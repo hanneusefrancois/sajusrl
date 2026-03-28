@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saju – Simulateur PID | Éviter les hausses permanentes après une crise</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1117;
+            color: #ffffff;
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #0f1117;
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 2.5rem;
+        }
+        .s-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #14b8a6;
+        }
+        .s-tag::before { content: ''; width: 20px; height: 1px; background: #14b8a6; }
+        .s-title {
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 14px;
+        }
+        .s-title em { font-style: italic; color: #d97706; }
+        .s-sub {
+            font-size: clamp(1rem, 1.5vw, 1.1rem);
+            font-weight: 300;
+            color: rgba(255,255,255,0.72);
+            max-width: 800px;
+            line-height: 1.85;
+            margin-bottom: 32px;
+        }
+        .simu-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .simu-controls {
+            flex: 1.2;
+            min-width: 280px;
+            background: #171b24;
+            border-radius: 1.2rem;
+            padding: 1.8rem;
+            border: 1px solid rgba(255,255,255,0.13);
+        }
+        .simu-chart {
+            flex: 2.8;
+            min-width: 400px;
+            background: #171b24;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.13);
+        }
+        .param-card {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1.2rem;
+        }
+        .param-card:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .param-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.88);
+        }
+        .param-label i { color: #d97706; }
+        input[type="range"] { width: 100%; accent-color: #d97706; margin: 6px 0; }
+        .param-value { font-size: 0.9rem; font-weight: 500; background: #1e2330; display: inline-block; padding: 0.2rem 0.8rem; border-radius: 2rem; margin-top: 6px; }
+        .param-hint { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
+        .crisis-group {
+            background: rgba(0,0,0,0.3);
+            border-radius: 0.8rem;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .crisis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .impact-summary {
+            background: #1e2330;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.2rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .impact-number { font-size: 1.4rem; font-weight: 700; color: #d97706; }
+        .chart-legend-custom {
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.7rem;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 3px;
+            vertical-align: middle;
+            margin-right: 4px;
+            border-radius: 2px;
+        }
+        .simu-footnote {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1.5rem;
+            margin-top: 1rem;
+        }
+        button {
+            background: #d97706;
+            border: none;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { background: #f59e0b; }
+        @media (max-width: 800px) {
+            .simu-controls, .simu-chart { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="s-tag">Simulateur avancé – Évitement des hausses permanentes</div>
+    <h2 class="s-title">Une crise ne doit pas <em>figer</em> le prix<br>pendant 40 ans</h2>
+    <p class="s-sub">Sans PID, un choc fait grimper le prix et la nouvelle base reste élevée indéfiniment. Avec Saju, le prix redescend progressivement après la crise. Vous ne payez pas deux fois le choc.</p>
+
+    <div class="simu-grid">
+        <div class="simu-controls">
+            <!-- Montant total et coefficient -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-euro-sign"></i> Montant total cible (sur 40 ans)</div>
+                <input type="range" id="totalAmount" min="0.5" max="3.0" step="0.01" value="1.4">
+                <div class="param-value"><span id="totalAmountVal">1.40</span> milliards €</div>
+                <div class="param-hint">Correspond à un coefficient multiplicateur calculé automatiquement</div>
+                <div class="param-value" style="margin-top:8px">Coefficient multiplicateur équivalent : <strong id="coefDisplay">4.80</strong> ×</div>
+            </div>
+
+            <!-- Crise majeure -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-skull-crosswalk"></i> Crise majeure</div>
+                <div>Année : <input type="range" id="majorYear" min="5" max="35" step="1" value="15"> <span id="majorYearVal">15</span></div>
+                <div>Amplitude (multiplicateur) : <input type="range" id="majorAmp" min="1.5" max="4.0" step="0.1" value="2.5"> <span id="majorAmpVal">2.5</span>×</div>
+            </div>
+
+            <!-- Crises mineures -->
+            <div class="crisis-group">
+                <div class="crisis-header"><span><i class="fas fa-waveform"></i> Crises mineures</span><button id="addMinor">+ Ajouter une crise</button></div>
+                <div id="minorCrisesContainer"></div>
+                <div class="param-hint">Ajoutez jusqu'à 3 chocs supplémentaires (amplitude plus faible).</div>
+            </div>
+
+            <!-- Gain technologique -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-microchip"></i> Gain technologique (IA, automatisation)</div>
+                <div>Année de début : <input type="range" id="techYear" min="5" max="35" step="1" value="20"> <span id="techYearVal">20</span></div>
+                <div>Réduction annuelle max : <input type="range" id="techAmp" min="0" max="0.03" step="0.001" value="0.015"> <span id="techAmpVal">1.5</span> %/an</div>
+                <div class="param-hint">Simule l'effet de l'IA ou des gains de productivité.</div>
+            </div>
+
+            <!-- Écarts concurrents -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Positionnement concurrents</div>
+                <div>Concurrent A (sous‑évaluateur) : <input type="range" id="compA" min="-30" max="0" step="1" value="-15"> <span id="compAVal">-15</span> %</div>
+                <div>Concurrent B (sur‑évaluateur) : <input type="range" id="compB" min="0" max="40" step="1" value="25"> <span id="compBVal">+25</span> %</div>
+                <div class="param-hint">Écart par rapport au coefficient de référence.</div>
+            </div>
+
+            <div class="impact-summary" id="impactSummary"></div>
+        </div>
+
+        <div class="simu-chart">
+            <canvas id="simuChart" width="700" height="450" style="width:100%; height:auto;"></canvas>
+            <div class="chart-legend-custom">
+                <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel (indice, choc permanent)</span>
+                <span><span class="legend-color" style="background:#fbbf24;"></span> Budget cible</span>
+                <span><span class="legend-color" style="background:#6b7280;"></span> Concurrent A (sous‑évaluateur)</span>
+                <span><span class="legend-color" style="background:#f97316;"></span> Concurrent B (sur‑évaluateur)</span>
+                <span><span class="legend-color" style="background:#10b981;"></span> Saju (PID – redescend après choc)</span>
+            </div>
+        </div>
+    </div>
+    <div class="simu-footnote">
+        📊 <strong>Pourquoi le PID change tout :</strong> Sans PID, un choc (ex: ×2,5) augmente la base de prix pour toutes les années restantes. Avec Saju, la correction automatique ramène progressivement le prix vers l'équilibre. Vous ne restez pas bloqué avec un prix trop élevé pendant des décennies.
+    </div>
+</div>
+
+<script>
+    (function(){
+        const YEARS = 40;
+        const INIT_PRICE = 100; // millions €
+
+        // Éléments DOM
+        const totalSlider = document.getElementById('totalAmount');
+        const totalVal = document.getElementById('totalAmountVal');
+        const coefSpan = document.getElementById('coefDisplay');
+
+        const majorYear = document.getElementById('majorYear');
+        const majorYearVal = document.getElementById('majorYearVal');
+        const majorAmp = document.getElementById('majorAmp');
+        const majorAmpVal = document.getElementById('majorAmpVal');
+
+        const techYear = document.getElementById('techYear');
+        const techYearVal = document.getElementById('techYearVal');
+        const techAmp = document.getElementById('techAmp');
+        const techAmpVal = document.getElementById('techAmpVal');
+
+        const compA = document.getElementById('compA');
+        const compAVal = document.getElementById('compAVal');
+        const compB = document.getElementById('compB');
+        const compBVal = document.getElementById('compBVal');
+
+        const minorContainer = document.getElementById('minorCrisesContainer');
+        let minorCrises = [];
+
+        let chart;
+
+        // Génère l'indice réel (coût) avec chocs permanents (sans PID)
+        function generateRealIndex() {
+            let index = new Array(YEARS+1);
+            for (let t=0; t<=YEARS; t++) {
+                index[t] = 1 + 0.0075 * t; // tendance +0,75%/an
+            }
+            // Crise majeure (permanente)
+            const mYear = parseInt(majorYear.value);
+            const mAmp = parseFloat(majorAmp.value);
+            for (let t=mYear; t<=YEARS; t++) {
+                index[t] *= mAmp;
+            }
+            // Crises mineures
+            minorCrises.forEach(c => {
+                for (let t=c.year; t<=YEARS; t++) {
+                    index[t] *= c.amp;
+                }
+            });
+            // Gain technologique (réduction progressive)
+            const techY = parseInt(techYear.value);
+            const techRed = parseFloat(techAmp.value);
+            if (techRed > 0) {
+                for (let t=techY; t<=YEARS; t++) {
+                    let yearsAfter = t - techY;
+                    let factor = 1 - techRed * yearsAfter;
+                    if (factor < 0.6) factor = 0.6;
+                    index[t] *= factor;
+                }
+            }
+            // Petit bruit réaliste
+            for (let t=1; t<=YEARS; t++) {
+                let noise = 1 + (Math.sin(t*0.8)*0.02 + Math.cos(t*1.2)*0.01);
+                index[t] *= noise;
+            }
+            return index;
+        }
+
+        // Prix budgétaire (coefficient constant)
+        function priceFromBudgetCoef(budgetCoef) {
+            let annualFactor = Math.pow(budgetCoef, 1/YEARS);
+            let price = new Array(YEARS+1);
+            price[0] = 1;
+            for (let t=1; t<=YEARS; t++) {
+                price[t] = price[t-1] * annualFactor;
+            }
+            return price;
+        }
+
+        // PID qui ramène progressivement vers la cible (1) après les chocs
+        // Gains modérés pour que l'effet soit visible mais pas trop agressif
+        function priceWithPID(index, Kp=0.45, Ki=0.12, Kd=0.15) {
+            let price = new Array(YEARS+1);
+            let error = 0, integral = 0, prevError = 0;
+            const target = 1.0;
+            for (let t=0; t<=YEARS; t++) {
+                error = target - index[t];
+                integral += error;
+                let derivative = error - prevError;
+                let correction = Kp*error + Ki*integral + Kd*derivative;
+                price[t] = index[t] + correction;
+                prevError = error;
+                if (price[t] < 0.1) price[t] = 0.1;
+            }
+            return price;
+        }
+
+        // Calcul du coefficient à partir du montant total cible
+        function getBudgetCoefFromTarget(totalTarget) {
+            let targetSumIndex = (totalTarget * 1000) / INIT_PRICE;
+            let low = 1.0, high = 10.0;
+            for (let iter=0; iter<30; iter++) {
+                let mid = (low+high)/2;
+                let price = priceFromBudgetCoef(mid);
+                let sum = price.reduce((a,b)=>a+b,0);
+                if (sum < targetSumIndex) low = mid;
+                else high = mid;
+            }
+            return (low+high)/2;
+        }
+
+        function updateAll() {
+            // Montant cible
+            let totalTarget = parseFloat(totalSlider.value);
+            totalVal.innerText = totalTarget.toFixed(2);
+            let budgetCoef = getBudgetCoefFromTarget(totalTarget);
+            coefSpan.innerText = budgetCoef.toFixed(2);
+            const budgetPrice = priceFromBudgetCoef(budgetCoef);
+
+            // Indice réel (chocs permanents)
+            const realIndex = generateRealIndex();
+
+            // Concurrents
+            let compACoef = budgetCoef * (1 + parseFloat(compA.value)/100);
+            let compBCoef = budgetCoef * (1 + parseFloat(compB.value)/100);
+            const compAPrice = priceFromBudgetCoef(compACoef);
+            const compBPrice = priceFromBudgetCoef(compBCoef);
+
+            // Saju avec PID (ramène après choc)
+            const pidPrice = priceWithPID(realIndex, 0.45, 0.12, 0.15);
+
+            // Sommes et conversions en milliards
+            let sumReal = realIndex.reduce((a,b)=>a+b,0);
+            let sumBudget = budgetPrice.reduce((a,b)=>a+b,0);
+            let sumCompA = compAPrice.reduce((a,b)=>a+b,0);
+            let sumCompB = compBPrice.reduce((a,b)=>a+b,0);
+            let sumPid = pidPrice.reduce((a,b)=>a+b,0);
+
+            let realTotal = sumReal * INIT_PRICE;
+            let budgetTotal = sumBudget * INIT_PRICE;
+            let compATotal = sumCompA * INIT_PRICE;
+            let compBTotal = sumCompB * INIT_PRICE;
+            let pidTotal = sumPid * INIT_PRICE;
+
+            let diffBudget = (budgetTotal - realTotal) / realTotal * 100;
+            let diffPid = (pidTotal - realTotal) / realTotal * 100;
+            let diffCompA = (compATotal - realTotal) / realTotal * 100;
+            let diffCompB = (compBTotal - realTotal) / realTotal * 100;
+
+            document.getElementById('impactSummary').innerHTML = `
+                <div>💰 Coût réel (choc permanent) : <strong class="impact-number">${(realTotal/1000).toFixed(2)}</strong> Mds€</div>
+                <div>🎯 Budget cible : <strong class="impact-number">${(budgetTotal/1000).toFixed(2)}</strong> Mds€ → écart <strong style="color:${diffBudget>0?'#ef4444':'#10b981'}">${diffBudget.toFixed(1)}%</strong></div>
+                <div>⚠️ Concurrent A (sous‑évaluateur) : <strong class="impact-number">${(compATotal/1000).toFixed(2)}</strong> Mds€ → écart ${diffCompA.toFixed(1)}%</div>
+                <div>⚠️ Concurrent B (sur‑évaluateur) : <strong class="impact-number">${(compBTotal/1000).toFixed(2)}</strong> Mds€ → écart +${diffCompB.toFixed(1)}%</div>
+                <div>🔧 <strong>Saju (PID)</strong> : <strong class="impact-number">${(pidTotal/1000).toFixed(2)}</strong> Mds€ → écart <strong style="color:${diffPid>0?'#ef4444':'#10b981'}">${diffPid.toFixed(1)}%</strong><br>
+                <span style="font-size:0.7rem;">✅ Le PID évite que le choc ne devienne permanent : le prix redescend après la crise.</span></div>
+            `;
+
+            // Graphique
+            const labels = Array.from({length: YEARS+1}, (_,i)=>i);
+            if (chart) {
+                chart.data.datasets[0].data = realIndex;
+                chart.data.datasets[1].data = budgetPrice;
+                chart.data.datasets[2].data = compAPrice;
+                chart.data.datasets[3].data = compBPrice;
+                chart.data.datasets[4].data = pidPrice;
+                chart.update();
+            } else {
+                const ctx = document.getElementById('simuChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Coût réel (choc permanent)', data: realIndex, borderColor: '#ef4444', borderWidth: 2, borderDash: [3,3], pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Budget cible', data: budgetPrice, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Concurrent A (sous-éval.)', data: compAPrice, borderColor: '#6b7280', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Concurrent B (sur-éval.)', data: compBPrice, borderColor: '#f97316', borderWidth: 2, borderDash: [5,3], pointRadius: 0, tension: 0.2, fill: false },
+                            { label: 'Saju (PID – redescend)', data: pidPrice, borderColor: '#10b981', borderWidth: 3, pointRadius: 0, tension: 0.2, fill: false }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { tooltip: { mode: 'index', intersect: false }, legend: { display: false } },
+                        scales: {
+                            y: { title: { display: true, text: 'Prix normalisé (base 1 = 100 M€)', color: 'rgba(255,255,255,0.6)' }, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'rgba(255,255,255,0.7)' } },
+                            x: { title: { display: true, text: 'Années du contrat', color: 'rgba(255,255,255,0.6)' }, grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Gestion crises mineures
+        function renderMinorCrises() {
+            minorContainer.innerHTML = '';
+            minorCrises.forEach((c, idx) => {
+                let div = document.createElement('div');
+                div.className = 'crisis-group';
+                div.style.marginTop = '8px';
+                div.innerHTML = `
+                    <div class="crisis-header">
+                        <span>Crise mineure ${idx+1}</span>
+                        <button class="removeMinor" data-idx="${idx}">✖ Supprimer</button>
+                    </div>
+                    <div>Année : <input type="range" class="minorYear" data-idx="${idx}" min="5" max="35" step="1" value="${c.year}"> <span class="minorYearVal">${c.year}</span></div>
+                    <div>Amplitude : <input type="range" class="minorAmp" data-idx="${idx}" min="1.2" max="2.5" step="0.05" value="${c.amp}"> <span class="minorAmpVal">${c.amp.toFixed(2)}</span></div>
+                `;
+                minorContainer.appendChild(div);
+            });
+            document.querySelectorAll('.removeMinor').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    let idx = parseInt(btn.getAttribute('data-idx'));
+                    minorCrises.splice(idx, 1);
+                    renderMinorCrises();
+                    updateAll();
+                });
+            });
+            document.querySelectorAll('.minorYear').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    let idx = parseInt(slider.getAttribute('data-idx'));
+                    minorCrises[idx].year = parseInt(slider.value);
+                    slider.nextElementSibling.innerText = minorCrises[idx].year;
+                    updateAll();
+                });
+            });
+            document.querySelectorAll('.minorAmp').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    let idx = parseInt(slider.getAttribute('data-idx'));
+                    minorCrises[idx].amp = parseFloat(slider.value);
+                    slider.nextElementSibling.innerText = minorCrises[idx].amp.toFixed(2);
+                    updateAll();
+                });
+            });
+        }
+
+        document.getElementById('addMinor').addEventListener('click', () => {
+            if (minorCrises.length < 3) {
+                minorCrises.push({ year: 10, amp: 1.5 });
+                renderMinorCrises();
+                updateAll();
+            } else alert('Maximum 3 crises mineures atteint.');
+        });
+
+        // Écouteurs
+        totalSlider.addEventListener('input', updateAll);
+        majorYear.addEventListener('input', () => { majorYearVal.innerText = majorYear.value; updateAll(); });
+        majorAmp.addEventListener('input', () => { majorAmpVal.innerText = majorAmp.value; updateAll(); });
+        techYear.addEventListener('input', () => { techYearVal.innerText = techYear.value; updateAll(); });
+        techAmp.addEventListener('input', () => { techAmpVal.innerText = (techAmp.value*100).toFixed(1); updateAll(); });
+        compA.addEventListener('input', () => { compAVal.innerText = compA.value; updateAll(); });
+        compB.addEventListener('input', () => { compBVal.innerText = compB.value; updateAll(); });
+
+        renderMinorCrises();
+        updateAll();
+    })();
+</script>
+</body>
+</html>
