@@ -43,11 +43,10 @@
 <div class="container">
     <div class="s-tag">Simulateur Expert Saju – MPC Avancé</div>
     <h2 class="s-title">Calibrez votre contrat : <em>Model Predictive Control avec contraintes</em></h2>
-    <p class="s-sub">Indices historiques réels, crises géopolitiques et mineures, économies d’échelle, MPC avancé. Bandes colorées + zoom interactif.</p>
+    <p class="s-sub">Indices historiques réels, crises détaillées, économies d’échelle, MPC avancé. Bandes colorées + zoom interactif. Tout se met à jour en temps réel.</p>
 
     <div class="simu-grid">
         <div class="simu-controls">
-            <!-- Produit & secteur -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-industry"></i> Produit & secteur</div>
                 <select id="productType">
@@ -64,7 +63,6 @@
                 </select>
             </div>
 
-            <!-- Production -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-cubes"></i> Production</div>
                 <div class="inline-group">
@@ -75,7 +73,6 @@
                 </div>
             </div>
 
-            <!-- Maintenance -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-tools"></i> Maintenance</div>
                 <div class="inline-group">
@@ -85,7 +82,6 @@
                 </div>
             </div>
 
-            <!-- Pondérations -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-chart-line"></i> Pondérations indices (somme = 1)</div>
                 <div class="inline-group">
@@ -95,7 +91,6 @@
                 </div>
             </div>
 
-            <!-- Coefficient & Total -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-calculator"></i> Coefficient multiplicateur (année 40 / année 0)</div>
                 <input type="range" id="coefSlider" min="1.0" max="10.0" step="0.05" value="5.82">
@@ -119,15 +114,15 @@
             <!-- Concurrents -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-chart-line"></i> Positionnement concurrents (% d'écart)</div>
-                <div>Concurrent A : <input type="range" id="compA" min="-30" max="0" step="1" value="-15"> <span id="compAVal">-15</span>%</div>
-                <div>Concurrent B : <input type="range" id="compB" min="0" max="40" step="1" value="25"> <span id="compBVal">+25</span>%</div>
+                <div>Concurrent A (sous‑éval.) : <input type="range" id="compA" min="-30" max="0" step="1" value="-15"> <span id="compAVal">-15</span> %</div>
+                <div>Concurrent B (sur‑éval.) : <input type="range" id="compB" min="0" max="40" step="1" value="25"> <span id="compBVal">+25</span> %</div>
             </div>
 
             <!-- Volatilité -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-chart-line"></i> Volatilité (bruit haute fréquence)</div>
-                <input type="range" id="volatility" min="0" max="3.5" step="0.1" value="1.2">
-                <span id="volatilityVal">1.2</span>
+                <input type="range" id="volatility" min="0" max="4" step="0.1" value="2.5">
+                <span id="volatilityVal">2.5</span>
             </div>
 
             <!-- Crise majeure -->
@@ -243,7 +238,7 @@
             return base;
         }
 
-        const historicalBase = { /* indices historiques 40 ans */ 
+        const historicalBase = {
             E: [1.02,1.03,1.05,1.08,1.12,1.18,1.25,1.35,1.28,1.15,1.10,1.22,1.45,1.38,1.20,1.05,1.08,1.15,1.28,1.35,1.42,1.55,1.68,1.75,1.65,1.48,1.55,1.82,2.10,2.35,1.95,1.75,1.85,2.05,2.45,2.80,2.60,2.40,2.55,2.70],
             S: [1.025,1.028,1.030,1.032,1.035,1.038,1.040,1.042,1.045,1.048,1.050,1.055,1.060,1.065,1.070,1.072,1.075,1.078,1.082,1.085,1.090,1.095,1.105,1.115,1.120,1.125,1.130,1.140,1.155,1.170,1.185,1.195,1.205,1.220,1.235,1.250,1.265,1.280,1.295,1.310],
             M: [1.015,1.018,1.022,1.028,1.035,1.045,1.055,1.080,1.095,1.085,1.065,1.075,1.120,1.145,1.130,1.095,1.105,1.125,1.150,1.165,1.180,1.210,1.240,1.255,1.230,1.210,1.225,1.260,1.290,1.320,1.280,1.255,1.270,1.295,1.340,1.380,1.355,1.330,1.345,1.365]
@@ -270,11 +265,11 @@
             // Économies d'échelle
             let scY = parseInt(document.getElementById('scaleYear').value), scD = parseInt(document.getElementById('scaleDur').value), scA = parseFloat(document.getElementById('scaleAmp').value);
             for (let t = scY; t < Math.min(YEARS+1, scY + scD); t++) { E[t] *= scA; S[t] *= scA; M[t] *= scA; }
-            // Volatilité
+            // Volatilité (forte)
             let vol = parseFloat(document.getElementById('volatility').value);
             if (vol > 0) {
                 for (let t = 1; t <= YEARS; t++) {
-                    let noise = (Math.sin(t*0.5)*0.05 + Math.sin(t*1.2)*0.03 + Math.sin(t*3.7)*Math.cos(t*1.9)*0.08) * vol;
+                    let noise = (Math.sin(t*0.5)*0.12 + Math.sin(t*1.2)*0.08 + Math.sin(t*3.7)*Math.cos(t*1.9)*0.15) * vol;
                     E[t] *= (1 + noise); S[t] *= (1 + noise*0.8); M[t] *= (1 + noise*1.2);
                 }
             }
@@ -492,11 +487,9 @@
             } else alert('Maximum 7 crises mineures atteint.');
         });
 
-        // Listeners globaux
         function initListeners() {
             const inputs = document.querySelectorAll('input, select');
             inputs.forEach(input => input.addEventListener('input', () => {
-                // Mise à jour des valeurs affichées
                 if (input.id === 'coefSlider') coefValue.innerText = parseFloat(input.value).toFixed(2);
                 if (input.id === 'totalAmount') totalVal.innerText = formatMoney(parseFloat(input.value));
                 if (input.id === 'mpcHorizon') mpcHorizonVal.innerText = input.value;
