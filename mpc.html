@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0f1117; color: #ffffff; line-height: 1.5; padding: 1.5rem 1rem; }
+        body { font-family: 'Inter', sans-serif; background: #0f1117; color: #ffffff; line-height: 1.5; padding: 2rem 1.5rem; }
         .container { max-width: 1600px; margin: 0 auto; background: #0f1117; border-radius: 2rem; padding: 2rem 1.8rem 2.5rem; }
         .s-tag { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; color: #14b8a6; }
         .s-title { font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 700; line-height: 1.1; margin-bottom: 14px; }
@@ -23,6 +23,7 @@
         .simu-chart canvas { max-width: 100% !important; height: auto !important; display: block; }
         .reset-zoom { position: absolute; top: 15px; right: 15px; background: #1e2330; color: #fff; border: 1px solid #d97706; padding: 4px 12px; border-radius: 2rem; font-size: 0.75rem; cursor: pointer; z-index: 100; }
         .param-card { margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.2rem; }
+        .param-card:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .param-label { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 10px; color: rgba(255,255,255,0.88); }
         .param-label i { color: #d97706; }
         input[type="range"], input[type="number"], select { width: 100%; accent-color: #d97706; margin: 6px 0; background: #1e2330; border: 1px solid #2c2f3a; border-radius: 8px; padding: 6px; color: white; }
@@ -41,11 +42,12 @@
 <body>
 <div class="container">
     <div class="s-tag">Simulateur Expert Saju – MPC Avancé</div>
-    <h2 class="s-title">Contrats longs : <em>Model Predictive Control avec contraintes</em></h2>
-    <p class="s-sub">MPC complet + bandes colorées + toutes les crises. Tout change en temps réel.</p>
+    <h2 class="s-title">Calibrez votre contrat : <em>Model Predictive Control avec contraintes</em></h2>
+    <p class="s-sub">Indices historiques réels, crises géopolitiques et mineures, économies d’échelle, MPC avancé. Bandes colorées + zoom interactif.</p>
 
     <div class="simu-grid">
         <div class="simu-controls">
+            <!-- Produit & secteur -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-industry"></i> Produit & secteur</div>
                 <select id="productType">
@@ -54,8 +56,15 @@
                     <option value="turbine">Turbine éolienne</option>
                     <option value="usine">Usine clé en main</option>
                 </select>
+                <select id="sector">
+                    <option value="transport">Transport & mobilité</option>
+                    <option value="energie">Énergie</option>
+                    <option value="industrie">Industrie lourde</option>
+                    <option value="defense">Défense</option>
+                </select>
             </div>
 
+            <!-- Production -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-cubes"></i> Production</div>
                 <div class="inline-group">
@@ -66,6 +75,7 @@
                 </div>
             </div>
 
+            <!-- Maintenance -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-tools"></i> Maintenance</div>
                 <div class="inline-group">
@@ -75,8 +85,9 @@
                 </div>
             </div>
 
+            <!-- Pondérations -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-chart-line"></i> Pondérations indices</div>
+                <div class="param-label"><i class="fas fa-chart-line"></i> Pondérations indices (somme = 1)</div>
                 <div class="inline-group">
                     <div><label>Énergie</label><input type="number" id="wE" value="0.4" step="0.05" style="width:70px"></div>
                     <div><label>Salaires</label><input type="number" id="wS" value="0.3" step="0.05" style="width:70px"></div>
@@ -84,12 +95,12 @@
                 </div>
             </div>
 
+            <!-- Coefficient & Total -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-calculator"></i> Coefficient multiplicateur</div>
-                <input type="range" id="coefSlider" min="1" max="10" step="0.05" value="5.82">
+                <div class="param-label"><i class="fas fa-calculator"></i> Coefficient multiplicateur (année 40 / année 0)</div>
+                <input type="range" id="coefSlider" min="1.0" max="10.0" step="0.05" value="5.82">
                 <div class="param-value"><span id="coefValue">5.82</span>×</div>
             </div>
-
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-euro-sign"></i> Montant total cible</div>
                 <input type="range" id="totalAmount" min="500" max="5000" step="10" value="1300">
@@ -98,11 +109,25 @@
 
             <!-- MPC Avancé -->
             <div class="param-card">
-                <div class="param-label"><i class="fas fa-brain"></i> MPC Avancé</div>
-                <div>Horizon prédiction : <input type="range" id="mpcHorizon" min="3" max="15" step="1" value="8"> <span id="mpcHorizonVal">8</span> ans</div>
-                <div>Poids tracking : <input type="range" id="mpcWeightTrack" min="0.5" max="3" step="0.1" value="1.5"> <span id="mpcWeightTrackVal">1.5</span></div>
-                <div>Poids effort : <input type="range" id="mpcWeightEffort" min="0" max="2" step="0.1" value="0.8"> <span id="mpcWeightEffortVal">0.8</span></div>
-                <div>Variation max/an (%) : <input type="range" id="mpcMaxChange" min="1" max="15" step="1" value="8"> <span id="mpcMaxChangeVal">8</span>%</div>
+                <div class="param-label"><i class="fas fa-brain"></i> MPC Avancé (Model Predictive Control)</div>
+                <div>Horizon de prédiction : <input type="range" id="mpcHorizon" min="3" max="15" step="1" value="8"> <span id="mpcHorizonVal">8</span> ans</div>
+                <div>Poids erreur tracking : <input type="range" id="mpcWeightTrack" min="0.5" max="3" step="0.1" value="1.5"> <span id="mpcWeightTrackVal">1.5</span></div>
+                <div>Poids effort contrôle : <input type="range" id="mpcWeightEffort" min="0" max="2" step="0.1" value="0.8"> <span id="mpcWeightEffortVal">0.8</span></div>
+                <div>Variation max par an (%) : <input type="range" id="mpcMaxChange" min="1" max="15" step="1" value="8"> <span id="mpcMaxChangeVal">8</span>%</div>
+            </div>
+
+            <!-- Concurrents -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Positionnement concurrents (% d'écart)</div>
+                <div>Concurrent A : <input type="range" id="compA" min="-30" max="0" step="1" value="-15"> <span id="compAVal">-15</span>%</div>
+                <div>Concurrent B : <input type="range" id="compB" min="0" max="40" step="1" value="25"> <span id="compBVal">+25</span>%</div>
+            </div>
+
+            <!-- Volatilité -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Volatilité (bruit haute fréquence)</div>
+                <input type="range" id="volatility" min="0" max="3.5" step="0.1" value="1.2">
+                <span id="volatilityVal">1.2</span>
             </div>
 
             <!-- Crise majeure -->
@@ -113,10 +138,32 @@
                 <div>Amplitude : <input type="range" id="majorAmp" min="1.5" max="4.0" step="0.1" value="2.5"> <span id="majorAmpVal">2.5</span>×</div>
             </div>
 
+            <!-- Crise obsolescence -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-microchip"></i> Crise obsolescence (maintenance)</div>
+                <div>Année : <input type="range" id="obsYear" min="5" max="35" step="1" value="22"> <span id="obsYearVal">22</span></div>
+                <div>Surcoût : <input type="range" id="obsAmp" min="1.0" max="3.0" step="0.05" value="1.8"> <span id="obsAmpVal">1.8</span>×</div>
+            </div>
+
+            <!-- Économies d’échelle -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-handshake"></i> 📉 Économies d’échelle / Synergie projet</div>
+                <div>Année début : <input type="range" id="scaleYear" min="5" max="35" step="1" value="12"> <span id="scaleYearVal">12</span></div>
+                <div>Durée : <input type="range" id="scaleDur" min="1" max="8" step="1" value="4"> <span id="scaleDurVal">4</span> ans</div>
+                <div>Économie : <input type="range" id="scaleAmp" min="0.70" max="0.95" step="0.01" value="0.85"> <span id="scaleAmpVal">0.85</span>× (baisse)</div>
+            </div>
+
             <!-- Crises mineures -->
             <div class="crisis-group">
                 <div class="crisis-header"><span><i class="fas fa-waveform"></i> Crises mineures / Coûts supplémentaires</span><button id="addMinor">+ Ajouter</button></div>
                 <div id="minorCrisesContainer"></div>
+            </div>
+
+            <!-- Gain technologique -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Gain technologique (productivité)</div>
+                <div>Année début : <input type="range" id="techYear" min="5" max="35" step="1" value="20"> <span id="techYearVal">20</span></div>
+                <div>Réduction annuelle : <input type="range" id="techAmp" min="0" max="0.03" step="0.001" value="0.015"> <span id="techAmpVal">1.5</span> %/an</div>
             </div>
 
             <div class="impact-summary" id="impactSummary"></div>
@@ -162,33 +209,111 @@
             return v >= 1000 ? (v/1000).toFixed(2) + ' B€' : Math.round(v) + ' M€';
         }
 
+        function getUnitsPerYear() {
+            let total = parseFloat(document.getElementById('totalUnits').value) || 0;
+            let start = parseInt(document.getElementById('prodStart').value) || 0;
+            let end = parseInt(document.getElementById('prodEnd').value) || 40;
+            let units = new Array(YEARS+1).fill(0);
+            if (start >= end) { units[Math.min(start, YEARS)] = total; return units; }
+            let per = total / (end - start);
+            for (let t = start; t < end && t <= YEARS; t++) units[t] = per;
+            return units;
+        }
+
+        function getUnitsInService() {
+            let perYear = getUnitsPerYear();
+            let service = new Array(YEARS+1).fill(0);
+            let cum = 0;
+            for (let t = 0; t <= YEARS; t++) { cum += perYear[t]; service[t] = cum; }
+            return service;
+        }
+
         function getBaseCostAnnual() {
-            let unit = parseFloat(document.getElementById('unitPrice').value) || 10;
-            let totalUnits = parseFloat(document.getElementById('totalUnits').value) || 90;
-            let maint = parseFloat(document.getElementById('maintPerUnit').value) || 5;
+            let unit = parseFloat(document.getElementById('unitPrice').value) || 0;
+            let perYear = getUnitsPerYear();
+            let service = getUnitsInService();
+            let maint = parseFloat(document.getElementById('maintPerUnit').value) || 0;
+            let mStart = parseInt(document.getElementById('maintStart').value) || 1;
+            let mEnd = parseInt(document.getElementById('maintEnd').value) || 40;
             let base = new Array(YEARS+1).fill(0);
-            let perYear = totalUnits / Math.max(1, parseInt(document.getElementById('prodEnd').value) || 40);
             for (let t = 0; t <= YEARS; t++) {
-                if (t <= parseInt(document.getElementById('prodEnd').value)) base[t] += perYear * unit;
-                if (t >= 1) base[t] += (t * perYear) * maint;
+                base[t] += perYear[t] * unit;
+                if (t >= mStart && t <= mEnd) base[t] += service[t] * maint;
             }
             return base;
         }
 
-        function generateRealIndex() {
-            let index = new Array(YEARS+1);
-            for (let t = 0; t <= YEARS; t++) index[t] = 1 + 0.0075 * t + 0.08 * Math.sin(t * 1.3);
+        const historicalBase = { /* indices historiques 40 ans */ 
+            E: [1.02,1.03,1.05,1.08,1.12,1.18,1.25,1.35,1.28,1.15,1.10,1.22,1.45,1.38,1.20,1.05,1.08,1.15,1.28,1.35,1.42,1.55,1.68,1.75,1.65,1.48,1.55,1.82,2.10,2.35,1.95,1.75,1.85,2.05,2.45,2.80,2.60,2.40,2.55,2.70],
+            S: [1.025,1.028,1.030,1.032,1.035,1.038,1.040,1.042,1.045,1.048,1.050,1.055,1.060,1.065,1.070,1.072,1.075,1.078,1.082,1.085,1.090,1.095,1.105,1.115,1.120,1.125,1.130,1.140,1.155,1.170,1.185,1.195,1.205,1.220,1.235,1.250,1.265,1.280,1.295,1.310],
+            M: [1.015,1.018,1.022,1.028,1.035,1.045,1.055,1.080,1.095,1.085,1.065,1.075,1.120,1.145,1.130,1.095,1.105,1.125,1.150,1.165,1.180,1.210,1.240,1.255,1.230,1.210,1.225,1.260,1.290,1.320,1.280,1.255,1.270,1.295,1.340,1.380,1.355,1.330,1.345,1.365]
+        };
+
+        function generateIndices() {
+            let E = new Array(YEARS+1), S = new Array(YEARS+1), M = new Array(YEARS+1);
+            for (let t = 0; t <= YEARS; t++) {
+                E[t] = historicalBase.E[t % historicalBase.E.length] * (1 + 0.0075 * t);
+                S[t] = historicalBase.S[t % historicalBase.S.length] * (1 + 0.0075 * t);
+                M[t] = historicalBase.M[t % historicalBase.M.length] * (1 + 0.0075 * t);
+            }
             // Crise majeure
-            let mY = parseInt(document.getElementById('majorYear').value);
-            let mD = parseInt(document.getElementById('majorDur').value);
-            let mA = parseFloat(document.getElementById('majorAmp').value);
-            for (let t = mY; t < Math.min(YEARS+1, mY + mD); t++) index[t] *= mA;
+            let mY = parseInt(document.getElementById('majorYear').value), mD = parseInt(document.getElementById('majorDur').value), mA = parseFloat(document.getElementById('majorAmp').value);
+            for (let t = mY; t < Math.min(YEARS+1, mY + mD); t++) { E[t] *= mA; S[t] *= mA; M[t] *= mA; }
             // Crises mineures
             minorCrises.forEach(c => {
                 let d = c.dur || 2;
-                for (let t = c.year; t < Math.min(YEARS+1, c.year + d); t++) index[t] *= c.amp;
+                for (let t = c.year; t < Math.min(YEARS+1, c.year + d); t++) { E[t] *= c.amp; S[t] *= c.amp; M[t] *= c.amp; }
             });
+            // Obsolescence
+            let oY = parseInt(document.getElementById('obsYear').value), oA = parseFloat(document.getElementById('obsAmp').value);
+            for (let t = oY; t <= YEARS; t++) { E[t] *= oA; S[t] *= oA; M[t] *= oA; }
+            // Économies d'échelle
+            let scY = parseInt(document.getElementById('scaleYear').value), scD = parseInt(document.getElementById('scaleDur').value), scA = parseFloat(document.getElementById('scaleAmp').value);
+            for (let t = scY; t < Math.min(YEARS+1, scY + scD); t++) { E[t] *= scA; S[t] *= scA; M[t] *= scA; }
+            // Volatilité
+            let vol = parseFloat(document.getElementById('volatility').value);
+            if (vol > 0) {
+                for (let t = 1; t <= YEARS; t++) {
+                    let noise = (Math.sin(t*0.5)*0.05 + Math.sin(t*1.2)*0.03 + Math.sin(t*3.7)*Math.cos(t*1.9)*0.08) * vol;
+                    E[t] *= (1 + noise); S[t] *= (1 + noise*0.8); M[t] *= (1 + noise*1.2);
+                }
+            }
+            return {E, S, M};
+        }
+
+        function computeRealCostIndex(E, S, M) {
+            let we = parseFloat(document.getElementById('wE').value)||0, ws = parseFloat(document.getElementById('wS').value)||0, wm = parseFloat(document.getElementById('wM').value)||0;
+            let sum = we + ws + wm || 1;
+            return E.map((e,i) => (we*e + ws*S[i] + wm*M[i]) / sum);
+        }
+
+        function applyTech(index) {
+            let tY = parseInt(document.getElementById('techYear').value), tRed = parseFloat(document.getElementById('techAmp').value);
+            for (let t = 0; t <= YEARS; t++) {
+                if (t >= tY) index[t] *= Math.max(1 - tRed*(t-tY), 0.6);
+                if (index[t] < 0.05) index[t] = 0.05;
+            }
             return index;
+        }
+
+        function generateRealIndex() {
+            let {E,S,M} = generateIndices();
+            let idx = computeRealCostIndex(E,S,M);
+            return applyTech(idx);
+        }
+
+        function getBudgetAnnualFromMultiplier(multiplier, base) {
+            let g40 = multiplier * base[0] / base[YEARS];
+            let g = Math.pow(g40, 1/YEARS);
+            return base.map((b,t) => b * Math.pow(g, t));
+        }
+
+        function sumPrice(p) { return p.reduce((a,b)=>a+b,0); }
+
+        function cumulative(ann) {
+            let cum = new Array(ann.length); cum[0] = ann[0];
+            for (let t = 1; t < ann.length; t++) cum[t] = cum[t-1] + ann[t];
+            return cum;
         }
 
         // MPC Avancé avec contraintes
@@ -218,7 +343,7 @@
                         predictedTotal += futurePrice;
                     }
                     cost += wEffort * Math.pow(test - currentMult, 2);
-                    cost += Math.max(0, predictedTotal - targetTotal) * 0.001; // contrainte budget total
+                    cost += Math.max(0, predictedTotal - targetTotal) * 0.001; // contrainte budget
 
                     if (cost < bestCost) {
                         bestCost = cost;
@@ -231,10 +356,35 @@
             return price;
         }
 
-        function cumulative(ann) {
-            let cum = new Array(ann.length); cum[0] = ann[0];
-            for (let t = 1; t < ann.length; t++) cum[t] = cum[t-1] + ann[t];
-            return cum;
+        function getEvents() {
+            let ev = [];
+            let mY = parseInt(document.getElementById('majorYear').value), mD = parseInt(document.getElementById('majorDur').value);
+            ev.push({start: mY, end: Math.min(YEARS, mY+mD-1), color: 'rgba(239,68,68,0.22)', emoji: '🌍'});
+            let oY = parseInt(document.getElementById('obsYear').value);
+            ev.push({start: oY, end: YEARS, color: 'rgba(245,158,11,0.20)', emoji: '🛠️'});
+            let scY = parseInt(document.getElementById('scaleYear').value), scD = parseInt(document.getElementById('scaleDur').value);
+            ev.push({start: scY, end: Math.min(YEARS, scY+scD-1), color: 'rgba(16,185,129,0.20)', emoji: '📉'});
+            minorCrises.forEach((c,i) => {
+                let d = c.dur || 2;
+                ev.push({start: c.year, end: Math.min(YEARS, c.year+d-1), color: 'rgba(234,179,8,0.20)', emoji: '⚠️'});
+            });
+            return ev;
+        }
+
+        function createAnnotations(events) {
+            let ann = {};
+            events.forEach((ev, i) => {
+                ann[`ev${i}`] = {
+                    type: 'box',
+                    xMin: ev.start,
+                    xMax: ev.end,
+                    backgroundColor: ev.color,
+                    borderColor: '#ffffff',
+                    borderWidth: 1,
+                    label: { content: ev.emoji, enabled: true, position: 'top', color: '#ffffff', font: { size: 13, weight: 'bold' } }
+                };
+            });
+            return ann;
         }
 
         function updateAll() {
@@ -248,6 +398,7 @@
             if (chart) {
                 chart.data.datasets[0].data = cumulative(realAnnual);
                 chart.data.datasets[1].data = cumulative(mpcAnnual);
+                chart.options.plugins.annotation.annotations = createAnnotations(getEvents());
                 chart.update();
             } else {
                 let ctx = document.getElementById('simuChart').getContext('2d');
@@ -267,12 +418,14 @@
                         responsive: true,
                         maintainAspectRatio: true,
                         plugins: {
+                            tooltip: { mode: 'index', intersect: false },
                             legend: { display: false },
-                            zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
+                            annotation: { annotations: createAnnotations(getEvents()) },
+                            zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', drag: { enabled: true } } }
                         },
                         scales: {
-                            y: { title: { display: true, text: 'Coût cumulé (M€ / B€)' } },
-                            x: { title: { display: true, text: 'Années du contrat' } }
+                            y: { title: { display: true, text: 'Coût cumulé (M€ / B€)' }, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'rgba(255,255,255,0.7)' } },
+                            x: { title: { display: true, text: 'Années du contrat' }, grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)' } }
                         }
                     }
                 });
@@ -292,7 +445,6 @@
             if (chart) chart.resetZoom();
         }
 
-        // Crises mineures
         function renderMinorCrises() {
             minorContainer.innerHTML = '';
             minorCrises.forEach((c, idx) => {
@@ -308,8 +460,8 @@
                         <option value="supplier">🏭 Fournisseur</option>
                         <option value="raw">⛏️ Matières premières</option>
                         <option value="logistics">🚚 Logistique</option>
-                        <option value="competition">⚔️ Concurrence</option>
-                        <option value="internal">📉 Erreur interne</option>
+                        <option value="competition">⚔️ Concurrence accrue</option>
+                        <option value="internal">📉 Erreur sous-évaluation interne</option>
                     </select>
                     <div>Année début : <input type="range" class="minorYear" data-idx="${idx}" min="5" max="35" step="1" value="${c.year}"> <span>${c.year}</span></div>
                     <div>Durée : <input type="range" class="minorDur" data-idx="${idx}" min="1" max="5" step="1" value="${c.dur||2}"> <span>${c.dur||2}</span> ans</div>
@@ -340,10 +492,19 @@
             } else alert('Maximum 7 crises mineures atteint.');
         });
 
-        // Listeners
+        // Listeners globaux
         function initListeners() {
             const inputs = document.querySelectorAll('input, select');
-            inputs.forEach(input => input.addEventListener('input', updateAll));
+            inputs.forEach(input => input.addEventListener('input', () => {
+                // Mise à jour des valeurs affichées
+                if (input.id === 'coefSlider') coefValue.innerText = parseFloat(input.value).toFixed(2);
+                if (input.id === 'totalAmount') totalVal.innerText = formatMoney(parseFloat(input.value));
+                if (input.id === 'mpcHorizon') mpcHorizonVal.innerText = input.value;
+                if (input.id === 'mpcWeightTrack') mpcWeightTrackVal.innerText = input.value;
+                if (input.id === 'mpcWeightEffort') mpcWeightEffortVal.innerText = input.value;
+                if (input.id === 'mpcMaxChange') mpcMaxChangeVal.innerText = input.value;
+                updateAll();
+            }));
         }
 
         window.onload = function() {
