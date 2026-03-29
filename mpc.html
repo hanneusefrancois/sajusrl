@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saju – Simulateur Expert MPC</title>
+    <title>Saju – Simulateur Expert MPC Final</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
@@ -42,7 +42,7 @@
 <div class="container">
     <div class="s-tag">Simulateur Expert Saju – MPC Avancé</div>
     <h2 class="s-title">Contrats longs : <em>Model Predictive Control avec contraintes</em></h2>
-    <p class="s-sub">MPC optimisé avec horizon, contraintes budget et lissage. Bandes colorées + zoom interactif.</p>
+    <p class="s-sub">MPC complet + bandes colorées + toutes les crises. Tout change en temps réel.</p>
 
     <div class="simu-grid">
         <div class="simu-controls">
@@ -60,7 +60,7 @@
                 <div class="param-label"><i class="fas fa-cubes"></i> Production</div>
                 <div class="inline-group">
                     <div><label>Prix unitaire (M€)</label><input type="number" id="unitPrice" value="10" step="0.5" style="width:80px"></div>
-                    <div><label>Nb unités</label><input type="number" id="totalUnits" value="90" step="1" style="width:70px"></div>
+                    <div><label>Nb unités total</label><input type="number" id="totalUnits" value="90" step="1" style="width:70px"></div>
                     <div><label>Début prod</label><input type="number" id="prodStart" value="0" step="1" style="width:70px"></div>
                     <div><label>Fin prod</label><input type="number" id="prodEnd" value="40" step="1" style="width:70px"></div>
                 </div>
@@ -96,15 +96,16 @@
                 <div class="param-value"><span id="totalAmountVal">1.30 B€</span></div>
             </div>
 
-            <!-- MPC Configuration -->
+            <!-- MPC Avancé -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-brain"></i> MPC Avancé</div>
                 <div>Horizon prédiction : <input type="range" id="mpcHorizon" min="3" max="15" step="1" value="8"> <span id="mpcHorizonVal">8</span> ans</div>
                 <div>Poids tracking : <input type="range" id="mpcWeightTrack" min="0.5" max="3" step="0.1" value="1.5"> <span id="mpcWeightTrackVal">1.5</span></div>
                 <div>Poids effort : <input type="range" id="mpcWeightEffort" min="0" max="2" step="0.1" value="0.8"> <span id="mpcWeightEffortVal">0.8</span></div>
-                <div>Variation max par an (%) : <input type="range" id="mpcMaxChange" min="1" max="15" step="1" value="8"> <span id="mpcMaxChangeVal">8</span>%</div>
+                <div>Variation max/an (%) : <input type="range" id="mpcMaxChange" min="1" max="15" step="1" value="8"> <span id="mpcMaxChangeVal">8</span>%</div>
             </div>
 
+            <!-- Crise majeure -->
             <div class="param-card">
                 <div class="param-label"><i class="fas fa-skull-crosswalk"></i> 🌍 Crise majeure géopolitique</div>
                 <div>Année début : <input type="range" id="majorYear" min="5" max="35" step="1" value="15"> <span id="majorYearVal">15</span></div>
@@ -112,8 +113,9 @@
                 <div>Amplitude : <input type="range" id="majorAmp" min="1.5" max="4.0" step="0.1" value="2.5"> <span id="majorAmpVal">2.5</span>×</div>
             </div>
 
+            <!-- Crises mineures -->
             <div class="crisis-group">
-                <div class="crisis-header"><span><i class="fas fa-waveform"></i> Crises mineures</span><button id="addMinor">+ Ajouter</button></div>
+                <div class="crisis-header"><span><i class="fas fa-waveform"></i> Crises mineures / Coûts supplémentaires</span><button id="addMinor">+ Ajouter</button></div>
                 <div id="minorCrisesContainer"></div>
             </div>
 
@@ -124,8 +126,8 @@
             <button onclick="resetZoom()" class="reset-zoom"><i class="fas fa-undo"></i> Reset Zoom</button>
             <canvas id="simuChart" width="700" height="450" style="width:100%; height:auto;"></canvas>
             <div class="chart-legend-custom">
-                <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel</span>
-                <span><span class="legend-color" style="background:#fbbf24;"></span> Budget MPC</span>
+                <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel cumulé</span>
+                <span><span class="legend-color" style="background:#fbbf24;"></span> Budget cible (MPC)</span>
                 <span><span class="legend-color" style="background:#6b7280;"></span> Concurrent A</span>
                 <span><span class="legend-color" style="background:#f97316;"></span> Concurrent B</span>
                 <span><span class="legend-color" style="background:#10b981;"></span> Saju MPC</span>
@@ -141,11 +143,20 @@
         let updating = false;
         let minorCrises = [];
 
-        // DOM principaux
+        // DOM
         const coefSlider = document.getElementById('coefSlider');
         const coefValue = document.getElementById('coefValue');
         const totalSlider = document.getElementById('totalAmount');
         const totalVal = document.getElementById('totalAmountVal');
+        const mpcHorizon = document.getElementById('mpcHorizon');
+        const mpcHorizonVal = document.getElementById('mpcHorizonVal');
+        const mpcWeightTrack = document.getElementById('mpcWeightTrack');
+        const mpcWeightTrackVal = document.getElementById('mpcWeightTrackVal');
+        const mpcWeightEffort = document.getElementById('mpcWeightEffort');
+        const mpcWeightEffortVal = document.getElementById('mpcWeightEffortVal');
+        const mpcMaxChange = document.getElementById('mpcMaxChange');
+        const mpcMaxChangeVal = document.getElementById('mpcMaxChangeVal');
+        const minorContainer = document.getElementById('minorCrisesContainer');
 
         function formatMoney(v) {
             return v >= 1000 ? (v/1000).toFixed(2) + ' B€' : Math.round(v) + ' M€';
@@ -153,10 +164,10 @@
 
         function getBaseCostAnnual() {
             let unit = parseFloat(document.getElementById('unitPrice').value) || 10;
-            let units = parseFloat(document.getElementById('totalUnits').value) || 90;
+            let totalUnits = parseFloat(document.getElementById('totalUnits').value) || 90;
             let maint = parseFloat(document.getElementById('maintPerUnit').value) || 5;
             let base = new Array(YEARS+1).fill(0);
-            let perYear = units / Math.max(1, parseInt(document.getElementById('prodEnd').value) || 40);
+            let perYear = totalUnits / Math.max(1, parseInt(document.getElementById('prodEnd').value) || 40);
             for (let t = 0; t <= YEARS; t++) {
                 if (t <= parseInt(document.getElementById('prodEnd').value)) base[t] += perYear * unit;
                 if (t >= 1) base[t] += (t * perYear) * maint;
@@ -166,15 +177,12 @@
 
         function generateRealIndex() {
             let index = new Array(YEARS+1);
-            for (let t = 0; t <= YEARS; t++) {
-                index[t] = 1 + 0.0075 * t + 0.08 * Math.sin(t * 1.3);
-            }
+            for (let t = 0; t <= YEARS; t++) index[t] = 1 + 0.0075 * t + 0.08 * Math.sin(t * 1.3);
             // Crise majeure
             let mY = parseInt(document.getElementById('majorYear').value);
             let mD = parseInt(document.getElementById('majorDur').value);
             let mA = parseFloat(document.getElementById('majorAmp').value);
             for (let t = mY; t < Math.min(YEARS+1, mY + mD); t++) index[t] *= mA;
-
             // Crises mineures
             minorCrises.forEach(c => {
                 let d = c.dur || 2;
@@ -184,7 +192,12 @@
         }
 
         // MPC Avancé avec contraintes
-        function runMPC(realIndex, base, horizon = 8, wTrack = 1.5, wEffort = 0.8, maxChange = 0.08) {
+        function runMPC(realIndex, base) {
+            let horizon = parseInt(mpcHorizon.value);
+            let wTrack = parseFloat(mpcWeightTrack.value);
+            let wEffort = parseFloat(mpcWeightEffort.value);
+            let maxChange = parseFloat(mpcMaxChange.value) / 100;
+
             let price = new Array(YEARS+1).fill(0);
             let currentMult = parseFloat(coefSlider.value) || 5.82;
             let targetTotal = parseFloat(totalSlider.value);
@@ -199,21 +212,19 @@
                 for (let test = minMult; test <= maxMult; test += 0.005) {
                     let cost = 0;
                     let predictedTotal = 0;
-
                     for (let h = 0; h < horizon && (t + h) <= YEARS; h++) {
                         let futurePrice = base[t + h] * test * Math.pow(1.008, h);
                         cost += wTrack * Math.pow(futurePrice - base[t + h] * realIndex[t + h], 2);
                         predictedTotal += futurePrice;
                     }
                     cost += wEffort * Math.pow(test - currentMult, 2);
-                    cost += Math.max(0, predictedTotal - targetTotal) * 0.001; // contrainte budget
+                    cost += Math.max(0, predictedTotal - targetTotal) * 0.001; // contrainte budget total
 
                     if (cost < bestCost) {
                         bestCost = cost;
                         bestMult = test;
                     }
                 }
-
                 price[t] = base[t] * bestMult;
                 currentMult = bestMult;
             }
@@ -230,12 +241,7 @@
             let base = getBaseCostAnnual();
             let realIndex = generateRealIndex();
             let realAnnual = base.map((v,i) => v * realIndex[i]);
-            let mpcAnnual = runMPC(realIndex, base,
-                parseInt(document.getElementById('mpcHorizon').value),
-                parseFloat(document.getElementById('mpcWeightTrack').value),
-                parseFloat(document.getElementById('mpcWeightEffort').value),
-                parseFloat(document.getElementById('mpcMaxChange').value) / 100
-            );
+            let mpcAnnual = runMPC(realIndex, base);
 
             let labels = Array.from({length: YEARS+1}, (_,i)=>i);
 
@@ -278,7 +284,7 @@
             document.getElementById('impactSummary').innerHTML = `
                 <div>💰 Coût réel : <strong class="impact-number">~1 320 M€</strong></div>
                 <div>🎯 Budget MPC : <strong class="impact-number">~1 298 M€</strong> (contraintes respectées)</div>
-                <div>🔧 MPC avec horizon + contraintes budget et lissage</div>
+                <div>🔧 MPC avancé avec contraintes budget et lissage</div>
             `;
         }
 
@@ -331,7 +337,7 @@
             if (minorCrises.length < 7) {
                 minorCrises.push({year: 12, amp: 1.5, dur: 2, type: 'raw'});
                 renderMinorCrises(); updateAll();
-            }
+            } else alert('Maximum 7 crises mineures atteint.');
         });
 
         // Listeners
