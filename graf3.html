@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saju – Simulateur V6 (Stable)</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+
+<style>
+body { background:#0b0d12; color:white; font-family:sans-serif; }
+.panel { margin-bottom:10px; }
+canvas { margin-top:20px; }
+button { cursor:pointer; }
+</style>
+</head>
+<body>
+
+<h2>Saju – Simulateur contrat long terme (V6 Stable)</h2>
+
+<!-- PRODUIT -->
+<div class="panel">
+<select id="productType">
+<option>Locomotive ferroviaire</option>
+<option>Avion civil</option>
+<option>Turbine éolienne</option>
+<option>Usine clé en main</option>
+</select>
+
+<select id="sector">
+<option>Transport & mobilité</option>
+<option>Énergie</option>
+<option>Industrie lourde</option>
+<option>Défense</option>
+</select>
+</div>
+
+<!-- SLIDERS -->
+<div class="panel">
+<label>Début production</label>
+<input type="range" id="prodStart" min="0" max="2087" value="0">
+<span id="prodStartVal"></span>
+
+<label>Fin production</label>
+<input type="range" id="prodEnd" min="1" max="2087" value="2087">
+<span id="prodEndVal"></span>
+</div>
+
+<!-- CRISE -->
+<div class="panel">
+<label>Crise début</label>
+<input type="range" id="majorStart" min="0" max="2087" value="700">
+<span id="majorStartVal"></span>
+
+<label>Durée</label>
+<input type="range" id="majorDur" min="1" max="400" value="120">
+<span id="majorDurVal"></span>
+</div>
+
+<!-- TOGGLE INDICES -->
+<button id="toggleIndices">Afficher indices</button>
+
+<!-- CHARTS -->
+<canvas id="chartMain"></canvas>
+<canvas id="chartWeekly"></canvas>
+<canvas id="chartIndices" style="display:none"></canvas>
+
+<script>
+const WPY = 52.1775;
+const TOTAL = 2087;
+
+const PRODUCT_SECTOR_MAP = {
+"Locomotive ferroviaire": "Transport & mobilité",
+"Avion civil": "Transport & mobilité",
+"Turbine éolienne": "Énergie",
+"Usine clé en main": "Industrie lourde"
+};
+
+function years(w){ return (w/WPY).toFixed(2)+" ans"; }
+
+// SYNC PRODUIT/SECTEUR
+productType.onchange = () => {
+sector.value = PRODUCT_SECTOR_MAP[productType.value];
+};
+
+// UPDATE LABELS
+function updateLabels(){
+prodStartVal.innerText = years(prodStart.value);
+prodEndVal.innerText   = years(prodEnd.value);
+majorStartVal.innerText = years(majorStart.value);
+majorDurVal.innerText   = (majorDur.value/WPY).toFixed(2)+" ans";
+}
+
+// DATA
+function genData(){
+let base=[], trend=[], noisy=[];
+
+for(let w=0; w<=TOTAL; w++){
+let t = 1 + w*0.002;
+trend.push(t);
+
+let noise = 1 + (Math.random()-0.5)*0.2;
+noisy.push(t*noise);
+
+base.push(100);
+}
+return {base,trend,noisy};
+}
+
+// CHARTS
+let chartMain, chartWeekly, chartIndices;
+
+function buildCharts(){
+const d = genData();
+
+const cum = arr => arr.reduce((a,v,i)=>(a[i]=(a[i-1]||0)+v,a),[]);
+
+chartMain = new Chart(chartMainCtx,{
+type:'line',
+data:{labels:d.base.map((_,i)=>i),
+datasets:[
+{label:'Réel',data:cum(d.noisy),borderColor:'red'},
+{label:'Budget',data:cum(d.trend),borderColor:'gold'}
+]},
+options:{animation:false}
+});
+
+chartWeekly = new Chart(chartWeeklyCtx,{
+type:'line',
+data:{labels:d.base.map((_,i)=>i),
+datasets:[
+{label:'Hebdo',data:d.noisy,borderColor:'cyan'}
+]},
+options:{animation:false}
+});
+
+chartIndices = new Chart(chartIndicesCtx,{
+type:'line',
+data:{labels:d.base.map((_,i)=>i),
+datasets:[
+{label:'Énergie',data:d.trend,borderColor:'orange'},
+{label:'Composite',data:d.trend.map(x=>x*0.9),borderColor:'green'}
+]},
+options:{
+animation:false,
+scales:{y:{type:'logarithmic'}}
+}
+});
+}
+
+// TOGGLE INDICES
+let visible=false;
+toggleIndices.onclick=()=>{
+visible=!visible;
+chartIndices.canvas.style.display = visible?'block':'none';
+toggleIndices.innerText = visible?'Masquer indices':'Afficher indices';
+};
+
+// INIT
+const chartMainCtx = document.getElementById('chartMain').getContext('2d');
+const chartWeeklyCtx = document.getElementById('chartWeekly').getContext('2d');
+const chartIndicesCtx = document.getElementById('chartIndices').getContext('2d');
+
+updateLabels();
+buildCharts();
+
+// EVENTS
+document.querySelectorAll('input').forEach(el=>{
+el.oninput=()=>{
+updateLabels();
+chartMain.destroy();
+chartWeekly.destroy();
+chartIndices.destroy();
+buildCharts();
+};
+});
+
+</script>
+</body>
+</html>
