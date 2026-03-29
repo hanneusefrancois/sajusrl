@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saju – Simulateur Expert | Granularité mensuelle, zoom</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1117;
+            color: #ffffff;
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #0f1117;
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 2.5rem;
+        }
+        .s-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #14b8a6;
+        }
+        .s-title {
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 14px;
+        }
+        .s-title em { font-style: italic; color: #d97706; }
+        .s-sub {
+            font-size: clamp(1rem, 1.5vw, 1.1rem);
+            font-weight: 300;
+            color: rgba(255,255,255,0.72);
+            max-width: 800px;
+            line-height: 1.85;
+            margin-bottom: 32px;
+        }
+        .simu-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .simu-controls {
+            flex: 1.2;
+            min-width: 320px;
+            background: #171b24;
+            border-radius: 1.2rem;
+            padding: 1.8rem;
+            border: 1px solid rgba(255,255,255,0.13);
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+        .simu-chart {
+            flex: 2.8;
+            min-width: 550px;
+            background: #171b24;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.13);
+            position: relative;
+        }
+        .simu-chart canvas {
+            max-width: 100% !important;
+            height: auto !important;
+            display: block;
+        }
+        .param-card {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1.2rem;
+        }
+        .param-card:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .param-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.88);
+        }
+        .param-label i { color: #d97706; }
+        input[type="range"], input[type="number"], select {
+            width: 100%;
+            accent-color: #d97706;
+            margin: 6px 0;
+            background: #1e2330;
+            border: 1px solid #2c2f3a;
+            border-radius: 8px;
+            padding: 6px;
+            color: white;
+        }
+        .param-value { font-size: 0.9rem; font-weight: 500; background: #1e2330; display: inline-block; padding: 0.2rem 0.8rem; border-radius: 2rem; margin-top: 6px; }
+        .param-hint { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
+        .crisis-group {
+            background: rgba(0,0,0,0.3);
+            border-radius: 0.8rem;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .crisis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .impact-summary {
+            background: #1e2330;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1.2rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .impact-number { font-size: 1.4rem; font-weight: 700; color: #d97706; }
+        .chart-legend-custom {
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.7rem;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 3px;
+            vertical-align: middle;
+            margin-right: 4px;
+            border-radius: 2px;
+        }
+        .simu-footnote {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1.5rem;
+            margin-top: 1rem;
+        }
+        button {
+            background: #d97706;
+            border: none;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { background: #f59e0b; }
+        .reset-zoom {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #1e2330;
+            color: #fff;
+            border: 1px solid #d97706;
+            padding: 4px 12px;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .mode-selector { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        .mode-btn { background: #2d3748; color: white; padding: 6px 12px; border-radius: 2rem; cursor: pointer; }
+        .mode-btn.active { background: #d97706; color: black; }
+        .inline-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            z-index: 20;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .loader i { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 1000px) {
+            .simu-controls, .simu-chart { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="s-tag">Simulateur Expert Saju – Granularité mensuelle</div>
+    <h2 class="s-title">Calibrez votre contrat : <em>coefficient, montant total, régulation avancée</em></h2>
+    <p class="s-sub">Indices historiques réels, bruit mensuel (style bourse), crises paramétrables en mois, zoom jusqu’au mois. Référence : 1er octobre 2026.</p>
+
+    <div class="simu-grid">
+        <div class="simu-controls">
+            <!-- Produit & secteur -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-industry"></i> Produit & secteur</div>
+                <select id="productType">
+                    <option value="locomotive">Locomotive ferroviaire</option>
+                    <option value="avion">Avion civil</option>
+                    <option value="turbine">Turbine éolienne</option>
+                    <option value="usine">Usine clé en main</option>
+                </select>
+                <select id="sector">
+                    <option value="transport">Transport & mobilité</option>
+                    <option value="energie">Énergie</option>
+                    <option value="industrie">Industrie lourde</option>
+                    <option value="defense">Défense</option>
+                </select>
+            </div>
+
+            <!-- Production / Maintenance (en années, converties en mois) -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-cubes"></i> Production</div>
+                <div class="inline-group">
+                    <div><label>Prix unitaire (M€)</label><input type="number" id="unitPrice" value="10" step="0.5" style="width:80px"></div>
+                    <div><label>Nb unités total</label><input type="number" id="totalUnits" value="90" step="1" style="width:70px"></div>
+                    <div><label>Début prod (année)</label><input type="number" id="prodStart" value="0" step="0.1" style="width:80px"></div>
+                    <div><label>Fin prod (année)</label><input type="number" id="prodEnd" value="40" step="0.1" style="width:80px"></div>
+                </div>
+            </div>
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-tools"></i> Maintenance</div>
+                <div class="inline-group">
+                    <div><label>Coût annuel / unité (M€)</label><input type="number" id="maintPerUnit" value="5" step="0.1" style="width:80px"></div>
+                    <div><label>Début maint (année)</label><input type="number" id="maintStart" value="1" step="0.1" style="width:80px"></div>
+                    <div><label>Fin maint (année)</label><input type="number" id="maintEnd" value="40" step="0.1" style="width:80px"></div>
+                </div>
+            </div>
+
+            <!-- Pondérations -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Pondérations indices (somme = 1)</div>
+                <div class="inline-group">
+                    <div><label>Énergie</label><input type="number" id="wE" value="0.4" step="0.05" style="width:70px"></div>
+                    <div><label>Salaires</label><input type="number" id="wS" value="0.3" step="0.05" style="width:70px"></div>
+                    <div><label>Matières</label><input type="number" id="wM" value="0.3" step="0.05" style="width:70px"></div>
+                </div>
+            </div>
+
+            <!-- Coefficient & Total (liés) -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-calculator"></i> Coefficient multiplicateur (fin / début)</div>
+                <input type="range" id="coefSlider" min="1.0" max="10.0" step="0.05" value="5.82">
+                <div class="param-value"><span id="coefValue">5.82</span>×</div>
+            </div>
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-euro-sign"></i> Montant total cible (M€)</div>
+                <input type="range" id="totalAmount" min="500" max="5000" step="10" value="1300">
+                <div class="param-value"><span id="totalAmountVal">1.30 B€</span></div>
+            </div>
+
+            <!-- Mode de régulation -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-brain"></i> Mode de régulation</div>
+                <div class="mode-selector">
+                    <div id="modePID" class="mode-btn active">PID classique</div>
+                    <div id="modeMPC" class="mode-btn">MPC avancé</div>
+                </div>
+                <div id="pidControls" style="display:block">
+                    <div class="param-label"><i class="fas fa-microchip"></i> Régulation PID (optimisée Saju)</div>
+                    <div class="inline-group">
+                        <div><label>Kp</label><input type="range" id="kp" min="0" max="1.2" step="0.01" value="0.35"><span id="kpVal">0.35</span></div>
+                        <div><label>Ki</label><input type="range" id="ki" min="0" max="0.3" step="0.01" value="0.09"><span id="kiVal">0.09</span></div>
+                        <div><label>Kd</label><input type="range" id="kd" min="0" max="0.3" step="0.01" value="0.12"><span id="kdVal">0.12</span></div>
+                    </div>
+                </div>
+                <div id="mpcControls" style="display:none">
+                    <div class="param-label"><i class="fas fa-chart-line"></i> Paramètres MPC</div>
+                    <div>Horizon prédiction (mois) : <input type="range" id="mpcHorizon" min="1" max="36" step="1" value="12"> <span id="mpcHorizonVal">12</span> mois</div>
+                    <div>Poids tracking : <input type="range" id="mpcWeightTrack" min="0.5" max="3" step="0.1" value="1.5"> <span id="mpcWeightTrackVal">1.5</span></div>
+                    <div>Poids effort : <input type="range" id="mpcWeightEffort" min="0" max="2" step="0.1" value="0.8"> <span id="mpcWeightEffortVal">0.8</span></div>
+                    <div>Variation max par an (%) : <input type="range" id="mpcMaxChange" min="1" max="15" step="1" value="8"> <span id="mpcMaxChangeVal">8</span>%</div>
+                </div>
+            </div>
+
+            <!-- Concurrents (basés sur le coût réel) -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Positionnement concurrents (% d'écart)</div>
+                <div>Concurrent A (sous‑éval.) : <input type="range" id="compA" min="-30" max="0" step="1" value="-15"> <span id="compAVal">-15</span> %</div>
+                <div>Concurrent B (sur‑éval.) : <input type="range" id="compB" min="0" max="40" step="1" value="25"> <span id="compBVal">+25</span> %</div>
+            </div>
+
+            <!-- Volatilité (bruit haute fréquence) -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Volatilité (style bourse) 0=faible, 5=très élevée</div>
+                <input type="range" id="volatility" min="0" max="5.0" step="0.1" value="2.5">
+                <span id="volatilityVal">2.5</span>
+            </div>
+
+            <!-- Crise majeure géopolitique (en mois) -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-skull-crosswalk"></i> 🌍 Crise majeure géopolitique</div>
+                <div>Année début : <input type="range" id="majorYear" min="0" max="40" step="0.1" value="15"> <span id="majorYearVal">15.0</span> ans</div>
+                <div>Durée : <input type="range" id="majorDur" min="0.1" max="5" step="0.1" value="1.5"> <span id="majorDurVal">1.5</span> ans</div>
+                <div>Amplitude : <input type="range" id="majorAmp" min="1.5" max="4.0" step="0.1" value="2.5"> <span id="majorAmpVal">2.5</span>×</div>
+            </div>
+
+            <!-- Crise obsolescence (en mois) -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-microchip"></i> Crise obsolescence (maintenance)</div>
+                <div>Année début : <input type="range" id="obsYear" min="0" max="40" step="0.1" value="22"> <span id="obsYearVal">22.0</span> ans</div>
+                <div>Surcoût : <input type="range" id="obsAmp" min="1.0" max="3.0" step="0.05" value="1.8"> <span id="obsAmpVal">1.8</span>×</div>
+            </div>
+
+            <!-- Économies d’échelle (baisse de coût) -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-handshake"></i> 📉 Économies d’échelle / Synergie projet</div>
+                <div>Année début : <input type="range" id="scaleYear" min="0" max="40" step="0.1" value="12"> <span id="scaleYearVal">12.0</span> ans</div>
+                <div>Durée : <input type="range" id="scaleDur" min="0.1" max="8" step="0.1" value="4"> <span id="scaleDurVal">4.0</span> ans</div>
+                <div>Économie : <input type="range" id="scaleAmp" min="0.70" max="0.95" step="0.01" value="0.85"> <span id="scaleAmpVal">0.85</span>× (baisse)</div>
+            </div>
+
+            <!-- Crises mineures (jusqu'à 7) -->
+            <div class="crisis-group">
+                <div class="crisis-header"><span><i class="fas fa-waveform"></i> Crises mineures / Coûts supplémentaires</span><button id="addMinor">+ Ajouter</button></div>
+                <div id="minorCrisesContainer"></div>
+            </div>
+
+            <!-- Gain technologique -->
+            <div class="param-card">
+                <div class="param-label"><i class="fas fa-chart-line"></i> Gain technologique (productivité)</div>
+                <div>Année début : <input type="range" id="techYear" min="0" max="40" step="0.1" value="20"> <span id="techYearVal">20.0</span> ans</div>
+                <div>Réduction annuelle : <input type="range" id="techAmp" min="0" max="0.03" step="0.001" value="0.015"> <span id="techAmpVal">1.5</span> %/an</div>
+            </div>
+
+            <div class="impact-summary" id="impactSummary"></div>
+        </div>
+
+        <div class="simu-chart" id="chartContainer">
+            <button id="resetZoomBtn" class="reset-zoom"><i class="fas fa-undo"></i> Reset Zoom</button>
+            <canvas id="simuChart" width="700" height="450" style="width:100%; height:auto;"></canvas>
+            <div class="chart-legend-custom">
+                <span><span class="legend-color" style="background:#ef4444;"></span> Coût réel cumulé</span>
+                <span><span class="legend-color" style="background:#fbbf24;"></span> Budget cible cumulé</span>
+                <span><span class="legend-color" style="background:#6b7280;"></span> Concurrent A</span>
+                <span><span class="legend-color" style="background:#f97316;"></span> Concurrent B</span>
+                <span><span class="legend-color" style="background:#10b981;"></span> Saju (régulation)</span>
+            </div>
+        </div>
+    </div>
+    <div class="simu-footnote">
+        📊 Simulation sur 40 ans (480 mois) depuis le 1er octobre 2026. Tous les événements sont paramétrables en années (précision 0.1 an ≈ 1.2 mois). Zoom interactif (roulette, glisser) sur l’axe temporel.
+    </div>
+</div>
+
+<script>
+    (function(){
+        // Paramètres temporels
+        const START_DATE = new Date(2026, 9, 1); // 1er octobre 2026
+        const YEARS = 40;
+        const MONTHS = YEARS * 12;
+        const MONTHS_PER_YEAR = 12;
+
+        let chart;
+        let updating = false;
+        let minorCrises = [];
+        let currentMode = 'PID';
+        let isLoading = false;
+
+        // DOM
+        const coefSlider = document.getElementById('coefSlider');
+        const coefValue = document.getElementById('coefValue');
+        const totalSlider = document.getElementById('totalAmount');
+        const totalVal = document.getElementById('totalAmountVal');
+        const modePIDBtn = document.getElementById('modePID');
+        const modeMPCBtn = document.getElementById('modeMPC');
+        const pidControls = document.getElementById('pidControls');
+        const mpcControls = document.getElementById('mpcControls');
+        const unitPriceInput = document.getElementById('unitPrice');
+        const totalUnitsInput = document.getElementById('totalUnits');
+        const prodStartInput = document.getElementById('prodStart');
+        const prodEndInput = document.getElementById('prodEnd');
+        const maintPerUnitInput = document.getElementById('maintPerUnit');
+        const maintStartInput = document.getElementById('maintStart');
+        const maintEndInput = document.getElementById('maintEnd');
+        const wE = document.getElementById('wE');
+        const wS = document.getElementById('wS');
+        const wM = document.getElementById('wM');
+        const majorYear = document.getElementById('majorYear');
+        const majorYearVal = document.getElementById('majorYearVal');
+        const majorDur = document.getElementById('majorDur');
+        const majorDurVal = document.getElementById('majorDurVal');
+        const majorAmp = document.getElementById('majorAmp');
+        const majorAmpVal = document.getElementById('majorAmpVal');
+        const obsYear = document.getElementById('obsYear');
+        const obsYearVal = document.getElementById('obsYearVal');
+        const obsAmp = document.getElementById('obsAmp');
+        const obsAmpVal = document.getElementById('obsAmpVal');
+        const scaleYear = document.getElementById('scaleYear');
+        const scaleYearVal = document.getElementById('scaleYearVal');
+        const scaleDur = document.getElementById('scaleDur');
+        const scaleDurVal = document.getElementById('scaleDurVal');
+        const scaleAmp = document.getElementById('scaleAmp');
+        const scaleAmpVal = document.getElementById('scaleAmpVal');
+        const techYear = document.getElementById('techYear');
+        const techYearVal = document.getElementById('techYearVal');
+        const techAmp = document.getElementById('techAmp');
+        const techAmpVal = document.getElementById('techAmpVal');
+        const compA = document.getElementById('compA');
+        const compAVal = document.getElementById('compAVal');
+        const compB = document.getElementById('compB');
+        const compBVal = document.getElementById('compBVal');
+        const volatilitySlider = document.getElementById('volatility');
+        const volatilityVal = document.getElementById('volatilityVal');
+        const kpSlider = document.getElementById('kp');
+        const kiSlider = document.getElementById('ki');
+        const kdSlider = document.getElementById('kd');
+        const kpVal = document.getElementById('kpVal');
+        const kiVal = document.getElementById('kiVal');
+        const kdVal = document.getElementById('kdVal');
+        const mpcHorizon = document.getElementById('mpcHorizon');
+        const mpcHorizonVal = document.getElementById('mpcHorizonVal');
+        const mpcWeightTrack = document.getElementById('mpcWeightTrack');
+        const mpcWeightTrackVal = document.getElementById('mpcWeightTrackVal');
+        const mpcWeightEffort = document.getElementById('mpcWeightEffort');
+        const mpcWeightEffortVal = document.getElementById('mpcWeightEffortVal');
+        const mpcMaxChange = document.getElementById('mpcMaxChange');
+        const mpcMaxChangeVal = document.getElementById('mpcMaxChangeVal');
+        const minorContainer = document.getElementById('minorCrisesContainer');
+
+        // Conversion années -> mois
+        function yearsToMonths(y) { return y * MONTHS_PER_YEAR; }
+
+        // Production et maintenance (en mois)
+        function getUnitsPerMonth() {
+            let total = parseFloat(totalUnitsInput.value) || 0;
+            let startYear = parseFloat(prodStartInput.value);
+            let endYear = parseFloat(prodEndInput.value);
+            let startMonth = yearsToMonths(startYear);
+            let endMonth = yearsToMonths(endYear);
+            let units = new Array(MONTHS+1).fill(0);
+            if (startMonth >= endMonth) { units[Math.min(Math.floor(startMonth), MONTHS)] = total; return units; }
+            let perMonth = total / (endMonth - startMonth);
+            for (let m = Math.floor(startMonth); m < Math.floor(endMonth) && m <= MONTHS; m++) {
+                units[m] = perMonth;
+            }
+            return units;
+        }
+
+        function getUnitsInService() {
+            let perMonth = getUnitsPerMonth();
+            let service = new Array(MONTHS+1).fill(0);
+            let cum = 0;
+            for (let m = 0; m <= MONTHS; m++) { cum += perMonth[m]; service[m] = cum; }
+            return service;
+        }
+
+        function getBaseCostMonthly() {
+            let unit = parseFloat(unitPriceInput.value) || 0;
+            let perMonth = getUnitsPerMonth();
+            let service = getUnitsInService();
+            let maint = parseFloat(maintPerUnitInput.value) || 0;
+            let startMaintYear = parseFloat(maintStartInput.value);
+            let endMaintYear = parseFloat(maintEndInput.value);
+            let startMonth = yearsToMonths(startMaintYear);
+            let endMonth = yearsToMonths(endMaintYear);
+            let base = new Array(MONTHS+1).fill(0);
+            for (let m = 0; m <= MONTHS; m++) {
+                base[m] += perMonth[m] * unit;
+                if (m >= startMonth && m <= endMonth) base[m] += service[m] * maint / MONTHS_PER_YEAR; // annual cost prorated monthly
+            }
+            return base;
+        }
+
+        // Indices historiques annuels de base (référence)
+        const historicalBaseAnnual = {
+            E: [1.02,1.03,1.05,1.08,1.12,1.18,1.25,1.35,1.28,1.15,1.10,1.22,1.45,1.38,1.20,1.05,1.08,1.15,1.28,1.35,1.42,1.55,1.68,1.75,1.65,1.48,1.55,1.82,2.10,2.35,1.95,1.75,1.85,2.05,2.45,2.80,2.60,2.40,2.55,2.70],
+            S: [1.025,1.028,1.030,1.032,1.035,1.038,1.040,1.042,1.045,1.048,1.050,1.055,1.060,1.065,1.070,1.072,1.075,1.078,1.082,1.085,1.090,1.095,1.105,1.115,1.120,1.125,1.130,1.140,1.155,1.170,1.185,1.195,1.205,1.220,1.235,1.250,1.265,1.280,1.295,1.310],
+            M: [1.015,1.018,1.022,1.028,1.035,1.045,1.055,1.080,1.095,1.085,1.065,1.075,1.120,1.145,1.130,1.095,1.105,1.125,1.150,1.165,1.180,1.210,1.240,1.255,1.230,1.210,1.225,1.260,1.290,1.320,1.280,1.255,1.270,1.295,1.340,1.380,1.355,1.330,1.345,1.365]
+        };
+
+        function generateMonthlyIndices() {
+            // Interpolation linéaire entre les années
+            let E = new Array(MONTHS+1), S = new Array(MONTHS+1), M = new Array(MONTHS+1);
+            for (let m = 0; m <= MONTHS; m++) {
+                let year = m / MONTHS_PER_YEAR;
+                let y0 = Math.floor(year);
+                let y1 = Math.min(y0+1, YEARS);
+                let frac = year - y0;
+                let e0 = historicalBaseAnnual.E[y0] || 1;
+                let e1 = historicalBaseAnnual.E[y1] || 1;
+                let s0 = historicalBaseAnnual.S[y0] || 1;
+                let s1 = historicalBaseAnnual.S[y1] || 1;
+                let m0 = historicalBaseAnnual.M[y0] || 1;
+                let m1 = historicalBaseAnnual.M[y1] || 1;
+                E[m] = (e0 * (1-frac) + e1 * frac) * (1 + 0.0075 * year);
+                S[m] = (s0 * (1-frac) + s1 * frac) * (1 + 0.0075 * year);
+                M[m] = (m0 * (1-frac) + m1 * frac) * (1 + 0.0075 * year);
+            }
+
+            // Volatilité (random walk mensuel)
+            let vol = parseFloat(volatilitySlider.value);
+            if (vol > 0) {
+                let stepE = 0, stepS = 0, stepM = 0;
+                for (let m = 1; m <= MONTHS; m++) {
+                    stepE += (Math.random() - 0.5) * vol * 0.025;
+                    stepS += (Math.random() - 0.5) * vol * 0.02;
+                    stepM += (Math.random() - 0.5) * vol * 0.03;
+                    let factorE = Math.exp(stepE);
+                    let factorS = Math.exp(stepS);
+                    let factorM = Math.exp(stepM);
+                    E[m] *= factorE;
+                    S[m] *= factorS;
+                    M[m] *= factorM;
+                }
+            }
+
+            // Crise majeure
+            let mYear = parseFloat(majorYear.value);
+            let mDur = parseFloat(majorDur.value);
+            let mAmp = parseFloat(majorAmp.value);
+            let mStartMonth = yearsToMonths(mYear);
+            let mEndMonth = yearsToMonths(mYear + mDur);
+            for (let m = Math.floor(mStartMonth); m <= Math.min(MONTHS, Math.floor(mEndMonth)); m++) {
+                E[m] *= mAmp; S[m] *= mAmp; M[m] *= mAmp;
+            }
+
+            // Crises mineures
+            minorCrises.forEach(c => {
+                let start = yearsToMonths(c.year);
+                let end = yearsToMonths(c.year + c.dur);
+                for (let m = Math.floor(start); m <= Math.min(MONTHS, Math.floor(end)); m++) {
+                    E[m] *= c.amp; S[m] *= c.amp; M[m] *= c.amp;
+                }
+            });
+
+            // Obsolescence (permanent à partir d'une année)
+            let oYear = parseFloat(obsYear.value);
+            let oAmp = parseFloat(obsAmp.value);
+            let oStartMonth = yearsToMonths(oYear);
+            for (let m = Math.floor(oStartMonth); m <= MONTHS; m++) {
+                E[m] *= oAmp; S[m] *= oAmp; M[m] *= oAmp;
+            }
+
+            // Économies d'échelle (réduction temporaire)
+            let scYear = parseFloat(scaleYear.value);
+            let scDur = parseFloat(scaleDur.value);
+            let scAmp = parseFloat(scaleAmp.value);
+            let scStart = yearsToMonths(scYear);
+            let scEnd = yearsToMonths(scYear + scDur);
+            for (let m = Math.floor(scStart); m <= Math.min(MONTHS, Math.floor(scEnd)); m++) {
+                E[m] *= scAmp; S[m] *= scAmp; M[m] *= scAmp;
+            }
+
+            return {E, S, M};
+        }
+
+        function computeRealCostIndex(E, S, M) {
+            let we = parseFloat(wE.value)||0, ws = parseFloat(wS.value)||0, wm = parseFloat(wM.value)||0;
+            let sum = we + ws + wm || 1;
+            let idx = new Array(MONTHS+1);
+            for (let m=0; m<=MONTHS; m++) {
+                idx[m] = (we*E[m] + ws*S[m] + wm*M[m]) / sum;
+            }
+            return idx;
+        }
+
+        function applyTech(index) {
+            let tYear = parseFloat(techYear.value);
+            let tRed = parseFloat(techAmp.value);
+            let startMonth = yearsToMonths(tYear);
+            for (let m = 0; m <= MONTHS; m++) {
+                if (m >= startMonth) {
+                    let yearsAfter = (m - startMonth) / MONTHS_PER_YEAR;
+                    let factor = Math.max(1 - tRed * yearsAfter, 0.6);
+                    index[m] *= factor;
+                }
+                if (index[m] < 0.05) index[m] = 0.05;
+            }
+            return index;
+        }
+
+        function generateRealIndex() {
+            let {E,S,M} = generateMonthlyIndices();
+            let idx = computeRealCostIndex(E,S,M);
+            return applyTech(idx);
+        }
+
+        function sumPrice(p) {
+            let s = 0;
+            for (let i=0; i<=MONTHS; i++) s += p[i];
+            return s;
+        }
+
+        function getBudgetMonthlyFromMultiplier(multiplier, base) {
+            // On souhaite que le prix final (mois MONTHS) soit multiplier * prix initial
+            let finalFactor = multiplier * base[0] / base[MONTHS];
+            let g = Math.pow(finalFactor, 1/MONTHS);
+            let budget = new Array(MONTHS+1);
+            budget[0] = base[0];
+            for (let m=1; m<=MONTHS; m++) {
+                budget[m] = budget[m-1] * g;
+            }
+            return budget;
+        }
+
+        // PID mensuel
+        function priceWithPID(index, Kp, Ki, Kd) {
+            let smoothed = [...index];
+            for (let m=1; m<=MONTHS; m++) smoothed[m] = 0.2*index[m] + 0.8*smoothed[m-1];
+            let price = new Array(MONTHS+1);
+            let err=0, integral=0, prev=0;
+            for (let m=0; m<=MONTHS; m++) {
+                err = smoothed[m] - index[m];
+                integral += err;
+                let deriv = err - prev;
+                price[m] = index[m] + Kp*err + Ki*integral + Kd*deriv;
+                if (price[m] < 0.05) price[m] = 0.05;
+                prev = err;
+            }
+            let sumI = sumPrice(index), sumP = sumPrice(price);
+            if (Math.abs(sumP - sumI) > 1e-6) {
+                let scale = sumI / sumP;
+                for (let m=0; m<=MONTHS; m++) price[m] *= scale;
+            }
+            return price;
+        }
+
+        // MPC mensuel
+        function priceWithMPC(index, targetTotal) {
+            let horizon = parseInt(mpcHorizon.value);
+            let wTrack = parseFloat(mpcWeightTrack.value);
+            let wEffort = parseFloat(mpcWeightEffort.value);
+            let maxChange = parseFloat(mpcMaxChange.value) / 100;
+            let price = new Array(MONTHS+1);
+            let currentMult = parseFloat(coefSlider.value);
+            let baseMonthly = getBaseCostMonthly();
+
+            for (let m = 0; m <= MONTHS; m++) {
+                let bestMult = currentMult;
+                let bestCost = Infinity;
+                let minMult = Math.max(0.5, currentMult * (1 - maxChange));
+                let maxMult = currentMult * (1 + maxChange);
+                for (let test = minMult; test <= maxMult; test += 0.001) {
+                    let cost = 0;
+                    let predictedTotal = 0;
+                    let steps = Math.min(horizon, MONTHS - m);
+                    for (let h = 0; h < steps; h++) {
+                        let futureIdx = index[m + h] * (1 + 0.0075 * h / MONTHS_PER_YEAR);
+                        let futurePrice = baseMonthly[m + h] * Math.pow(test, (m + h) / MONTHS) * futureIdx;
+                        let error = futurePrice - (futureIdx * baseMonthly[m + h]);
+                        cost += wTrack * error * error;
+                        predictedTotal += futurePrice;
+                    }
+                    cost += wEffort * Math.pow(test - currentMult, 2);
+                    cost += Math.max(0, predictedTotal - targetTotal) * 0.001;
+                    if (cost < bestCost) {
+                        bestCost = cost;
+                        bestMult = test;
+                    }
+                }
+                price[m] = baseMonthly[m] * Math.pow(bestMult, m / MONTHS) * index[m];
+                currentMult = bestMult;
+            }
+            return price;
+        }
+
+        // Événements pour bandes (annotations)
+        function getEvents() {
+            let ev = [];
+            // Crise majeure
+            let mYear = parseFloat(majorYear.value);
+            let mDur = parseFloat(majorDur.value);
+            ev.push({
+                start: yearsToMonths(mYear),
+                end: yearsToMonths(mYear + mDur),
+                color: 'rgba(239,68,68,0.22)',
+                emoji: '🌍',
+                label: 'Crise majeure'
+            });
+            // Obsolescence
+            let oYear = parseFloat(obsYear.value);
+            ev.push({
+                start: yearsToMonths(oYear),
+                end: MONTHS,
+                color: 'rgba(245,158,11,0.20)',
+                emoji: '🛠️',
+                label: 'Obsolescence'
+            });
+            // Économies d'échelle
+            let scYear = parseFloat(scaleYear.value);
+            let scDur = parseFloat(scaleDur.value);
+            ev.push({
+                start: yearsToMonths(scYear),
+                end: yearsToMonths(scYear + scDur),
+                color: 'rgba(16,185,129,0.20)',
+                emoji: '📉',
+                label: 'Économies'
+            });
+            // Crises mineures
+            minorCrises.forEach(c => {
+                let emoji = c.type === 'monetary' ? '💰' : c.type === 'supplier' ? '🏭' : c.type === 'raw' ? '⛏️' : c.type === 'logistics' ? '🚚' : c.type === 'competition' ? '⚔️' : '📉';
+                ev.push({
+                    start: yearsToMonths(c.year),
+                    end: yearsToMonths(c.year + (c.dur||2)),
+                    color: 'rgba(234,179,8,0.20)',
+                    emoji: emoji,
+                    label: c.typeLabel || c.type
+                });
+            });
+            return ev;
+        }
+
+        function createAnnotations(events) {
+            let ann = {};
+            events.forEach((ev, i) => {
+                ann[`ev${i}`] = {
+                    type: 'box',
+                    xMin: new Date(START_DATE.getTime() + ev.start * (86400000 * 365.25 / 12)),
+                    xMax: new Date(START_DATE.getTime() + ev.end * (86400000 * 365.25 / 12)),
+                    backgroundColor: ev.color,
+                    borderColor: '#ffffff',
+                    borderWidth: 1,
+                    label: {
+                        content: `${ev.emoji} ${ev.label}`,
+                        enabled: true,
+                        position: 'top',
+                        color: '#ffffff',
+                        font: { size: 10, weight: 'bold' }
+                    }
+                };
+            });
+            return ann;
+        }
+
+        function cumulative(ann) {
+            let cum = new Array(ann.length);
+            cum[0] = ann[0];
+            for (let i=1; i<ann.length; i++) cum[i] = cum[i-1] + ann[i];
+            return cum;
+        }
+
+        // Mise à jour du coefficient et du total (liés)
+        function updateFromCoef() {
+            if (updating) return;
+            updating = true;
+            let coef = parseFloat(coefSlider.value);
+            coefValue.innerText = coef.toFixed(2);
+            let base = getBaseCostMonthly();
+            let budget = getBudgetMonthlyFromMultiplier(coef, base);
+            let total = sumPrice(budget);
+            totalSlider.value = Math.round(total);
+            totalVal.innerText = total >= 1000 ? (total/1000).toFixed(2) + ' B€' : Math.round(total) + ' M€';
+            updating = false;
+        }
+
+        function updateFromTotal() {
+            if (updating) return;
+            updating = true;
+            let target = parseFloat(totalSlider.value);
+            totalVal.innerText = target >= 1000 ? (target/1000).toFixed(2) + ' B€' : Math.round(target) + ' M€';
+            let base = getBaseCostMonthly();
+            let low = 1.0, high = 15.0;
+            for (let i=0; i<40; i++) {
+                let mid = (low+high)/2;
+                if (sumPrice(getBudgetMonthlyFromMultiplier(mid, base)) < target) low = mid;
+                else high = mid;
+            }
+            let coef = (low+high)/2;
+            coefSlider.value = coef;
+            coefValue.innerText = coef.toFixed(2);
+            updating = false;
+        }
+
+        // Affichage avec chargement
+        function updateAllWithLoader() {
+            if (isLoading) return;
+            isLoading = true;
+            const loader = document.createElement('div');
+            loader.className = 'loader';
+            loader.innerHTML = '<i class="fas fa-spinner"></i> Calcul en cours...';
+            document.getElementById('chartContainer').appendChild(loader);
+            setTimeout(() => {
+                updateAll();
+                loader.remove();
+                isLoading = false;
+            }, 50); // permet au DOM de se mettre à jour
+        }
+
+        function updateAll() {
+            updateFromCoef(); // assure cohérence
+
+            let budgetCoef = parseFloat(coefSlider.value);
+            let base = getBaseCostMonthly();
+            let realIndex = generateRealIndex();
+
+            let realMonthly = base.map((v,i) => v * realIndex[i]);
+            let budgetMonthly = getBudgetMonthlyFromMultiplier(budgetCoef, base);
+
+            // Concurrents
+            let compA_factor = 1 + parseFloat(compA.value)/100;
+            let compB_factor = 1 + parseFloat(compB.value)/100;
+            let compAMonthly = realMonthly.map(v => v * compA_factor);
+            let compBMonthly = realMonthly.map(v => v * compB_factor);
+
+            // Régulation
+            let regMonthly;
+            if (currentMode === 'PID') {
+                let Kp = parseFloat(kpSlider.value), Ki = parseFloat(kiSlider.value), Kd = parseFloat(kdSlider.value);
+                kpVal.innerText = Kp.toFixed(2); kiVal.innerText = Ki.toFixed(2); kdVal.innerText = Kd.toFixed(2);
+                let pidIndex = priceWithPID(realIndex, Kp, Ki, Kd);
+                regMonthly = base.map((v,i) => v * pidIndex[i]);
+            } else {
+                let targetTotal = parseFloat(totalSlider.value);
+                regMonthly = priceWithMPC(realIndex, targetTotal);
+            }
+
+            let realCum = cumulative(realMonthly);
+            let budgCum = cumulative(budgetMonthly);
+            let compACum = cumulative(compAMonthly);
+            let compBCum = cumulative(compBMonthly);
+            let regCum = cumulative(regMonthly);
+
+            let rTot = realCum[MONTHS], bTot = budgCum[MONTHS], caTot = compACum[MONTHS], cbTot = compBCum[MONTHS], pTot = regCum[MONTHS];
+            let dB = (bTot - rTot)/rTot*100;
+            let dP = (pTot - rTot)/rTot*100;
+
+            document.getElementById('impactSummary').innerHTML = `
+                <div>💰 Réel : <strong class="impact-number">${rTot >= 1000 ? (rTot/1000).toFixed(2)+' B€' : Math.round(rTot)+' M€'}</strong></div>
+                <div>🎯 Budget (×${budgetCoef.toFixed(2)}) : <strong class="impact-number">${bTot >= 1000 ? (bTot/1000).toFixed(2)+' B€' : Math.round(bTot)+' M€'}</strong> → ${dB.toFixed(1)}%</div>
+                <div>⚠️ Conc. A (${compA_factor*100-100}%) : ${caTot >= 1000 ? (caTot/1000).toFixed(2)+' B€' : Math.round(caTot)+' M€'} | Conc. B (+${compB_factor*100-100}%) : ${cbTot >= 1000 ? (cbTot/1000).toFixed(2)+' B€' : Math.round(cbTot)+' M€'}</div>
+                <div>🔧 Saju (${currentMode}) : <strong class="impact-number">${pTot >= 1000 ? (pTot/1000).toFixed(2)+' B€' : Math.round(pTot)+' M€'}</strong> → ${dP.toFixed(1)}%</div>
+            `;
+
+            // Labels de temps (dates)
+            let labels = [];
+            let step = Math.max(1, Math.floor(MONTHS / 400)); // échantillonnage pour performance (max 400 points)
+            let sampledReal = [], sampledBudget = [], sampledCompA = [], sampledCompB = [], sampledReg = [];
+            let sampledTimes = [];
+            for (let m=0; m<=MONTHS; m+=step) {
+                let date = new Date(START_DATE.getTime() + m * (86400000 * 365.25 / 12));
+                sampledTimes.push(date);
+                sampledReal.push(realCum[m]);
+                sampledBudget.push(budgCum[m]);
+                sampledCompA.push(compACum[m]);
+                sampledCompB.push(compBCum[m]);
+                sampledReg.push(regCum[m]);
+            }
+
+            let annotations = createAnnotations(getEvents());
+
+            if (chart) {
+                chart.data.labels = sampledTimes;
+                chart.data.datasets[0].data = sampledReal;
+                chart.data.datasets[1].data = sampledBudget;
+                chart.data.datasets[2].data = sampledCompA;
+                chart.data.datasets[3].data = sampledCompB;
+                chart.data.datasets[4].data = sampledReg;
+                chart.options.plugins.annotation.annotations = annotations;
+                chart.update();
+            } else {
+                let ctx = document.getElementById('simuChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: sampledTimes,
+                        datasets: [
+                            { label: 'Réel', data: sampledReal, borderColor: '#ef4444', borderWidth: 2, tension: 0, pointRadius: 0, fill: false },
+                            { label: 'Budget', data: sampledBudget, borderColor: '#fbbf24', borderWidth: 2.5, tension: 0, pointRadius: 0, fill: false },
+                            { label: 'Conc. A', data: sampledCompA, borderColor: '#6b7280', borderWidth: 2, borderDash: [5,3], tension: 0, pointRadius: 0, fill: false },
+                            { label: 'Conc. B', data: sampledCompB, borderColor: '#f97316', borderWidth: 2, borderDash: [5,3], tension: 0, pointRadius: 0, fill: false },
+                            { label: 'Saju', data: sampledReg, borderColor: '#10b981', borderWidth: 3, tension: 0.1, pointRadius: 0, fill: false }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            tooltip: { mode: 'index', intersect: false },
+                            legend: { display: false },
+                            annotation: { annotations: annotations },
+                            zoom: {
+                                zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x', drag: { enabled: true } },
+                                pan: { enabled: true, mode: 'x' }
+                            }
+                        },
+                        scales: {
+                            x: { type: 'time', time: { unit: 'year', displayFormats: { year: 'yyyy' } }, title: { display: true, text: 'Année', color: 'rgba(255,255,255,0.6)' }, ticks: { color: 'rgba(255,255,255,0.7)' } },
+                            y: { title: { display: true, text: 'Coût cumulé (M€ / B€)', color: 'rgba(255,255,255,0.6)' }, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'rgba(255,255,255,0.7)' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function resetZoom() { if (chart) chart.resetZoom(); }
+
+        // Gestion crises mineures
+        function renderMinorCrises() {
+            minorContainer.innerHTML = '';
+            minorCrises.forEach((c, idx) => {
+                let div = document.createElement('div');
+                div.className = 'crisis-group';
+                div.innerHTML = `
+                    <div class="crisis-header">
+                        <span>Crise mineure ${idx+1}</span>
+                        <button class="removeMinor" data-idx="${idx}">✖</button>
+                    </div>
+                    <select class="minorType" data-idx="${idx}">
+                        <option value="monetary" ${c.type==='monetary'?'selected':''}>💰 Monétaire</option>
+                        <option value="supplier" ${c.type==='supplier'?'selected':''}>🏭 Fournisseur</option>
+                        <option value="raw" ${c.type==='raw'?'selected':''}>⛏️ Matières premières</option>
+                        <option value="logistics" ${c.type==='logistics'?'selected':''}>🚚 Logistique</option>
+                        <option value="competition" ${c.type==='competition'?'selected':''}>⚔️ Concurrence accrue</option>
+                        <option value="internal" ${c.type==='internal'?'selected':''}>📉 Erreur sous-évaluation interne</option>
+                    </select>
+                    <div>Année début : <input type="range" class="minorYear" data-idx="${idx}" min="0" max="40" step="0.1" value="${c.year}"> <span class="minorYearVal">${c.year.toFixed(1)}</span> ans</div>
+                    <div>Durée : <input type="range" class="minorDur" data-idx="${idx}" min="0.1" max="5" step="0.1" value="${c.dur||2}"> <span class="minorDurVal">${(c.dur||2).toFixed(1)}</span> ans</div>
+                    <div>Amplitude : <input type="range" class="minorAmp" data-idx="${idx}" min="1.2" max="2.5" step="0.05" value="${c.amp}"> <span class="minorAmpVal">${c.amp.toFixed(2)}</span>×</div>
+                `;
+                minorContainer.appendChild(div);
+            });
+
+            document.querySelectorAll('.removeMinor').forEach(b => b.addEventListener('click', () => {
+                let idx = parseInt(b.dataset.idx);
+                minorCrises.splice(idx,1);
+                renderMinorCrises(); updateAllWithLoader();
+            }));
+            document.querySelectorAll('.minorType,.minorYear,.minorDur,.minorAmp').forEach(el => el.addEventListener('input', () => {
+                let idx = parseInt(el.dataset.idx);
+                if (el.classList.contains('minorType')) minorCrises[idx].type = el.value;
+                if (el.classList.contains('minorYear')) {
+                    minorCrises[idx].year = parseFloat(el.value);
+                    el.parentElement.querySelector('.minorYearVal').innerText = minorCrises[idx].year.toFixed(1);
+                }
+                if (el.classList.contains('minorDur')) {
+                    minorCrises[idx].dur = parseFloat(el.value);
+                    el.parentElement.querySelector('.minorDurVal').innerText = minorCrises[idx].dur.toFixed(1);
+                }
+                if (el.classList.contains('minorAmp')) {
+                    minorCrises[idx].amp = parseFloat(el.value);
+                    el.parentElement.querySelector('.minorAmpVal').innerText = minorCrises[idx].amp.toFixed(2);
+                }
+                updateAllWithLoader();
+            }));
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            if (mode === 'PID') {
+                pidControls.style.display = 'block';
+                mpcControls.style.display = 'none';
+                modePIDBtn.classList.add('active');
+                modeMPCBtn.classList.remove('active');
+            } else {
+                pidControls.style.display = 'none';
+                mpcControls.style.display = 'block';
+                modePIDBtn.classList.remove('active');
+                modeMPCBtn.classList.add('active');
+            }
+            updateAllWithLoader();
+        }
+
+        function initListeners() {
+            coefSlider.addEventListener('input', () => { updateFromCoef(); updateAllWithLoader(); });
+            totalSlider.addEventListener('input', () => { updateFromTotal(); updateAllWithLoader(); });
+
+            const updaters = [
+                {slider: majorYear, span: majorYearVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: majorDur, span: majorDurVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: majorAmp, span: majorAmpVal, formatter: v => parseFloat(v).toFixed(2)},
+                {slider: obsYear, span: obsYearVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: obsAmp, span: obsAmpVal, formatter: v => parseFloat(v).toFixed(2)},
+                {slider: scaleYear, span: scaleYearVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: scaleDur, span: scaleDurVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: scaleAmp, span: scaleAmpVal, formatter: v => parseFloat(v).toFixed(2)},
+                {slider: techYear, span: techYearVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: techAmp, span: techAmpVal, formatter: v => (parseFloat(v)*100).toFixed(1)},
+                {slider: compA, span: compAVal, formatter: v => parseFloat(v)},
+                {slider: compB, span: compBVal, formatter: v => parseFloat(v)},
+                {slider: volatilitySlider, span: volatilityVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: kpSlider, span: kpVal, formatter: v => parseFloat(v).toFixed(2)},
+                {slider: kiSlider, span: kiVal, formatter: v => parseFloat(v).toFixed(2)},
+                {slider: kdSlider, span: kdVal, formatter: v => parseFloat(v).toFixed(2)},
+                {slider: mpcHorizon, span: mpcHorizonVal, formatter: v => parseFloat(v)},
+                {slider: mpcWeightTrack, span: mpcWeightTrackVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: mpcWeightEffort, span: mpcWeightEffortVal, formatter: v => parseFloat(v).toFixed(1)},
+                {slider: mpcMaxChange, span: mpcMaxChangeVal, formatter: v => parseFloat(v)}
+            ];
+            updaters.forEach(u => {
+                if (u.slider) {
+                    const update = () => { if (u.span) u.span.innerText = u.formatter ? u.formatter(u.slider.value) : u.slider.value; };
+                    u.slider.addEventListener('input', () => { update(); updateAllWithLoader(); });
+                    update();
+                }
+            });
+
+            const allInputs = document.querySelectorAll('input, select');
+            allInputs.forEach(inp => {
+                if (inp.id !== 'coefSlider' && inp.id !== 'totalAmount' && !updaters.some(u => u.slider === inp)) {
+                    inp.addEventListener('input', () => updateAllWithLoader());
+                }
+            });
+
+            modePIDBtn.addEventListener('click', () => setMode('PID'));
+            modeMPCBtn.addEventListener('click', () => setMode('MPC'));
+            document.getElementById('addMinor').addEventListener('click', () => {
+                if (minorCrises.length < 7) {
+                    minorCrises.push({year: 12, amp: 1.5, dur: 2, type: 'raw', typeLabel: '⛏️ Matières premières'});
+                    renderMinorCrises();
+                    updateAllWithLoader();
+                } else alert('Maximum 7 crises mineures atteint.');
+            });
+            document.getElementById('resetZoomBtn').addEventListener('click', resetZoom);
+        }
+
+        function init() {
+            renderMinorCrises();
+            initListeners();
+            updateFromCoef();
+            updateAllWithLoader();
+        }
+
+        window.onload = init;
+    })();
+</script>
+</body>
+</html>
