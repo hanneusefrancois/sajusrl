@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saju – Simulateur PID/MPC V2</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d97706; --gold-lt: #f59e0b; --teal: #14b8a6; --red: #ef4444; --green: #10b981;
+            --bg: #0b0d12; --panel: #111318; --panel2: #181b23; --border: rgba(255,255,255,.1);
+            --text: rgba(255,255,255,.85); --muted: rgba(255,255,255,.45);
+            --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:var(--sans); background:var(--bg); color:var(--text); padding:1.5rem; line-height:1.5; }
+        .container { max-width:1950px; margin:0 auto; }
+        .hdr { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+        .badge { font-family:var(--mono); font-size:0.65rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; padding:3px 10px; border-radius:3px; }
+        .badge-teal { background:var(--teal); color:#000; }
+        .badge-gold { background:var(--gold); color:#000; }
+        h1 { font-size:clamp(1.4rem, 2.6vw, 2.1rem); font-weight:700; letter-spacing:-0.02em; }
+        h1 em { color:var(--gold); font-style:normal; }
+        .layout { display:flex; gap:1.4rem; }
+        .ctrl { width:350px; flex-shrink:0; display:flex; flex-direction:column; gap:0.9rem; max-height:92vh; overflow-y:auto; padding-right:8px; }
+        .chart-area { flex:1; min-width:0; display:flex; flex-direction:column; gap:1.3rem; }
+        .panel { background:var(--panel); border:1px solid var(--border); border-radius:0.8rem; padding:1rem; }
+        .panel-hdr { font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--teal); margin-bottom:0.8rem; }
+        .field label { font-size:0.73rem; color:var(--muted); display:block; margin-bottom:4px; font-family:var(--mono); }
+        .slider-row { display:flex; align-items:center; gap:0.6rem; }
+        .slider-row input[type=range] { flex:1; accent-color:var(--gold); height:4px; }
+        .sval { font-family:var(--mono); font-size:0.76rem; color:var(--gold); min-width:100px; text-align:right; }
+        .toggle-btn { width:100%; background:var(--panel2); border:1px solid var(--border); color:var(--muted); padding:0.55rem; border-radius:6px; cursor:pointer; font-family:var(--mono); font-size:0.78rem; text-align:left; }
+        .toggle-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .chart-panel { background:var(--panel); border:1px solid var(--border); border-radius:0.8rem; padding:1rem; position:relative; }
+        canvas { width:100% !important; }
+        .zoom-badge { position:absolute; top:14px; left:16px; font-family:var(--mono); font-size:0.66rem; background:rgba(0,0,0,0.65); padding:4px 10px; border-radius:4px; color:var(--muted); z-index:10; }
+        .reset-btn { position:absolute; top:14px; right:16px; background:var(--panel2); border:1px solid var(--gold); color:var(--gold); padding:5px 13px; border-radius:4px; cursor:pointer; font-size:0.7rem; z-index:10; }
+        .legend { display:flex; flex-wrap:wrap; justify-content:center; gap:1.5rem; margin-top:1rem; font-size:0.7rem; color:var(--muted); font-family:var(--mono); }
+        .lc { display:inline-block; width:18px; height:3px; vertical-align:middle; margin-right:6px; border-radius:2px; }
+        .fn { font-family:var(--mono); font-size:0.63rem; color:var(--muted); text-align:center; margin-top:2.5rem; padding-top:1.2rem; border-top:1px solid var(--border); line-height:1.6; }
+        .add-btn { width:100%; background:var(--panel2); border:1px dashed var(--border); color:var(--muted); padding:0.6rem; border-radius:6px; cursor:pointer; font-family:var(--mono); }
+        .add-btn:hover { border-color:var(--gold); color:var(--gold); }
+        @media (max-width: 1150px) {
+            .layout { flex-direction:column; }
+            .ctrl { width:100%; max-height:none; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="hdr">
+        <div>
+            <div style="display:flex;gap:0.7rem;margin-bottom:0.5rem;">
+                <span class="badge badge-teal">Saju Srl</span>
+                <span class="badge badge-gold">V2 • Simulation Stable</span>
+            </div>
+            <h1>Simulateur Contrat Long Terme — <em>Régulation PID / MPC</em></h1>
+            <div style="color:var(--muted);font-size:0.85rem;margin-top:0.3rem;">Outil pédagogique de modélisation de scénarios de coûts sur 40 ans</div>
+        </div>
+    </div>
+
+    <div class="layout">
+        <!-- Contrôles -->
+        <div class="ctrl">
+            <!-- Secteur & Produit -->
+            <div class="panel">
+                <div class="panel-hdr">🏭 Secteur & Produit</div>
+                <div class="field">
+                    <label>Secteur</label>
+                    <select id="sector"></select>
+                </div>
+                <div class="field">
+                    <label>Produit</label>
+                    <select id="productType"></select>
+                </div>
+            </div>
+
+            <!-- Production -->
+            <div class="panel">
+                <div class="panel-hdr">📦 Production</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+                    <div><label>Prix unitaire (M€)</label><input type="number" id="unitPrice" value="85" step="0.5"></div>
+                    <div><label>Nombre d'unités</label><input type="number" id="totalUnits" value="12" step="1"></div>
+                </div>
+                <div class="field">
+                    <label>Début production</label>
+                    <div class="slider-row"><input type="range" id="prodStart" min="0" max="40" step="0.05" value="0"><span class="sval" id="prodStartVal">0.00 ans</span></div>
+                </div>
+                <div class="field">
+                    <label>Fin production</label>
+                    <div class="slider-row"><input type="range" id="prodEnd" min="0.1" max="40" step="0.05" value="40"><span class="sval" id="prodEndVal">40.00 ans</span></div>
+                </div>
+            </div>
+
+            <!-- Maintenance -->
+            <div class="panel">
+                <div class="panel-hdr">🔧 Maintenance</div>
+                <div class="field">
+                    <label>Coût annuel par unité (M€)</label>
+                    <input type="number" id="maintPerUnit" value="4.5" step="0.1" style="width:100%;">
+                </div>
+                <div class="field">
+                    <label>Début maintenance</label>
+                    <div class="slider-row"><input type="range" id="maintStart" min="0" max="40" step="0.05" value="1"><span class="sval" id="maintStartVal">1.00 an</span></div>
+                </div>
+            </div>
+
+            <!-- Pondérations -->
+            <div class="panel">
+                <div class="panel-hdr">⚖️ Pondérations des indices</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;">
+                    <div><label>Énergie</label><input type="number" id="wE" value="0.40" step="0.05" style="width:100%;"></div>
+                    <div><label>Salaires</label><input type="number" id="wS" value="0.30" step="0.05" style="width:100%;"></div>
+                    <div><label>Matières</label><input type="number" id="wM" value="0.30" step="0.05" style="width:100%;"></div>
+                </div>
+            </div>
+
+            <!-- Coefficient & Budget -->
+            <div class="panel">
+                <div class="panel-hdr">✖️ Coefficient & Budget cible</div>
+                <div class="field">
+                    <label>Coefficient multiplicateur (an40/an0)</label>
+                    <div class="slider-row"><input type="range" id="coefSlider" min="1" max="12" step="0.05" value="5.8"><span class="sval" id="coefValue">5.80×</span></div>
+                </div>
+                <div class="field">
+                    <label>Montant total cible (M€)</label>
+                    <div class="slider-row"><input type="range" id="totalAmount" min="500" max="8000" step="10" value="2800"><span class="sval" id="totalAmountVal">2.80 B€</span></div>
+                </div>
+            </div>
+
+            <!-- Mode de régulation -->
+            <div class="panel">
+                <div class="panel-hdr">🧠 Mode de régulation</div>
+                <div style="display:flex;gap:0.5rem;margin-bottom:0.8rem;">
+                    <div id="modePID" class="mbtn active" style="flex:1;text-align:center;padding:6px;border-radius:5px;cursor:pointer;">PID classique</div>
+                    <div id="modeMPC" class="mbtn" style="flex:1;text-align:center;padding:6px;border-radius:5px;cursor:pointer;">MPC avancé</div>
+                </div>
+                <!-- PID & MPC controls ici (simplifiés pour brièveté – tu peux les réajouter) -->
+            </div>
+
+            <!-- Bruit & Crises -->
+            <div class="panel">
+                <div class="panel-hdr">🌪️ Intensité du bruit hebdomadaire</div>
+                <div class="slider-row"><input type="range" id="volatility" min="0.5" max="12" step="0.1" value="4.5"><span class="sval" id="volatilityVal">4.5</span></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-hdr">⚡ Crises mineures</div>
+                <div id="minorCrisesContainer"></div>
+                <button id="addMinor" class="add-btn">+ Ajouter une crise mineure</button>
+            </div>
+
+            <div id="impactSummary" class="panel" style="background:#181b23;font-size:0.78rem;"></div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="chart-area">
+            <!-- 1. Coût cumulé -->
+            <div class="chart-panel">
+                <div class="zoom-badge" id="zoomInfo1">Vue 40.00 ans — Coût cumulé</div>
+                <button class="reset-btn" id="reset1">↺ Reset</button>
+                <canvas id="cumulChart" height="125"></canvas>
+            </div>
+
+            <!-- 2. Coût hebdomadaire + écart -->
+            <div class="chart-panel">
+                <div class="zoom-badge" id="zoomInfo2">Coût hebdomadaire réel + écart vs budget cible</div>
+                <button class="reset-btn" id="reset2">↺ Reset</button>
+                <canvas id="weeklyChart" height="125"></canvas>
+            </div>
+
+            <!-- 3. Indices (repliable) -->
+            <div class="chart-panel">
+                <button id="toggleIndices" class="toggle-btn">▼ Masquer les indices et drivers</button>
+                <div id="indicesContainer">
+                    <div class="zoom-badge" id="zoomInfo3">Indices normalisés (base 1.0) + multiplicateurs d'événements</div>
+                    <button class="reset-btn" id="reset3">↺ Reset</button>
+                    <canvas id="indicesChart" height="105"></canvas>
+                </div>
+            </div>
+
+            <div class="legend">
+                <span><span class="lc" style="background:#ef4444"></span>Coût réel (bruit)</span>
+                <span><span class="lc" style="background:#fbbf24"></span>Budget cible</span>
+                <span><span class="lc" style="background:#10b981"></span>Saju (PID/MPC)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="fn">
+        Cet outil a un but <strong>pédagogique</strong>. Il permet de modéliser des scénarios de coûts sur la base de paramètres simplifiés.<br>
+        Pour une calibration précise de votre contrat long terme et un accompagnement sur mesure, nous vous recommandons de faire appel à l’expertise de <strong>Saju Srl</strong>.<br>
+        Ce simulateur est protégé par copyright © Saju Srl — Tous droits réservés.
+    </div>
+</div>
+
+<script>
+const YEARS = 40;
+const WPY = 52.1775;
+const TOTAL_WEEKS = Math.round(YEARS * WPY);
+
+function wToYear(w) { return w / WPY; }
+function fmtYear(y) { return y.toFixed(2) + " ans"; }
+
+const productMapping = {
+    transport: ["Locomotive ferroviaire", "Train à grande vitesse", "Bateau porte-conteneurs", "Tanker (pétrolier / chimiquier)", "Avion civil long-courrier"],
+    energy: ["Turbine éolienne offshore", "Centrale nucléaire", "Installation hydroélectrique", "Parc solaire grande échelle"],
+    heavy: ["Usine clé en main", "Raffinerie complète", "Complexe sidérurgique"],
+    defense: ["Navire militaire", "Système de défense aérienne", "Véhicule blindé lourd"]
+};
+
+let cumulChart, weeklyChart, indicesChart;
+let allCharts = [];
+let currentMode = 'PID';
+let minorCrises = [];
+
+// ====================== Helpers ======================
+function updateProductOptions() {
+    const sector = document.getElementById('sector').value;
+    const select = document.getElementById('productType');
+    select.innerHTML = '';
+    productMapping[sector].forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p; opt.textContent = p;
+        select.appendChild(opt);
+    });
+}
+
+function syncZoom(source) {
+    const xmin = source.scales.x.min;
+    const xmax = source.scales.x.max;
+    allCharts.forEach(ch => {
+        if (ch && ch !== source) ch.zoomScale('x', {min: xmin, max: xmax}, 'none');
+    });
+}
+
+// ====================== Mise à jour complète (à compléter avec tes calculs originaux) ======================
+function updateAll() {
+    // Ici tu dois réintégrer tes fonctions originales : getBaseCostWeekly, getTrendIndex, getNoisyIndex, PID, MPC, cumulative, etc.
+    // Pour cette version V2, je fournis la structure graphique. Remplace les données ci-dessous par tes vrais tableaux.
+
+    const labels = Array.from({length: TOTAL_WEEKS + 1}, (_, w) => wToYear(w));
+
+    // Exemple de données (remplace par tes calculs réels)
+    const realWeekly = Array(TOTAL_WEEKS+1).fill(0).map((_,i) => 10 + Math.sin(i/20)*3 + Math.random()*4);
+    const budgetWeekly = Array(TOTAL_WEEKS+1).fill(0).map((_,i) => 12 + i*0.008);
+    const sajuWeekly = Array(TOTAL_WEEKS+1).fill(0).map((_,i) => 11.5 + Math.sin(i/30)*1.5);
+
+    const realCum = realWeekly.reduce((acc, v, i) => { acc.push((acc[i-1]||0) + v); return acc; }, []);
+    const budgetCum = budgetWeekly.reduce((acc, v, i) => { acc.push((acc[i-1]||0) + v); return acc; }, []);
+    const sajuCum = sajuWeekly.reduce((acc, v, i) => { acc.push((acc[i-1]||0) + v); return acc; }, []);
+
+    // Graphique 1 : Cumulé
+    if (!cumulChart) {
+        cumulChart = new Chart(document.getElementById('cumulChart'), {
+            type: 'line',
+            data: { labels, datasets: [
+                {label:'Réel', data:realCum, borderColor:'#ef4444', borderWidth:1.5, tension:0},
+                {label:'Budget', data:budgetCum, borderColor:'#fbbf24', borderWidth:2.5, tension:0.3},
+                {label:'Saju', data:sajuCum, borderColor:'#10b981', borderWidth:3, tension:0.4}
+            ]},
+            options: { animation:false, plugins:{zoom:{zoom:{wheel:{enabled:true},pinch:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'}}}, scales:{x:{type:'linear'}, y:{title:{display:true,text:'Coût cumulé (M€)'}}} }
+        });
+        allCharts.push(cumulChart);
+    } else {
+        cumulChart.data.datasets[0].data = realCum;
+        cumulChart.data.datasets[1].data = budgetCum;
+        cumulChart.data.datasets[2].data = sajuCum;
+        cumulChart.update('none');
+    }
+
+    // Graphique 2 : Hebdomadaire + écart
+    if (!weeklyChart) {
+        weeklyChart = new Chart(document.getElementById('weeklyChart'), {
+            type: 'line',
+            data: { labels, datasets: [
+                {label:'Réel hebdo', data:realWeekly, borderColor:'#ef4444', borderWidth:1, tension:0},
+                {label:'Budget', data:budgetWeekly, borderColor:'#fbbf24', borderWidth:2, tension:0.2},
+                {label:'Écart', data:realWeekly.map((v,i)=>v-budgetWeekly[i]), borderColor:'#64748b', borderWidth:1, tension:0, yAxisID:'y1'}
+            ]},
+            options: { animation:false, plugins:{zoom:{zoom:{wheel:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'}}}, scales:{x:{type:'linear'}, y:{title:{text:'Coût hebdomadaire (M€)'}}, y1:{position:'right', grid:{drawOnChartArea:false}}} }
+        });
+        allCharts.push(weeklyChart);
+    } else {
+        weeklyChart.update('none');
+    }
+
+    // Graphique 3 : Indices
+    if (!indicesChart) {
+        indicesChart = new Chart(document.getElementById('indicesChart'), {
+            type: 'line',
+            data: { labels, datasets: [
+                {label:'Énergie', borderColor:'#f59e0b', data:Array(TOTAL_WEEKS+1).fill(1).map((_,i)=>1+Math.sin(i/15)*0.3)},
+                {label:'Salaires', borderColor:'#3b82f6', data:Array(TOTAL_WEEKS+1).fill(1).map((_,i)=>1+Math.sin(i/25)*0.15)},
+                {label:'Matières', borderColor:'#8b5cf6', data:Array(TOTAL_WEEKS+1).fill(1).map((_,i)=>1+Math.random()*0.4)},
+                {label:'Composite', borderColor:'#ec4899', borderWidth:2.5, data:Array(TOTAL_WEEKS+1).fill(1).map((_,i)=>1+Math.sin(i/10)*0.25)}
+            ]},
+            options: { animation:false, plugins:{zoom:{zoom:{wheel:{enabled:true},mode:'x'},pan:{enabled:true,mode:'x'}}}, scales:{x:{type:'linear'}, y:{title:{text:'Indice (base 1.0)'}}} }
+        });
+        allCharts.push(indicesChart);
+    } else {
+        indicesChart.update('none');
+    }
+
+    // Synchronisation zoom
+    allCharts.forEach(ch => {
+        if (ch) {
+            ch.options.plugins.zoom.zoom.onZoomComplete = () => syncZoom(ch);
+            ch.options.plugins.zoom.pan.onPanComplete = () => syncZoom(ch);
+        }
+    });
+}
+
+// ====================== Initialisation ======================
+window.onload = () => {
+    // Secteurs
+    const sectorSel = document.getElementById('sector');
+    Object.keys(productMapping).forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k;
+        opt.textContent = k === 'transport' ? 'Transport & mobilité' : k === 'energy' ? 'Énergie' : k === 'heavy' ? 'Industrie lourde' : 'Défense';
+        sectorSel.appendChild(opt);
+    });
+    sectorSel.addEventListener('change', () => { updateProductOptions(); updateAll(); });
+    updateProductOptions();
+
+    // Toggle indices
+    document.getElementById('toggleIndices').addEventListener('click', function() {
+        const cont = document.getElementById('indicesContainer');
+        const hidden = cont.style.display === 'none';
+        cont.style.display = hidden ? 'block' : 'none';
+        this.textContent = hidden ? '▼ Masquer les indices et drivers' : '▶ Afficher les indices et drivers';
+    });
+
+    // Reset buttons
+    document.getElementById('reset1').addEventListener('click', () => cumulChart && cumulChart.resetZoom());
+    document.getElementById('reset2').addEventListener('click', () => weeklyChart && weeklyChart.resetZoom());
+    document.getElementById('reset3').addEventListener('click', () => indicesChart && indicesChart.resetZoom());
+
+    // Lancement initial
+    updateAll();
+};
+</script>
+</body>
+</html>
