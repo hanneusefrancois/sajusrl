@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saju Srl — PID/MPC V6 | Long-Term Contract Simulator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800<!--amp-->&family=Inter:wght@300;400;500;600;700<!--amp-->&family=IBM+Plex+Mono:wght@300;400;500;600<!--amp-->&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A94E;
+  --gold-dk: #8B7832;
+  --gold-lt: #D4B85A;
+  --gold-bg: rgba(201,169,78,0.08);
+  --gold-border: rgba(201,169,78,0.3);
+  --teal: #14b8a6;
+  --red: #B33A3A;
+  --green: #2D6B4F;
+  --green-bg: rgba(45,107,79,0.07);
+  --blue: #2A5080;
+  --bg: #0b0d12;
+  --panel: #111318;
+  --panel2: #181b23;
+  --panel3: #1e2130;
+  --border: rgba(255,255,255,.1);
+  --text: rgba(255,255,255,.88);
+  --muted: rgba(255,255,255,.45);
+  --ivory: #FFFDF7;
+  --cream: #FAF8F4;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Inter', 'IBM Plex Sans', sans-serif;
+  --display: 'Playfair Display', serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); padding:0; line-height:1.5; }
+.container { max-width:1920px; margin:0 auto; }
+
+/* ═══ HEADER BAND ═══ */
+.logo-band {
+  background:#fff;
+  padding:14px 50px;
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.logo-band img { height:48px; }
+.logo-band .tagline {
+  font-family:var(--display);
+  font-size:1rem;
+  color:#333;
+  letter-spacing:.02em;
+}
+
+/* ═══ HERO ═══ */
+.hero {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1810 50%, #252520 100%);
+  position:relative;
+  padding:2.5rem 50px 2rem;
+  overflow:hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute;
+  top:-80px; right:-120px;
+  width:500px; height:500px;
+  background:radial-gradient(circle, rgba(201,169,78,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero::after {
+  content:'';
+  position:absolute;
+  bottom:-60px; left:20%;
+  width:400px; height:400px;
+  background:radial-gradient(circle, rgba(201,169,78,0.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+.gold-line { height:3px; background:linear-gradient(90deg,var(--gold-dk),var(--gold),var(--gold-dk)); }
+
+.badge-row { display:flex; align-items:center; gap:.7rem; margin-bottom:.8rem; flex-wrap:wrap; }
+.badge {
+  font-family:var(--mono); font-size:.62rem; font-weight:600;
+  letter-spacing:.18em; text-transform:uppercase;
+  padding:3px 12px; border-radius:3px;
+}
+.badge-gold { background:var(--gold); color:#0a0a0a; }
+.badge-teal { background:var(--teal); color:#000; }
+.badge-dark { background:var(--panel2); color:var(--gold); border:1px solid var(--gold-border); }
+
+h1 {
+  font-family:var(--display);
+  font-size:clamp(1.5rem,3vw,2.4rem);
+  font-weight:700;
+  letter-spacing:-.02em;
+  color:#fff;
+  position:relative;
+  z-index:1;
+}
+h1 em { font-style:normal; color:var(--gold); }
+.sub {
+  font-size:.82rem; color:var(--muted);
+  margin-top:.4rem; font-family:var(--mono);
+  position:relative; z-index:1;
+}
+
+/* ═══ META BAR ═══ */
+.meta-bar {
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  padding:.6rem 50px;
+  display:flex;
+  align-items:center;
+  gap:2rem;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:.7rem;
+}
+.meta-bar .mi { color:var(--muted); }
+.meta-bar .mv { color:var(--gold); font-weight:600; }
+.meta-bar a { color:var(--gold); text-decoration:none; }
+.meta-bar a:hover { text-decoration:underline; }
+
+/* ═══ LAYOUT ═══ */
+.main-layout {
+  display:flex;
+  gap:1.2rem;
+  align-items:flex-start;
+  padding:1.2rem 1.2rem 1.2rem 1.2rem;
+}
+.ctrl {
+  width:320px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  gap:.7rem;
+  max-height:92vh;
+  overflow-y:auto;
+  padding-right:5px;
+}
+.charts-col {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+
+/* ═══ PANELS ═══ */
+.panel {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:.75rem;
+  padding:.85rem 1rem;
+}
+.panel-hdr {
+  font-family:var(--mono);
+  font-size:.68rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:.6rem;
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+}
+.panel-hdr span { color:var(--muted); font-weight:400; }
+
+.field { margin-bottom:.55rem; }
+.field:last-child { margin-bottom:0; }
+.field label {
+  font-size:.7rem; color:var(--muted);
+  display:block; margin-bottom:2px;
+  font-family:var(--mono);
+}
+
+/* Slider row */
+.slider-row {
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.slider-row input[type=range] {
+  flex:1;
+  -webkit-appearance:none;
+  appearance:none;
+  height:4px;
+  border-radius:2px;
+  background:var(--panel2);
+  outline:none;
+  cursor:pointer;
+}
+.slider-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none;
+  appearance:none;
+  width:14px; height:14px;
+  border-radius:50%;
+  background:var(--gold);
+  cursor:pointer;
+  border:2px solid var(--gold-dk);
+  box-shadow:0 0 6px rgba(201,169,78,0.4);
+}
+.slider-row input[type=range]::-moz-range-thumb {
+  width:14px; height:14px;
+  border-radius:50%;
+  background:var(--gold);
+  cursor:pointer;
+  border:2px solid var(--gold-dk);
+}
+.sval {
+  font-family:var(--mono);
+  font-size:.72rem;
+  font-weight:600;
+  color:var(--gold);
+  min-width:85px;
+  text-align:right;
+  white-space:nowrap;
+}
+
+/* Number / select */
+.num-row { display:flex; gap:.5rem; flex-wrap:wrap; }
+.num-row > div { display:flex; flex-direction:column; gap:2px; }
+.num-row label { font-size:.63rem; color:var(--muted); font-family:var(--mono); }
+input[type=number], select {
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:5px 7px;
+  color:var(--text);
+  font-size:.78rem;
+  font-family:var(--mono);
+  transition:border-color .2s;
+}
+input[type=number]:focus, select:focus {
+  border-color:var(--gold);
+  outline:none;
+}
+input[type=number] { width:76px; }
+select { width:100%; }
+
+/* Mode buttons */
+.mode-row { display:flex; gap:.4rem; }
+.mbtn {
+  flex:1; text-align:center;
+  padding:6px; border-radius:5px;
+  cursor:pointer; font-size:.72rem;
+  font-weight:600; background:var(--panel2);
+  border:1px solid var(--border);
+  color:var(--muted); transition:.2s;
+  font-family:var(--mono);
+}
+.mbtn:hover { border-color:var(--gold-border); color:var(--gold-lt); }
+.mbtn.active {
+  background:linear-gradient(135deg,var(--gold-dk),var(--gold));
+  color:#0a0a0a;
+  border-color:var(--gold);
+  font-weight:700;
+}
+
+/* Weights row */
+.weights { display:flex; gap:.4rem; }
+.weights > div { flex:1; display:flex; flex-direction:column; gap:2px; }
+.weights label { font-size:.6rem; color:var(--muted); font-family:var(--mono); text-align:center; }
+.weights input[type=number] { width:100%; text-align:center; }
+
+/* Crisis items */
+.crisis-item {
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:.5rem;
+  padding:.6rem;
+  margin-bottom:.5rem;
+}
+.crisis-hdr {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:.5rem;
+}
+.crisis-hdr span { font-family:var(--mono); font-size:.68rem; font-weight:600; color:var(--gold); }
+.rm-btn {
+  background:none;
+  border:1px solid rgba(179,58,58,.4);
+  color:var(--red);
+  border-radius:3px;
+  padding:1px 7px;
+  cursor:pointer;
+  font-size:.65rem;
+  transition:.15s;
+}
+.rm-btn:hover { background:var(--red); color:#fff; }
+.add-btn {
+  width:100%;
+  background:var(--panel2);
+  border:2px dashed var(--gold-border);
+  border-radius:.5rem;
+  padding:.5rem;
+  color:var(--muted);
+  font-size:.72rem;
+  cursor:pointer;
+  font-family:var(--mono);
+  transition:.2s;
+}
+.add-btn:hover { border-color:var(--gold); color:var(--gold); background:var(--gold-bg); }
+
+/* Summary KPI */
+.summary {
+  background:var(--panel);
+  border:1px solid var(--gold-border);
+  border-radius:.75rem;
+  padding:.9rem 1rem;
+  font-family:var(--mono);
+  font-size:.72rem;
+  line-height:2;
+}
+.summary .val { color:var(--gold); font-weight:700; font-size:.78rem; }
+.summary .lbl { color:var(--muted); }
+
+/* Chart panel */
+.chart-panel {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:.75rem;
+  padding:1rem;
+  position:relative;
+}
+.chart-panel.compact { padding:.8rem; }
+canvas { display:block; width:100%!important; }
+.zoom-badge {
+  position:absolute; top:10px; left:12px;
+  font-family:var(--mono); font-size:.6rem;
+  color:var(--muted);
+  background:rgba(0,0,0,.6);
+  padding:3px 10px;
+  border-radius:3px;
+  pointer-events:none;
+  z-index:5;
+}
+.reset-btn {
+  position:absolute; top:10px; right:12px;
+  background:var(--panel2);
+  border:1px solid var(--gold);
+  color:var(--gold);
+  padding:4px 12px;
+  border-radius:4px;
+  font-size:.65rem;
+  font-family:var(--mono);
+  cursor:pointer;
+  z-index:5;
+  transition:.15s;
+}
+.reset-btn:hover { background:var(--gold); color:#0a0a0a; }
+
+.chart-title {
+  font-family:var(--display);
+  font-size:1rem;
+  color:var(--gold);
+  margin-bottom:.4rem;
+  font-weight:600;
+}
+.chart-subtitle {
+  font-size:.68rem;
+  color:var(--muted);
+  font-family:var(--mono);
+  margin-bottom:.6rem;
+}
+
+/* Legend */
+.legend {
+  display:flex;
+  justify-content:center;
+  gap:1.2rem;
+  margin-top:.6rem;
+  flex-wrap:wrap;
+  font-size:.63rem;
+  font-family:var(--mono);
+  color:var(--muted);
+}
+.lc {
+  display:inline-block;
+  width:16px; height:3px;
+  vertical-align:middle;
+  margin-right:4px;
+  border-radius:1px;
+}
+
+/* Accordion */
+.accordion-toggle {
+  width:100%;
+  background:linear-gradient(135deg,var(--panel2),var(--panel3));
+  border:1px solid var(--gold-border);
+  border-radius:.75rem;
+  padding:.7rem 1rem;
+  color:var(--gold);
+  font-family:var(--display);
+  font-size:.95rem;
+  font-weight:600;
+  cursor:pointer;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  transition:.2s;
+}
+.accordion-toggle:hover { border-color:var(--gold); background:var(--gold-bg); }
+.accordion-toggle .arrow { transition:transform .3s; }
+.accordion-toggle.open .arrow { transform:rotate(180deg); }
+.accordion-body {
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .4s ease;
+}
+.accordion-body.open { max-height:800px; }
+
+/* Hint */
+.hint {
+  font-size:.62rem;
+  color:var(--muted);
+  font-family:var(--mono);
+  margin-top:3px;
+  line-height:1.4;
+}
+
+/* Contact bar */
+.contact-bar {
+  background:var(--panel);
+  border:1px solid var(--gold-border);
+  border-radius:.75rem;
+  margin:1.2rem;
+  padding:1rem 1.5rem;
+  display:flex;
+  align-items:center;
+  gap:1.5rem;
+  flex-wrap:wrap;
+}
+.contact-bar .logo-box {
+  background:#fff;
+  border-radius:10px;
+  padding:10px 16px;
+  display:flex;
+  align-items:center;
+}
+.contact-bar .logo-box img { height:36px; }
+.contact-bar .info {
+  font-family:var(--mono);
+  font-size:.72rem;
+  color:var(--muted);
+  line-height:1.8;
+}
+.contact-bar .info strong { color:var(--gold); }
+.contact-bar .info a { color:var(--gold); text-decoration:none; }
+.contact-bar .info a:hover { text-decoration:underline; }
+
+/* Footer */
+.footer {
+  background:var(--panel);
+  border-top:3px solid var(--gold);
+  padding:1.5rem 50px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:1rem;
+}
+.footer .logo-pill {
+  background:#fff;
+  border-radius:12px;
+  padding:8px 18px;
+  display:flex;
+  align-items:center;
+}
+.footer .logo-pill img { height:30px; }
+.footer .ft {
+  font-family:var(--mono);
+  font-size:.58rem;
+  color:var(--muted);
+  text-align:right;
+  line-height:1.7;
+}
+
+/* Scrollbar */
+.ctrl::-webkit-scrollbar { width:3px; }
+.ctrl::-webkit-scrollbar-thumb { background:var(--gold-border); border-radius:2px; }
+
+/* Responsive */
+@media(max-width:1100px){
+  .main-layout { flex-direction:column; padding:.8rem; }
+  .ctrl { width:100%; max-height:none; }
+}
+@media print {
+  body { background:#fff; color:#222; }
+  .ctrl { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- LOGO BAND -->
+  <div class="logo-band">
+    <a href="https://www.saju.be/" target="_blank">
+      <img src="https://www.saju.be/wp-content/uploads/2024/11/LogoSaju.svg" alt="Saju Srl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2240%22%3E%3Ctext x=%225%22 y=%2230%22 font-family=%22serif%22 font-size=%2228%22 fill=%22%238B7832%22%3ESaju%3C/text%3E%3C/svg%3E'">
+    </a>
+    <span class="tagline">Long-Term Contract Cost Simulator — PID/MPC Engine V6</span>
+  </div>
+
+  <!-- GOLD LINE -->
+  <div class="gold-line"></div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge-row">
+      <span class="badge badge-gold">SAJU SRL</span>
+      <span class="badge badge-teal">V6 · 3 CHARTS · WEEKLY RESOLUTION</span>
+      <span class="badge badge-dark">RS — ROLLING STOCK</span>
+    </div>
+    <h1>Long-Term Contract Simulator — <em>PID / MPC Regulation</em></h1>
+    <div class="sub">Start: <span id="startDateLabel">…</span> · ~2,087 weeks (40 years) · Real cost = pure weekly noise · PID/Budget = smooth trajectories</div>
+  </div>
+
+  <!-- GOLD LINE -->
+  <div class="gold-line"></div>
+
+  <!-- META BAR -->
+  <div class="meta-bar">
+    <span><span class="mi">Author:</span> <span class="mv">Hanneuse François</span></span>
+    <span><span class="mi">Company:</span> <span class="mv">Saju Srl</span></span>
+    <span><span class="mi">VAT:</span> <span class="mv">BE0785.280.227</span></span>
+    <span><span class="mi">Date:</span> <span class="mv" id="metaDate"></span></span>
+    <span><a href="https://www.saju.be/" target="_blank">www.saju.be</a></span>
+  </div>
+
+  <!-- CONTACT BAR TOP -->
+  <div class="contact-bar">
+    <div class="logo-box">
+      <a href="https://www.saju.be/" target="_blank">
+        <img src="https://www.saju.be/wp-content/uploads/2024/11/LogoSaju.svg" alt="Saju Srl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2240%22%3E%3Ctext x=%225%22 y=%2230%22 font-family=%22serif%22 font-size=%2228%22 fill=%22%238B7832%22%3ESaju%3C/text%3E%3C/svg%3E'">
+      </a>
+    </div>
+    <div class="info">
+      For more details or to request another report, contact: <strong>Mr. François Hanneuse</strong><br>
+      <a href="https://www.saju.be/" target="_blank">www.saju.be</a> · <a href="mailto:fh@saju.be">fh@saju.be</a> · <strong>+32 483 37 98</strong><br>
+      Chaussée d'Alsemberg 1108 boîte 6, Uccle 1180, Belgium
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout">
+
+    <!-- ═══ CONTROLS ═══ -->
+    <div class="ctrl">
+
+      <!-- Product & Sector -->
+      <div class="panel">
+        <div class="panel-hdr">🏭 PRODUCT & SECTOR</div>
+        <div class="field">
+          <label>Product type</label>
+          <select id="productType">
+            <option value="loco_rail" data-sector="transport">Railway Locomotive (RS)</option>
+            <option value="emu" data-sector="transport">Electric Multiple Unit (RS)</option>
+            <option value="metro" data-sector="transport">Metro / Light Rail (RS)</option>
+            <option value="civil_aircraft" data-sector="aerospace">Civil Aircraft</option>
+            <option value="wind_turbine" data-sector="energy">Wind Turbine (RI)</option>
+            <option value="gas_turbine" data-sector="energy">Gas Turbine (RI)</option>
+            <option value="turnkey_plant" data-sector="industry">Turnkey Plant (RI)</option>
+            <option value="defense_vehicle" data-sector="defense">Defense Vehicle</option>
+            <option value="signalling" data-sector="transport">Signalling System (CS)</option>
+            <option value="breaker_3kv" data-sector="energy">3kV Circuit Breaker (CS)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Sector</label>
+          <select id="sector">
+            <option value="transport">Transport & Mobility (RS)</option>
+            <option value="energy">Energy (RI)</option>
+            <option value="industry">Heavy Industry (RI)</option>
+            <option value="defense">Defense</option>
+            <option value="aerospace">Aerospace</option>
+          </select>
+        </div>
+        <div class="hint" id="coherenceHint" style="color:var(--green)">✅ Product/Sector coherent</div>
+      </div>
+
+      <!-- Production -->
+      <div class="panel">
+        <div class="panel-hdr">📦 PRODUCTION</div>
+        <div class="num-row">
+          <div><label>Unit price (M€)</label><input type="number" id="unitPrice" value="10" step="0.5"></div>
+          <div><label>Nb units</label><input type="number" id="totalUnits" value="90" step="1"></div>
+        </div>
+        <div class="field" style="margin-top:.5rem">
+          <label>Production start</label>
+          <div class="slider-row"><input type="range" id="prodStart" min="0" max="2087" step="1" value="0"><span class="sval" id="prodStartVal"></span></div>
+        </div>
+        <div class="field">
+          <label>Production end</label>
+          <div class="slider-row"><input type="range" id="prodEnd" min="1" max="2087" step="1" value="2087"><span class="sval" id="prodEndVal"></span></div>
+        </div>
+      </div>
+
+      <!-- Maintenance -->
+      <div class="panel">
+        <div class="panel-hdr">🔧 MAINTENANCE</div>
+        <div class="field">
+          <label>Cost/unit/year (M€)</label>
+          <input type="number" id="maintPerUnit" value="5" step="0.1" style="width:80px">
+        </div>
+        <div class="field">
+          <label>Maintenance start</label>
+          <div class="slider-row"><input type="range" id="maintStart" min="0" max="2087" step="1" value="52"><span class="sval" id="maintStartVal"></span></div>
+        </div>
+        <div class="field">
+          <label>Maintenance end</label>
+          <div class="slider-row"><input type="range" id="maintEnd" min="1" max="2087" step="1" value="2087"><span class="sval" id="maintEndVal"></span></div>
+        </div>
+      </div>
+
+      <!-- Weights -->
+      <div class="panel">
+        <div class="panel-hdr">⚖️ INDEX WEIGHTS</div>
+        <div class="weights">
+          <div><label>Energy</label><input type="number" id="wE" value="0.40" step="0.05"></div>
+          <div><label>Wages</label><input type="number" id="wS" value="0.30" step="0.05"></div>
+          <div><label>Raw Mat.</label><input type="number" id="wM" value="0.30" step="0.05"></div>
+        </div>
+      </div>
+
+      <!-- Coefficient -->
+      <div class="panel">
+        <div class="panel-hdr">✖️ MULTIPLIER COEFF (yr40/yr0)</div>
+        <div class="field">
+          <div class="slider-row"><input type="range" id="coefSlider" min="1" max="10" step="0.05" value="5.82"><span class="sval" id="coefValue">5.82×</span></div>
+        </div>
+        <div class="field">
+          <label>Total target amount (M€)</label>
+          <div class="slider-row"><input type="range" id="totalAmount" min="500" max="5000" step="10" value="1300"><span class="sval" id="totalAmountVal">1.30 B€</span></div>
+        </div>
+      </div>
+
+      <!-- Regulation mode -->
+      <div class="panel">
+        <div class="panel-hdr">🧠 REGULATION MODE</div>
+        <div class="mode-row" style="margin-bottom:.7rem">
+          <div id="modePID" class="mbtn active">PID Classic</div>
+          <div id="modeMPC" class="mbtn">MPC Advanced</div>
+        </div>
+        <div id="pidControls">
+          <div class="field"><label>Kp — proportional gain</label><div class="slider-row"><input type="range" id="kp" min="0" max="1.2" step="0.01" value="0.35"><span class="sval" id="kpVal">0.35</span></div></div>
+          <div class="field"><label>Ki — integral gain</label><div class="slider-row"><input type="range" id="ki" min="0" max="0.3" step="0.005" value="0.09"><span class="sval" id="kiVal">0.09</span></div></div>
+          <div class="field"><label>Kd — derivative gain</label><div class="slider-row"><input type="range" id="kd" min="0" max="0.3" step="0.005" value="0.12"><span class="sval" id="kdVal">0.12</span></div></div>
+        </div>
+        <div id="mpcControls" style="display:none">
+          <div class="field"><label>Prediction horizon</label><div class="slider-row"><input type="range" id="mpcHorizon" min="4" max="104" step="4" value="48"><span class="sval" id="mpcHorizonVal">0.92 yr</span></div></div>
+          <div class="field"><label>Tracking weight</label><div class="slider-row"><input type="range" id="mpcWeightTrack" min="0.5" max="3" step="0.1" value="1.5"><span class="sval" id="mpcWeightTrackVal">1.5</span></div></div>
+          <div class="field"><label>Effort weight</label><div class="slider-row"><input type="range" id="mpcWeightEffort" min="0" max="2" step="0.1" value="0.8"><span class="sval" id="mpcWeightEffortVal">0.8</span></div></div>
+          <div class="field"><label>Max var./week (%)</label><div class="slider-row"><input type="range" id="mpcMaxChange" min="0.05" max="1" step="0.05" value="0.2"><span class="sval" id="mpcMaxChangeVal">0.20%</span></div></div>
+        </div>
+      </div>
+
+      <!-- Competitors -->
+      <div class="panel">
+        <div class="panel-hdr">📊 COMPETITORS <span>% vs real cost</span></div>
+        <div class="field"><label>Competitor A (negative bias)</label><div class="slider-row"><input type="range" id="compA" min="-30" max="0" step="1" value="-15"><span class="sval" id="compAVal">−15%</span></div></div>
+        <div class="field"><label>Competitor B (positive bias)</label><div class="slider-row"><input type="range" id="compB" min="0" max="40" step="1" value="25"><span class="sval" id="compBVal">+25%</span></div></div>
+        <div class="hint">Competitors inherit the same weekly noise + their own bias.</div>
+      </div>
+
+      <!-- Noise -->
+      <div class="panel">
+        <div class="panel-hdr">🌪️ WEEKLY NOISE INTENSITY</div>
+        <div class="field"><div class="slider-row"><input type="range" id="volatility" min="0.5" max="10" step="0.1" value="4"><span class="sval" id="volatilityVal">4.0</span></div></div>
+        <div class="hint">Each week = independent value, not smoothed. Sawtooth visible on zoom.</div>
+      </div>
+
+      <!-- Major crisis -->
+      <div class="panel">
+        <div class="panel-hdr">🌎 MAJOR GEOPOLITICAL CRISIS</div>
+        <div class="field"><label>Start</label><div class="slider-row"><input type="range" id="majorStart" min="1" max="2050" step="1" value="782"><span class="sval" id="majorStartVal"></span></div></div>
+        <div class="field"><label>Duration</label><div class="slider-row"><input type="range" id="majorDur" min="4" max="416" step="4" value="157"><span class="sval" id="majorDurVal"></span></div></div>
+        <div class="field"><label>Multiplicative amplitude</label><div class="slider-row"><input type="range" id="majorAmp" min="1.1" max="4.0" step="0.05" value="2.5"><span class="sval" id="majorAmpVal">2.50×</span></div></div>
+      </div>
+
+      <!-- Obsolescence -->
+      <div class="panel">
+        <div class="panel-hdr">🛠️ TECHNOLOGY OBSOLESCENCE</div>
+        <div class="field"><label>Start</label><div class="slider-row"><input type="range" id="obsStart" min="1" max="2080" step="1" value="1147"><span class="sval" id="obsStartVal"></span></div></div>
+        <div class="field"><label>Multiplicative surcharge</label><div class="slider-row"><input type="range" id="obsAmp" min="1.0" max="3.0" step="0.05" value="1.8"><span class="sval" id="obsAmpVal">1.80×</span></div></div>
+      </div>
+
+      <!-- Economies of scale -->
+      <div class="panel">
+        <div class="panel-hdr">📉 ECONOMIES OF SCALE</div>
+        <div class="field"><label>Start</label><div class="slider-row"><input type="range" id="scaleStart" min="1" max="2050" step="1" value="626"><span class="sval" id="scaleStartVal"></span></div></div>
+        <div class="field"><label>Duration</label><div class="slider-row"><input type="range" id="scaleDur" min="4" max="416" step="4" value="209"><span class="sval" id="scaleDurVal"></span></div></div>
+        <div class="field"><label>Reduction factor</label><div class="slider-row"><input type="range" id="scaleAmp" min="0.70" max="0.99" step="0.01" value="0.85"><span class="sval" id="scaleAmpVal">0.85×</span></div></div>
+      </div>
+
+      <!-- Tech gain -->
+      <div class="panel">
+        <div class="panel-hdr">💡 PROGRESSIVE TECH GAIN</div>
+        <div class="field"><label>Start</label><div class="slider-row"><input type="range" id="techStart" min="1" max="2080" step="1" value="1043"><span class="sval" id="techStartVal"></span></div></div>
+        <div class="field"><label>Weekly reduction (%)</label><div class="slider-row"><input type="range" id="techAmp" min="0" max="0.03" step="0.0005" value="0.015"><span class="sval" id="techAmpVal">1.500%/yr</span></div></div>
+      </div>
+
+      <!-- Minor crises -->
+      <div class="panel">
+        <div class="panel-hdr">⚡ MINOR CRISES</div>
+        <div id="minorCrisesContainer"></div>
+        <button class="add-btn" id="addMinor">+ Add a minor crisis</button>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary" id="impactSummary"></div>
+
+    </div><!-- /ctrl -->
+
+    <!-- ═══ CHARTS COLUMN ═══ -->
+    <div class="charts-col">
+
+      <!-- CHART 1 — Cumulative -->
+      <div class="chart-panel">
+        <div class="chart-title">📈 Chart 1 — Cumulative Cost</div>
+        <div class="chart-subtitle">Real (noisy), Budget (smooth), Competitors, Saju PID/MPC — cumulated over time</div>
+        <div class="zoom-badge" id="zoomInfo1">40-year view — scroll/pinch to zoom</div>
+        <button class="reset-btn" id="resetZoom1">↺ Reset zoom</button>
+        <canvas id="chart1" height="260"></canvas>
+        <div class="legend">
+          <span><span class="lc" style="background:#ef4444"></span>Real cost (weekly noise)</span>
+          <span><span class="lc" style="background:#C9A94E"></span>Budget target (smooth)</span>
+          <span><span class="lc" style="background:#94a3b8"></span>Competitor A</span>
+          <span><span class="lc" style="background:#f97316"></span>Competitor B</span>
+          <span><span class="lc" style="background:#10b981;height:4px"></span>Saju PID/MPC</span>
+        </div>
+      </div>
+
+      <!-- CHART 2 — Weekly non-cumulative -->
+      <div class="chart-panel">
+        <div class="chart-title">📈 Chart 2 — Weekly Cost (Non-Cumulative)</div>
+        <div class="chart-subtitle">Weekly cost variations — sawtooth pattern + red/green deviation zones</div>
+        <div class="zoom-badge" id="zoomInfo2">40-year view</div>
+        <button class="reset-btn" id="resetZoom2">↺ Reset zoom</button>
+        <canvas id="chart2" height="220"></canvas>
+        <div class="legend">
+          <span><span class="lc" style="background:#ef4444"></span>Real weekly cost</span>
+          <span><span class="lc" style="background:#C9A94E"></span>Budget weekly</span>
+          <span><span class="lc" style="background:#10b981"></span>Saju weekly</span>
+          <span><span class="lc" style="background:rgba(239,68,68,0.15)"></span>Over-budget zone</span>
+          <span><span class="lc" style="background:rgba(16,185,129,0.15)"></span>Under-budget zone</span>
+        </div>
+      </div>
+
+      <!-- CHART 3 — Indices (accordion) -->
+      <button class="accordion-toggle" id="accordionBtn">
+        <span>📊 Chart 3 — Detailed Indices & Drivers</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body" id="accordionBody">
+        <div class="chart-panel compact" style="margin-top:.5rem">
+          <div class="chart-subtitle">Energy, Wages, Raw Materials, Composite Index, Crisis/Obsolescence/Scale/Tech multipliers — base 1.0</div>
+          <div class="zoom-badge" id="zoomInfo3">40-year view</div>
+          <button class="reset-btn" id="resetZoom3">↺ Reset zoom</button>
+          <canvas id="chart3" height="180"></canvas>
+          <div class="legend">
+            <span><span class="lc" style="background:#f59e0b"></span>Energy</span>
+            <span><span class="lc" style="background:#3b82f6"></span>Wages</span>
+            <span><span class="lc" style="background:#a855f7"></span>Raw Materials</span>
+            <span><span class="lc" style="background:#C9A94E;height:4px"></span>Composite</span>
+            <span><span class="lc" style="background:#ef4444;border-style:dashed"></span>Crisis mult.</span>
+            <span><span class="lc" style="background:#14b8a6;border-style:dashed"></span>Scale/Tech</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /charts-col -->
+  </div><!-- /main-layout -->
+
+  <!-- CONTACT BAR BOTTOM -->
+  <div class="contact-bar">
+    <div class="logo-box">
+      <a href="https://www.saju.be/" target="_blank">
+        <img src="https://www.saju.be/wp-content/uploads/2024/11/LogoSaju.svg" alt="Saju Srl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2240%22%3E%3Ctext x=%225%22 y=%2230%22 font-family=%22serif%22 font-size=%2228%22 fill=%22%238B7832%22%3ESaju%3C/text%3E%3C/svg%3E'">
+      </a>
+    </div>
+    <div class="info">
+      This simulator was created using the expertise of <strong>Saju Srl</strong>.<br>
+      For more details or to request another report, contact: <strong>Mr. François Hanneuse</strong><br>
+      <a href="https://www.saju.be/" target="_blank">www.saju.be</a> · <a href="mailto:fh@saju.be">fh@saju.be</a> · <strong>+32 483 37 98</strong><br>
+      VAT: BE0785.280.227 · Chaussée d'Alsemberg 1108 boîte 6, Uccle 1180, Belgium
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="logo-pill">
+      <a href="https://www.saju.be/" target="_blank">
+        <img src="https://www.saju.be/wp-content/uploads/2024/11/LogoSaju.svg" alt="Saju Srl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2232%22%3E%3Ctext x=%225%22 y=%2226%22 font-family=%22serif%22 font-size=%2224%22 fill=%22%238B7832%22%3ESaju%3C/text%3E%3C/svg%3E'">
+      </a>
+    </div>
+    <div class="ft">
+      Saju V6 · 3-Chart Resolution (~2,087 pts) · Weekly noise (non-cumulative) · PID/MPC smooth regulation<br>
+      © Saju Srl — Hanneuse François · All rights reserved
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+(function(){
+  'use strict';
+
+  /* ═══════════════════════════════════════════════════════
+     CONSTANTS
+     ═══════════════════════════════════════════════════════ */
+  const YEARS = 40;
+  const WPY = 52.1775;
+  const TOTAL_WEEKS = Math.round(YEARS * WPY); // 2087
+  const START_DATE = new Date();
+  START_DATE.setHours(0,0,0,0);
+
+  function weekToDate(w) {
+    const d = new Date(START_DATE);
+    d.setDate(d.getDate() + w * 7);
+    return d;
+  }
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  /* Convert week to year display (e.g., "Year 15.0" or "2.34 yr") */
+  function wToYearDisplay(w) {
+    const yr = (w / WPY);
+    if (yr < 0.1) return 'Start';
+    return yr.toFixed(2) + ' yr';
+  }
+
+  function wToYearDisplayShort(w) {
+    const yr = (w / WPY);
+    return 'Yr ' + yr.toFixed(1);
+  }
+
+  function durToYearDisplay(w) {
+    const yr = (w / WPY);
+    if (yr < 1) return w + ' wk (' + yr.toFixed(2) + ' yr)';
+    return yr.toFixed(2) + ' yr (' + w + ' wk)';
+  }
+
+  function wToCalendarYear(w) {
+    const d = weekToDate(w);
+    return d.getFullYear();
+  }
+
+  function wToFullLabel(w) {
+    const yr = (w / WPY).toFixed(2);
+    const calYr = wToCalendarYear(w);
+    return yr + ' yr (cal. ' + calYr + ')';
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     DOM
+     ═══════════════════════════════════════════════════════ */
+  const $ = id => document.getElementById(id);
+
+  $('startDateLabel').textContent = START_DATE.toLocaleDateString('en-GB', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+  $('metaDate').textContent = START_DATE.toLocaleDateString('en-GB', {
+    year:'numeric', month:'long', day:'numeric'
+  });
+
+  let chart1, chart2, chart3;
+  let updating = false;
+  let minorCrises = [];
+  let currentMode = 'PID';
+
+  /* ═══════════════════════════════════════════════════════
+     PRODUCT / SECTOR COHERENCE
+     ═══════════════════════════════════════════════════════ */
+  const PRODUCT_SECTOR_MAP = {
+    'loco_rail': 'transport',
+    'emu': 'transport',
+    'metro': 'transport',
+    'civil_aircraft': 'aerospace',
+    'wind_turbine': 'energy',
+    'gas_turbine': 'energy',
+    'turnkey_plant': 'industry',
+    'defense_vehicle': 'defense',
+    'signalling': 'transport',
+    'breaker_3kv': 'energy'
+  };
+
+  function checkCoherence() {
+    const prod = $('productType').value;
+    const sect = $('sector').value;
+    const expected = PRODUCT_SECTOR_MAP[prod];
+    const hint = $('coherenceHint');
+    if (expected === sect) {
+      hint.style.color = '#2D6B4F';
+      hint.textContent = '\u2705 Product/Sector coherent';
+    } else {
+      hint.style.color = '#B33A3A';
+      hint.textContent = '\u26A0\uFE0F Incoherent! ' + prod + ' expects sector: ' + expected;
+    }
+  }
+
+  $('productType').addEventListener('change', function() {
+    const expected = PRODUCT_SECTOR_MAP[this.value];
+    if (expected) $('sector').value = expected;
+    checkCoherence();
+    updateAll();
+  });
+  $('sector').addEventListener('change', function() { checkCoherence(); updateAll(); });
+
+  /* ═══════════════════════════════════════════════════════
+     HELPERS
+     ═══════════════════════════════════════════════════════ */
+  const fmt = v => v >= 1000 ? (v/1000).toFixed(2)+' B\u20AC' : Math.round(v)+' M\u20AC';
+  const sumArr = a => { let s=0; for(let i=0;i<a.length;i++) s+=a[i]; return s; };
+
+  /* Historical annual indices */
+  const HIST_E = [1.02,1.03,1.05,1.08,1.12,1.18,1.25,1.35,1.28,1.15,1.10,1.22,1.45,1.38,1.20,1.05,1.08,1.15,1.28,1.35,1.42,1.55,1.68,1.75,1.65,1.48,1.55,1.82,2.10,2.35,1.95,1.75,1.85,2.05,2.45,2.80,2.60,2.40,2.55,2.70,2.85];
+  const HIST_S = [1.025,1.028,1.030,1.032,1.035,1.038,1.040,1.042,1.045,1.048,1.050,1.055,1.060,1.065,1.070,1.072,1.075,1.078,1.082,1.085,1.090,1.095,1.105,1.115,1.120,1.125,1.130,1.140,1.155,1.170,1.185,1.195,1.205,1.220,1.235,1.250,1.265,1.280,1.295,1.310,1.325];
+  const HIST_M = [1.015,1.018,1.022,1.028,1.035,1.045,1.055,1.080,1.095,1.085,1.065,1.075,1.120,1.145,1.130,1.095,1.105,1.125,1.150,1.165,1.180,1.210,1.240,1.255,1.230,1.210,1.225,1.260,1.290,1.320,1.280,1.255,1.270,1.295,1.340,1.380,1.355,1.330,1.345,1.365,1.380];
+
+  function interpAnnual(arr, w) {
+    const yr = w / WPY;
+    const y0 = Math.min(Math.floor(yr), arr.length-1);
+    const y1 = Math.min(Math.ceil(yr), arr.length-1);
+    const fr = yr - Math.floor(yr);
+    return arr[y0] + fr*(arr[y1]-arr[y0]);
+  }
+
+  function randn() {
+    return (Math.random()+Math.random()+Math.random()+Math.random()-2);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     BASE COST (deterministic)
+     ═══════════════════════════════════════════════════════ */
+  function getBaseCostWeekly() {
+    const unit = parseFloat($('unitPrice').value) || 0;
+    const maint = parseFloat($('maintPerUnit').value) || 0;
+    const total = parseFloat($('totalUnits').value) || 0;
+    const pStartW = parseInt($('prodStart').value) || 0;
+    const pEndW = Math.max(pStartW+1, parseInt($('prodEnd').value) || TOTAL_WEEKS);
+    const mStartW = parseInt($('maintStart').value) || 52;
+    const mEndW = Math.max(mStartW+1, parseInt($('maintEnd').value) || TOTAL_WEEKS);
+    const base = new Float64Array(TOTAL_WEEKS + 1);
+    let cumUnits = 0;
+    const perWeek = total / Math.max(1, pEndW - pStartW);
+    for (let w = 0; w <= TOTAL_WEEKS; w++) {
+      if (w >= pStartW && w < pEndW) {
+        base[w] += perWeek * unit;
+        cumUnits += perWeek;
+      }
+      if (w >= mStartW && w <= mEndW && cumUnits > 0) {
+        base[w] += cumUnits * maint / WPY;
+      }
+    }
+    return base;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     TREND INDEX (smooth, no noise)
+     + separate component arrays for Chart 3
+     ═══════════════════════════════════════════════════════ */
+  function getTrendData() {
+    const mSw = parseInt($('majorStart').value);
+    const mDw = parseInt($('majorDur').value);
+    const mA = parseFloat($('majorAmp').value);
+    const oSw = parseInt($('obsStart').value);
+    const oA = parseFloat($('obsAmp').value);
+    const scSw = parseInt($('scaleStart').value);
+    const scDw = parseInt($('scaleDur').value);
+    const scA = parseFloat($('scaleAmp').value);
+    const tSw = parseInt($('techStart').value);
+    const tRed = parseFloat($('techAmp').value) / WPY;
+    const we = parseFloat($('wE').value)||0;
+    const ws = parseFloat($('wS').value)||0;
+    const wm = parseFloat($('wM').value)||0;
+    const wsum = (we+ws+wm)||1;
+    const trendW = 1 + 0.0065 / WPY;
+    const rampW = Math.round(WPY * 0.3);
+
+    const idx = new Float64Array(TOTAL_WEEKS + 1);
+    const idxE = new Float64Array(TOTAL_WEEKS + 1);
+    const idxS = new Float64Array(TOTAL_WEEKS + 1);
+    const idxM = new Float64Array(TOTAL_WEEKS + 1);
+    const multCrisis = new Float64Array(TOTAL_WEEKS + 1);
+    const multObs = new Float64Array(TOTAL_WEEKS + 1);
+    const multScale = new Float64Array(TOTAL_WEEKS + 1);
+    const multTech = new Float64Array(TOTAL_WEEKS + 1);
+
+    for (let w = 0; w <= TOTAL_WEEKS; w++) {
+      const trend = Math.pow(trendW, w);
+      let E = interpAnnual(HIST_E, w) * trend;
+      let S = interpAnnual(HIST_S, w) * trend;
+      let M = interpAnnual(HIST_M, w) * trend;
+
+      let crisisMult = 1;
+      // Major crisis with ramp
+      if (w >= mSw && w < mSw + mDw) {
+        const pos = w - mSw;
+        let amp = mA;
+        if (pos < rampW) amp = 1 + (mA-1)*(pos+1)/(rampW+1);
+        else if (mDw-pos <= rampW) amp = 1 + (mA-1)*(mDw-pos)/(rampW+1);
+        crisisMult *= amp;
+      }
+      // Minor crises
+      for (const c of minorCrises) {
+        if (w >= c.start && w < c.start+c.dur) {
+          crisisMult *= c.amp;
+        }
+      }
+      E *= crisisMult; S *= crisisMult; M *= crisisMult;
+
+      let obsMult = 1;
+      if (w >= oSw) { obsMult = oA; E*=oA; S*=oA; M*=oA; }
+
+      let scaleMult = 1;
+      if (w >= scSw && w < scSw+scDw) { scaleMult = scA; E*=scA; S*=scA; M*=scA; }
+
+      let composite = (we*E + ws*S + wm*M) / wsum;
+
+      let techMult = 1;
+      if (w >= tSw) {
+        techMult = Math.max(1 - tRed*(w-tSw), 0.55);
+        composite *= techMult;
+      }
+
+      idx[w] = Math.max(0.05, composite);
+      idxE[w] = E / (crisisMult * (w>=oSw?oA:1) * (w>=scSw&&w<scSw+scDw?scA:1)); // base E
+      idxS[w] = S / (crisisMult * (w>=oSw?oA:1) * (w>=scSw&&w<scSw+scDw?scA:1));
+      idxM[w] = M / (crisisMult * (w>=oSw?oA:1) * (w>=scSw&&w<scSw+scDw?scA:1));
+      multCrisis[w] = crisisMult;
+      multObs[w] = obsMult;
+      multScale[w] = scaleMult;
+      multTech[w] = techMult;
+    }
+
+    return { idx, idxE, idxS, idxM, multCrisis, multObs, multScale, multTech };
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     NOISY INDEX (independent per week)
+     ═══════════════════════════════════════════════════════ */
+  function getNoisyIndex(trendIdx) {
+    const vol = parseFloat($('volatility').value);
+    const sigE = vol * 0.022;
+    const sigS = vol * 0.008;
+    const sigM = vol * 0.025;
+    const shockP = Math.min(0.12, 0.012 * vol);
+    const shockMx = 0.06 * vol;
+    const we = parseFloat($('wE').value)||0;
+    const ws = parseFloat($('wS').value)||0;
+    const wm = parseFloat($('wM').value)||0;
+    const wsum = (we+ws+wm)||1;
+    const noisy = new Float64Array(TOTAL_WEEKS + 1);
+    for (let w = 0; w <= TOTAL_WEEKS; w++) {
+      let noiseE = 1 + randn() * sigE;
+      let noiseS = 1 + randn() * sigS;
+      let noiseM = 1 + randn() * sigM;
+      if (Math.random() < shockP) {
+        const sign = Math.random() < 0.55 ? 1 : -1;
+        const mag = Math.random() * shockMx;
+        noiseE += sign * mag * (0.7 + Math.random()*0.6);
+        noiseM += sign * mag * (0.8 + Math.random()*0.4);
+        noiseS += sign * mag * 0.2;
+      }
+      const noiseComposite = (we * noiseE + ws * noiseS + wm * noiseM) / wsum;
+      noisy[w] = Math.max(0.05, trendIdx[w] * noiseComposite);
+    }
+    return noisy;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     BUDGET (smooth)
+     ═══════════════════════════════════════════════════════ */
+  function getBudgetWeekly(multiplier, base) {
+    const b0 = base[0], bN = base[TOTAL_WEEKS];
+    const g = (b0>0 && bN>0) ? Math.pow(multiplier * b0 / bN, 1/TOTAL_WEEKS) : Math.pow(multiplier, 1/TOTAL_WEEKS);
+    const out = new Float64Array(TOTAL_WEEKS+1);
+    for (let w=0; w<=TOTAL_WEEKS; w++) out[w] = base[w] * Math.pow(g, w);
+    return out;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     PID (smooth — operates on trend)
+     ═══════════════════════════════════════════════════════ */
+  function priceWithPID(trendIdx, base, Kp, Ki, Kd) {
+    const price = new Float64Array(TOTAL_WEEKS+1);
+    let err=0, integ=0, prev=0;
+    for (let w=0; w<=TOTAL_WEEKS; w++) {
+      const ref = trendIdx[w];
+      err = ref - trendIdx[Math.max(0,w-1)];
+      integ += err;
+      const deriv = err - prev;
+      const corrIdx = Math.max(0.05, ref + Kp*err + (Ki/WPY)*integ + Kd*WPY*deriv);
+      price[w] = base[w] * corrIdx;
+      prev = err;
+    }
+    let sumTrend=0, sumPid=0;
+    for (let w=0; w<=TOTAL_WEEKS; w++) { sumTrend+=base[w]*trendIdx[w]; sumPid+=price[w]; }
+    if (sumPid>0) { const r=sumTrend/sumPid; for(let w=0;w<=TOTAL_WEEKS;w++) price[w]*=r; }
+    return price;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     MPC (smooth)
+     ═══════════════════════════════════════════════════════ */
+  function priceWithMPC(trendIdx, base, targetTotal) {
+    const horizon = parseInt($('mpcHorizon').value);
+    const wT = parseFloat($('mpcWeightTrack').value);
+    const wEf = parseFloat($('mpcWeightEffort').value);
+    const maxCh = parseFloat($('mpcMaxChange').value)/100;
+    const price = new Float64Array(TOTAL_WEEKS+1);
+    let curM = parseFloat($('coefSlider').value);
+    for (let w=0; w<=TOTAL_WEEKS; w++) {
+      let best=curM, bestC=Infinity;
+      const lo=Math.max(0.5,curM*(1-maxCh)), hi=curM*(1+maxCh);
+      for (let t=lo; t<=hi; t+=0.003) {
+        let cost=0, pTot=0;
+        for (let h=0; h<horizon && w+h<=TOTAL_WEEKS; h++) {
+          const fIdx = trendIdx[w+h];
+          const norm = Math.pow(t,(w+h)/TOTAL_WEEKS);
+          const fp = base[w+h]*norm*fIdx;
+          const er = fp - base[w+h]*fIdx;
+          cost += wT*er*er;
+          pTot += fp;
+        }
+        cost += wEf*Math.pow(t-curM,2);
+        cost += Math.max(0,pTot-targetTotal)*0.0005;
+        if (cost<bestC){bestC=cost;best=t;}
+      }
+      price[w] = base[w]*Math.pow(best,w/TOTAL_WEEKS)*trendIdx[w];
+      curM = best;
+    }
+    return price;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     CUMULATIVE
+     ═══════════════════════════════════════════════════════ */
+  function cumulative(arr) {
+    const c = new Float64Array(arr.length);
+    c[0] = arr[0];
+    for (let i=1; i<arr.length; i++) c[i]=c[i-1]+arr[i];
+    return c;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ANNOTATIONS
+     ═══════════════════════════════════════════════════════ */
+  function makeAnnotations() {
+    const a = {};
+    const mSw=+$('majorStart').value, mDw=+$('majorDur').value;
+    a.major={type:'box',xMin:mSw,xMax:Math.min(TOTAL_WEEKS,mSw+mDw),
+      backgroundColor:'rgba(239,68,68,.1)',borderColor:'rgba(239,68,68,.4)',borderWidth:1,
+      label:{content:'\uD83C\uDF0D Major Crisis',display:true,position:'start',color:'#fff',
+        font:{size:9,family:'IBM Plex Mono'}}};
+    const oSw=+$('obsStart').value;
+    a.obs={type:'box',xMin:oSw,xMax:TOTAL_WEEKS,
+      backgroundColor:'rgba(245,158,11,.07)',borderColor:'rgba(245,158,11,.3)',borderWidth:1,
+      label:{content:'\uD83D\uDEE0\uFE0F Obsolescence',display:true,position:'start',color:'#fff',
+        font:{size:9,family:'IBM Plex Mono'}}};
+    const scSw=+$('scaleStart').value, scDw=+$('scaleDur').value;
+    a.scale={type:'box',xMin:scSw,xMax:Math.min(TOTAL_WEEKS,scSw+scDw),
+      backgroundColor:'rgba(16,185,129,.08)',borderColor:'rgba(16,185,129,.3)',borderWidth:1,
+      label:{content:'\uD83D\uDCC9 Economies',display:true,position:'start',color:'#fff',
+        font:{size:9,family:'IBM Plex Mono'}}};
+    const emj={monetary:'\uD83D\uDCB0',supplier:'\uD83C\uDFED',raw:'\u26CF\uFE0F',
+      logistics:'\uD83D\uDE9A',competition:'\u2694\uFE0F',internal:'\uD83D\uDCC9'};
+    minorCrises.forEach((c,i)=>{
+      a['m'+i]={type:'box',xMin:c.start,xMax:Math.min(TOTAL_WEEKS,c.start+c.dur),
+        backgroundColor:'rgba(234,179,8,.1)',borderColor:'rgba(234,179,8,.35)',borderWidth:1,
+        label:{content:(emj[c.type]||'\u26A1')+' C'+(i+1),display:true,position:'start',color:'#fff',
+          font:{size:8,family:'IBM Plex Mono'}}};
+    });
+    return a;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COHERENCE COEF / TOTAL
+     ═══════════════════════════════════════════════════════ */
+  function updateFromCoef() {
+    if(updating) return;
+    updating=true;
+    const coef=parseFloat($('coefSlider').value);
+    $('coefValue').innerText=coef.toFixed(2)+'\u00D7';
+    const base=getBaseCostWeekly();
+    const tot=sumArr(getBudgetWeekly(coef,base));
+    $('totalAmount').value=Math.round(tot);
+    $('totalAmountVal').innerText=fmt(tot);
+    updating=false;
+  }
+
+  function updateFromTotal() {
+    if(updating) return;
+    updating=true;
+    const target=parseFloat($('totalAmount').value);
+    $('totalAmountVal').innerText=fmt(target);
+    const base=getBaseCostWeekly();
+    let lo=1,hi=15;
+    for(let i=0;i<64;i++){const m=(lo+hi)/2; sumArr(getBudgetWeekly(m,base))<target?lo=m:hi=m;}
+    const c=(lo+hi)/2;
+    $('coefSlider').value=c;
+    $('coefValue').innerText=c.toFixed(2)+'\u00D7';
+    updating=false;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ZOOM SYNC & GRANULARITY
+     ═══════════════════════════════════════════════════════ */
+  function getGranularity(range) {
+    if (range <= WPY * 0.5) return 'week';
+    if (range <= WPY * 3) return 'month';
+    if (range <= WPY * 10) return 'quarter';
+    return 'year';
+  }
+
+  function tickStep(range) {
+    if (range <= WPY * 0.5) return Math.round(WPY/12);
+    if (range <= WPY * 3) return Math.round(WPY/12);
+    if (range <= WPY * 10) return Math.round(WPY/4);
+    return Math.round(WPY);
+  }
+
+  const allCharts = () => [chart1, chart2, chart3].filter(Boolean);
+
+  function syncZoom(sourceChart) {
+    const xMin = sourceChart.scales.x.min;
+    const xMax = sourceChart.scales.x.max;
+    allCharts().forEach(ch => {
+      if (ch !== sourceChart) {
+        ch.options.scales.x.min = xMin;
+        ch.options.scales.x.max = xMax;
+        ch.update('none');
+      }
+    });
+    updateZoomInfoAll();
+  }
+
+  function updateZoomInfoAll() {
+    allCharts().forEach((ch, i) => {
+      const el = $('zoomInfo' + (i+1));
+      if (!el || !ch) return;
+      const xMin = ch.scales.x.min ?? 0;
+      const xMax = ch.scales.x.max ?? TOTAL_WEEKS;
+      const range = xMax - xMin;
+      const gran = getGranularity(range);
+      const labels = {week:'week-by-week detail',month:'monthly detail',quarter:'quarterly detail',year:'annual view'};
+      const rangeY = (range/WPY).toFixed(1);
+      const yrStart = (xMin/WPY).toFixed(1);
+      const yrEnd = (xMax/WPY).toFixed(1);
+      el.innerText = rangeY + ' yr view (Yr' + yrStart + ' \u2192 Yr' + yrEnd + ') \u2014 ' + labels[gran];
+    });
+  }
+
+  function resetAllZoom() {
+    allCharts().forEach(ch => { ch.resetZoom(); });
+    updateZoomInfoAll();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     CHART CREATION HELPERS
+     ═══════════════════════════════════════════════════════ */
+  const chartColors = {
+    real: '#ef4444',
+    budget: '#C9A94E',
+    compA: '#94a3b8',
+    compB: '#f97316',
+    saju: '#10b981',
+    energy: '#f59e0b',
+    wages: '#3b82f6',
+    rawMat: '#a855f7',
+    composite: '#C9A94E',
+    crisis: '#ef4444',
+    scale: '#14b8a6'
+  };
+
+  function makeZoomPlugin(srcChartGetter) {
+    return {
+      zoom: {
+        wheel: { enabled: true, speed: 0.08 },
+        pinch: { enabled: true },
+        mode: 'x',
+        onZoomComplete({chart}) { syncZoom(chart); }
+      },
+      pan: {
+        enabled: true,
+        mode: 'x',
+        onPanComplete({chart}) { syncZoom(chart); }
+      },
+      limits: { x: { min: 0, max: TOTAL_WEEKS } }
+    };
+  }
+
+  function makeXScale() {
+    return {
+      title: {
+        display: true,
+        text: 'Timeline (years) \u2014 scroll to zoom, drag to pan',
+        color: 'rgba(255,255,255,.5)',
+        font: { family: 'IBM Plex Mono', size: 10 }
+      },
+      grid: { color: 'rgba(255,255,255,.04)' },
+      ticks: {
+        color: 'rgba(255,255,255,.6)',
+        maxRotation: 0,
+        autoSkip: true,
+        autoSkipPadding: 25,
+        maxTicksLimit: 18,
+        font: { family: 'IBM Plex Mono', size: 9 },
+        callback: function(val, idx) {
+          const w = idx;
+          const ch = this.chart;
+          if (!ch) return '';
+          const xMin = ch.scales.x.min ?? 0;
+          const xMax = ch.scales.x.max ?? TOTAL_WEEKS;
+          const range = xMax - xMin;
+          const gran = getGranularity(range);
+          const step = tickStep(range);
+          if (w % step !== 0) return null;
+          const d = weekToDate(w);
+          const yr = d.getFullYear();
+          const mo = d.getMonth();
+          const an = (w / WPY).toFixed(1);
+          if (gran === 'week') return 'Yr' + an + ' (' + yr + ')';
+          if (gran === 'month') return MONTHS[mo] + ' ' + yr;
+          if (gran === 'quarter') {
+            if (mo%3===0) return 'Q' + (Math.floor(mo/3)+1) + ' ' + yr;
+            return null;
+          }
+          if (mo === 0 || w === 0) return yr + '\nYr' + Math.floor(w/WPY);
+          return null;
+        }
+      }
+    };
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     MAIN UPDATE
+     ═══════════════════════════════════════════════════════ */
+  function updateAll() {
+    updateFromCoef();
+    checkCoherence();
+
+    const coef = parseFloat($('coefSlider').value);
+    const base = getBaseCostWeekly();
+    const trendData = getTrendData();
+    const trendIdx = trendData.idx;
+    const noisyIdx = getNoisyIndex(trendIdx);
+
+    // Real cost = base * noisy index (sawtooth)
+    const realW = new Float64Array(TOTAL_WEEKS+1);
+    for(let w=0;w<=TOTAL_WEEKS;w++) realW[w]=base[w]*noisyIdx[w];
+
+    // Budget smooth
+    const budgW = getBudgetWeekly(coef, base);
+
+    // Competitors
+    const caF = 1+parseFloat($('compA').value)/100;
+    const cbF = 1+parseFloat($('compB').value)/100;
+    const caW = new Float64Array(TOTAL_WEEKS+1);
+    const cbW = new Float64Array(TOTAL_WEEKS+1);
+    for(let w=0;w<=TOTAL_WEEKS;w++){caW[w]=realW[w]*caF; cbW[w]=realW[w]*cbF;}
+
+    // Saju regulation (smooth)
+    let regW;
+    if(currentMode==='PID'){
+      const Kp=+$('kp').value,Ki=+$('ki').value,Kd=+$('kd').value;
+      regW = priceWithPID(trendIdx,base,Kp,Ki,Kd);
+    } else {
+      regW = priceWithMPC(trendIdx,base,parseFloat($('totalAmount').value));
+    }
+
+    // Cumulatives
+    const realC=cumulative(realW), budgC=cumulative(budgW);
+    const caC=cumulative(caW), cbC=cumulative(cbW), regC=cumulative(regW);
+
+    // Deviation weekly (for chart 2 fill)
+    const deviationW = new Float64Array(TOTAL_WEEKS+1);
+    for(let w=0;w<=TOTAL_WEEKS;w++) deviationW[w] = realW[w] - budgW[w];
+
+    // Summary
+    const rT=realC[TOTAL_WEEKS],bT=budgC[TOTAL_WEEKS];
+    const caT=caC[TOTAL_WEEKS],cbT=cbC[TOTAL_WEEKS],pT=regC[TOTAL_WEEKS];
+    $('impactSummary').innerHTML=
+      '<div><span class="lbl">\uD83D\uDCB0 Real (noisy):</span> <span class="val">'+fmt(rT)+'</span></div>'+
+      '<div><span class="lbl">\uD83C\uDFAF Budget \u00D7'+coef.toFixed(2)+':</span> <span class="val">'+fmt(bT)+'</span> <span class="lbl">('+((bT-rT)/rT*100).toFixed(1)+'%)</span></div>'+
+      '<div><span class="lbl">\u2694\uFE0F Comp.A ('+(caF*100-100).toFixed(0)+'%):</span> <span class="val">'+fmt(caT)+'</span></div>'+
+      '<div><span class="lbl">\u2694\uFE0F Comp.B (+'+(cbF*100-100).toFixed(0)+'%):</span> <span class="val">'+fmt(cbT)+'</span></div>'+
+      '<div><span class="lbl">\uD83D\uDD27 Saju '+currentMode+':</span> <span class="val">'+fmt(pT)+'</span> <span class="lbl">('+((pT-rT)/rT*100).toFixed(1)+'%)</span></div>';
+
+    const ann = makeAnnotations();
+    const labels = Array.from({length:TOTAL_WEEKS+1},(_,w)=>w);
+
+    /* ── CHART 1 ── Cumulative */
+    if (chart1) {
+      chart1.data.datasets[0].data = Array.from(realC);
+      chart1.data.datasets[1].data = Array.from(budgC);
+      chart1.data.datasets[2].data = Array.from(caC);
+      chart1.data.datasets[3].data = Array.from(cbC);
+      chart1.data.datasets[4].data = Array.from(regC);
+      chart1.options.plugins.annotation.annotations = ann;
+      chart1.update('none');
+    } else {
+      chart1 = new Chart($('chart1').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {label:'Real', data:Array.from(realC), borderColor:chartColors.real, borderWidth:1.2, tension:0, pointRadius:0, fill:false},
+            {label:'Budget', data:Array.from(budgC), borderColor:chartColors.budget, borderWidth:2.5, tension:0.4, pointRadius:0, fill:false},
+            {label:'Comp. A', data:Array.from(caC), borderColor:chartColors.compA, borderWidth:0.8, tension:0, pointRadius:0, fill:false},
+            {label:'Comp. B', data:Array.from(cbC), borderColor:chartColors.compB, borderWidth:0.8, tension:0, pointRadius:0, fill:false},
+            {label:'Saju ('+currentMode+')', data:Array.from(regC), borderColor:chartColors.saju, borderWidth:3, tension:0.4, pointRadius:0, fill:false}
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:true, animation:false,
+          interaction:{mode:'index',intersect:false},
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const w = items[0].dataIndex;
+                  const d = weekToDate(w);
+                  const yr = (w/WPY).toFixed(2);
+                  return 'Year '+yr+' \u2014 '+d.toLocaleDateString('en-GB')+' (wk '+w+')';
+                },
+                label(item) { return item.dataset.label+': '+fmt(item.raw); }
+              },
+              titleFont:{family:'IBM Plex Mono',size:10},
+              bodyFont:{family:'IBM Plex Mono',size:10},
+              backgroundColor:'rgba(11,13,18,.95)',
+              borderColor:'rgba(201,169,78,.3)',borderWidth:1
+            },
+            legend:{display:false},
+            annotation:{annotations:ann},
+            zoom: makeZoomPlugin(() => chart1)
+          },
+          scales: {
+            y: {
+              title:{display:true,text:'Cumulative Cost (M\u20AC / B\u20AC)',color:'rgba(255,255,255,.5)',font:{family:'IBM Plex Mono',size:10}},
+              grid:{color:'rgba(255,255,255,.06)'},
+              ticks:{color:'rgba(255,255,255,.6)',callback:v=>fmt(v),font:{family:'IBM Plex Mono',size:9}}
+            },
+            x: makeXScale()
+          }
+        }
+      });
+    }
+
+    /* ── CHART 2 ── Weekly non-cumulative */
+    if (chart2) {
+      chart2.data.datasets[0].data = Array.from(realW);
+      chart2.data.datasets[1].data = Array.from(budgW);
+      chart2.data.datasets[2].data = Array.from(regW);
+      // Update fill datasets
+      const overBudget = Array.from({length:TOTAL_WEEKS+1}, (_,w) => realW[w] > budgW[w] ? realW[w] : budgW[w]);
+      const underBudget = Array.from({length:TOTAL_WEEKS+1}, (_,w) => realW[w] <= budgW[w] ? realW[w] : budgW[w]);
+      chart2.data.datasets[3].data = overBudget;
+      chart2.data.datasets[4].data = underBudget;
+      chart2.options.plugins.annotation.annotations = ann;
+      chart2.update('none');
+    } else {
+      const overBudget = Array.from({length:TOTAL_WEEKS+1}, (_,w) => realW[w] > budgW[w] ? realW[w] : budgW[w]);
+      const underBudget = Array.from({length:TOTAL_WEEKS+1}, (_,w) => realW[w] <= budgW[w] ? realW[w] : budgW[w]);
+      chart2 = new Chart($('chart2').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {label:'Real weekly', data:Array.from(realW), borderColor:chartColors.real, borderWidth:1, tension:0, pointRadius:0, fill:false, order:1},
+            {label:'Budget weekly', data:Array.from(budgW), borderColor:chartColors.budget, borderWidth:2, tension:0.4, pointRadius:0, fill:false, order:2},
+            {label:'Saju weekly', data:Array.from(regW), borderColor:chartColors.saju, borderWidth:2.5, tension:0.4, pointRadius:0, fill:false, order:0},
+            {label:'Over budget', data:overBudget, borderColor:'transparent', borderWidth:0, pointRadius:0, backgroundColor:'rgba(239,68,68,0.12)', fill:{target:1,above:'rgba(239,68,68,0.12)',below:'transparent'}, tension:0, order:3},
+            {label:'Under budget', data:underBudget, borderColor:'transparent', borderWidth:0, pointRadius:0, backgroundColor:'rgba(16,185,129,0.12)', fill:{target:1,above:'transparent',below:'rgba(16,185,129,0.12)'}, tension:0, order:4}
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:true, animation:false,
+          interaction:{mode:'index',intersect:false},
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const w = items[0].dataIndex;
+                  const yr = (w/WPY).toFixed(2);
+                  return 'Year '+yr+' (wk '+w+')';
+                },
+                label(item) {
+                  if (item.datasetIndex >= 3) return null;
+                  return item.dataset.label+': '+fmt(item.raw);
+                }
+              },
+              titleFont:{family:'IBM Plex Mono',size:10},
+              bodyFont:{family:'IBM Plex Mono',size:10},
+              backgroundColor:'rgba(11,13,18,.95)',
+              borderColor:'rgba(201,169,78,.3)',borderWidth:1,
+              filter: item => item.datasetIndex < 3
+            },
+            legend:{display:false},
+            annotation:{annotations:ann},
+            zoom: makeZoomPlugin(() => chart2)
+          },
+          scales: {
+            y: {
+              title:{display:true,text:'Weekly Cost (M\u20AC)',color:'rgba(255,255,255,.5)',font:{family:'IBM Plex Mono',size:10}},
+              grid:{color:'rgba(255,255,255,.06)'},
+              ticks:{color:'rgba(255,255,255,.6)',callback:v=>v.toFixed(2)+' M',font:{family:'IBM Plex Mono',size:9}}
+            },
+            x: makeXScale()
+          }
+        }
+      });
+    }
+
+    /* ── CHART 3 ── Indices & Drivers */
+    // Normalize indices to base 1.0 at w=0
+    const eNorm = Array.from({length:TOTAL_WEEKS+1}, (_,w) => trendData.idxE[w] / (trendData.idxE[0]||1));
+    const sNorm = Array.from({length:TOTAL_WEEKS+1}, (_,w) => trendData.idxS[w] / (trendData.idxS[0]||1));
+    const mNorm = Array.from({length:TOTAL_WEEKS+1}, (_,w) => trendData.idxM[w] / (trendData.idxM[0]||1));
+    const cNorm = Array.from({length:TOTAL_WEEKS+1}, (_,w) => trendData.idx[w] / (trendData.idx[0]||1));
+    const crisisArr = Array.from(trendData.multCrisis);
+    const scaleTechArr = Array.from({length:TOTAL_WEEKS+1}, (_,w) => trendData.multScale[w] * trendData.multTech[w]);
+
+    if (chart3) {
+      chart3.data.datasets[0].data = eNorm;
+      chart3.data.datasets[1].data = sNorm;
+      chart3.data.datasets[2].data = mNorm;
+      chart3.data.datasets[3].data = cNorm;
+      chart3.data.datasets[4].data = crisisArr;
+      chart3.data.datasets[5].data = scaleTechArr;
+      chart3.update('none');
+    } else {
+      chart3 = new Chart($('chart3').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {label:'Energy', data:eNorm, borderColor:chartColors.energy, borderWidth:1.5, tension:0.3, pointRadius:0, fill:false},
+            {label:'Wages', data:sNorm, borderColor:chartColors.wages, borderWidth:1.5, tension:0.3, pointRadius:0, fill:false},
+            {label:'Raw Materials', data:mNorm, borderColor:chartColors.rawMat, borderWidth:1.5, tension:0.3, pointRadius:0, fill:false},
+            {label:'Composite', data:cNorm, borderColor:chartColors.composite, borderWidth:3, tension:0.3, pointRadius:0, fill:false},
+            {label:'Crisis mult.', data:crisisArr, borderColor:chartColors.crisis, borderWidth:1.2, borderDash:[6,4], tension:0, pointRadius:0, fill:false},
+            {label:'Scale/Tech', data:scaleTechArr, borderColor:chartColors.scale, borderWidth:1.2, borderDash:[6,4], tension:0.2, pointRadius:0, fill:false}
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:true, animation:false,
+          interaction:{mode:'index',intersect:false},
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const w = items[0].dataIndex;
+                  const yr = (w/WPY).toFixed(2);
+                  return 'Year '+yr+' (wk '+w+')';
+                },
+                label(item) { return item.dataset.label+': '+item.raw.toFixed(3); }
+              },
+              titleFont:{family:'IBM Plex Mono',size:10},
+              bodyFont:{family:'IBM Plex Mono',size:10},
+              backgroundColor:'rgba(11,13,18,.95)',
+              borderColor:'rgba(201,169,78,.3)',borderWidth:1
+            },
+            legend:{display:false},
+            zoom: makeZoomPlugin(() => chart3)
+          },
+          scales: {
+            y: {
+              title:{display:true,text:'Index (base 1.0)',color:'rgba(255,255,255,.5)',font:{family:'IBM Plex Mono',size:10}},
+              grid:{color:'rgba(255,255,255,.06)'},
+              ticks:{color:'rgba(255,255,255,.6)',font:{family:'IBM Plex Mono',size:9},
+                callback:v=>v.toFixed(1)}
+            },
+            x: makeXScale()
+          }
+        }
+      });
+    }
+
+    updateZoomInfoAll();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     MINOR CRISES UI
+     ═══════════════════════════════════════════════════════ */
+  function renderMinorCrises() {
+    const cont = $('minorCrisesContainer');
+    cont.innerHTML = '';
+    minorCrises.forEach((cr, idx) => {
+      const d = document.createElement('div');
+      d.className = 'crisis-item';
+      d.innerHTML =
+        '<div class="crisis-hdr"><span>Crisis '+(idx+1)+'</span><button class="rm-btn" data-i="'+idx+'">\u2716</button></div>'+
+        '<div class="field"><label>Type</label>'+
+        '<select class="mt" data-i="'+idx+'">'+
+        '<option value="monetary"'+(cr.type==='monetary'?' selected':'')+'>\uD83D\uDCB0 Monetary</option>'+
+        '<option value="supplier"'+(cr.type==='supplier'?' selected':'')+'>\uD83C\uDFED Supplier</option>'+
+        '<option value="raw"'+(cr.type==='raw'?' selected':'')+'>\u26CF\uFE0F Raw materials</option>'+
+        '<option value="logistics"'+(cr.type==='logistics'?' selected':'')+'>\uD83D\uDE9A Logistics</option>'+
+        '<option value="competition"'+(cr.type==='competition'?' selected':'')+'>\u2694\uFE0F Competition</option>'+
+        '<option value="internal"'+(cr.type==='internal'?' selected':'')+'>\uD83D\uDCC9 Internal</option>'+
+        '</select></div>'+
+        '<div class="field"><label>Start</label>'+
+        '<div class="slider-row"><input type="range" class="my" data-i="'+idx+'" min="1" max="2050" step="1" value="'+cr.start+'">'+
+        '<span class="sval my-lbl" data-i="'+idx+'">'+wToFullLabel(cr.start)+'</span></div></div>'+
+        '<div class="field"><label>Duration</label>'+
+        '<div class="slider-row"><input type="range" class="md" data-i="'+idx+'" min="1" max="208" step="1" value="'+(cr.dur||4)+'">'+
+        '<span class="sval md-lbl" data-i="'+idx+'">'+durToYearDisplay(cr.dur||4)+'</span></div></div>'+
+        '<div class="field"><label>Amplitude</label>'+
+        '<div class="slider-row"><input type="range" class="ma" data-i="'+idx+'" min="1.05" max="2.5" step="0.05" value="'+cr.amp+'">'+
+        '<span class="sval ma-lbl" data-i="'+idx+'">'+cr.amp.toFixed(2)+'\u00D7</span></div></div>';
+      cont.appendChild(d);
+    });
+
+    cont.querySelectorAll('.rm-btn').forEach(b => b.addEventListener('click', () => {
+      minorCrises.splice(+b.dataset.i, 1); renderMinorCrises(); updateAll();
+    }));
+    cont.querySelectorAll('.mt').forEach(el => el.addEventListener('change', () => {
+      minorCrises[+el.dataset.i].type = el.value; updateAll();
+    }));
+    cont.querySelectorAll('.my').forEach(el => el.addEventListener('input', () => {
+      const i = +el.dataset.i;
+      minorCrises[i].start = +el.value;
+      cont.querySelector('.my-lbl[data-i="'+i+'"]').innerText = wToFullLabel(+el.value);
+      updateAll();
+    }));
+    cont.querySelectorAll('.md').forEach(el => el.addEventListener('input', () => {
+      const i = +el.dataset.i;
+      minorCrises[i].dur = +el.value;
+      cont.querySelector('.md-lbl[data-i="'+i+'"]').innerText = durToYearDisplay(+el.value);
+      updateAll();
+    }));
+    cont.querySelectorAll('.ma').forEach(el => el.addEventListener('input', () => {
+      const i = +el.dataset.i;
+      minorCrises[i].amp = +el.value;
+      cont.querySelector('.ma-lbl[data-i="'+i+'"]').innerText = (+el.value).toFixed(2)+'\u00D7';
+      updateAll();
+    }));
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ACCORDION
+     ═══════════════════════════════════════════════════════ */
+  $('accordionBtn').addEventListener('click', function() {
+    this.classList.toggle('open');
+    const body = $('accordionBody');
+    body.classList.toggle('open');
+    if (body.classList.contains('open') && chart3) {
+      setTimeout(() => chart3.resize(), 350);
+    }
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     LISTENERS
+     ═══════════════════════════════════════════════════════ */
+  function initListeners() {
+    $('coefSlider').addEventListener('input', () => { updateFromCoef(); updateAll(); });
+    $('totalAmount').addEventListener('input', () => { updateFromTotal(); updateAll(); });
+
+    /* Week sliders with year-based labels */
+    const weekSliders = [
+      ['prodStart','prodStartVal', wToFullLabel],
+      ['prodEnd','prodEndVal', wToFullLabel],
+      ['maintStart','maintStartVal', wToFullLabel],
+      ['maintEnd','maintEndVal', wToFullLabel],
+      ['majorStart','majorStartVal', wToFullLabel],
+      ['majorDur','majorDurVal', durToYearDisplay],
+      ['obsStart','obsStartVal', wToFullLabel],
+      ['scaleStart','scaleStartVal', wToFullLabel],
+      ['scaleDur','scaleDurVal', durToYearDisplay],
+      ['techStart','techStartVal', wToFullLabel],
+    ];
+    weekSliders.forEach(([id, sid, fn]) => {
+      const el = $(id), sp = $(sid);
+      if (!el || !sp) return;
+      el.addEventListener('input', () => { sp.innerText = fn(+el.value); updateAll(); });
+      sp.innerText = fn(+el.value);
+    });
+
+    /* Simple sliders */
+    const simpleSliders = [
+      ['majorAmp','majorAmpVal', v => parseFloat(v).toFixed(2)+'\u00D7'],
+      ['obsAmp','obsAmpVal', v => parseFloat(v).toFixed(2)+'\u00D7'],
+      ['scaleAmp','scaleAmpVal', v => parseFloat(v).toFixed(2)+'\u00D7'],
+      ['techAmp','techAmpVal', v => (+v*100*WPY).toFixed(2)+'%/yr'],
+      ['compA','compAVal', v => v+'%'],
+      ['compB','compBVal', v => '+'+v+'%'],
+      ['volatility','volatilityVal', v => (+v).toFixed(1)],
+      ['kp','kpVal', v => (+v).toFixed(2)],
+      ['ki','kiVal', v => (+v).toFixed(2)],
+      ['kd','kdVal', v => (+v).toFixed(2)],
+      ['mpcHorizon','mpcHorizonVal', v => (+v/WPY).toFixed(2)+' yr'],
+      ['mpcWeightTrack','mpcWeightTrackVal', v => (+v).toFixed(1)],
+      ['mpcWeightEffort','mpcWeightEffortVal', v => (+v).toFixed(1)],
+      ['mpcMaxChange','mpcMaxChangeVal', v => (+v).toFixed(2)+'%'],
+    ];
+    simpleSliders.forEach(([id, sid, fn]) => {
+      const el = $(id), sp = $(sid);
+      if (!el || !sp) return;
+      el.addEventListener('input', () => { sp.innerText = fn(el.value); updateAll(); });
+      sp.innerText = fn(el.value);
+    });
+
+    /* Other inputs */
+    ['unitPrice','totalUnits','maintPerUnit','wE','wS','wM'].forEach(id => {
+      const el = $(id);
+      if (el) el.addEventListener('input', updateAll);
+    });
+
+    $('modePID').addEventListener('click', () => setMode('PID'));
+    $('modeMPC').addEventListener('click', () => setMode('MPC'));
+
+    $('addMinor').addEventListener('click', () => {
+      if (minorCrises.length < 7) {
+        minorCrises.push({start:520, dur:26, amp:1.4, type:'raw'});
+        renderMinorCrises();
+        updateAll();
+      } else {
+        alert('Maximum 7 minor crises.');
+      }
+    });
+
+    $('resetZoom1').addEventListener('click', resetAllZoom);
+    $('resetZoom2').addEventListener('click', resetAllZoom);
+    $('resetZoom3').addEventListener('click', resetAllZoom);
+  }
+
+  function setMode(m) {
+    currentMode = m;
+    $('pidControls').style.display = m==='PID' ? 'block' : 'none';
+    $('mpcControls').style.display = m==='MPC' ? 'block' : 'none';
+    $('modePID').classList.toggle('active', m==='PID');
+    $('modeMPC').classList.toggle('active', m==='MPC');
+    if (chart1 && chart1.data.datasets[4]) {
+      chart1.data.datasets[4].label = 'Saju ('+m+')';
+    }
+    updateAll();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     INIT
+     ═══════════════════════════════════════════════════════ */
+  window.onload = () => {
+    renderMinorCrises();
+    initListeners();
+    checkCoherence();
+    updateFromCoef();
+    updateAll();
+
+    // Open accordion by default
+    $('accordionBtn').classList.add('open');
+    $('accordionBody').classList.add('open');
+    setTimeout(() => { if(chart3) chart3.resize(); }, 400);
+  };
+
+})();
+</script>
+</body>
+</html>
