@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Saju Srl — Live Market Intelligence Dashboard</title>
+<style>
+:root{--bk:#0f1117;--cd:#141822;--cd2:#1a2030;--bd:rgba(255,255,255,.1);--w:#fff;--wd:rgba(255,255,255,.88);--wl:rgba(255,255,255,.5);--or:#d97706;--em:#059669;--r:#c0392b;--tl:#0d9488;--bl:#3b82f6;--pu:#8b5cf6}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bk);color:var(--w);line-height:1.65;font-size:14px;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}a{color:inherit;text-decoration:none}
+.ctr{max-width:1260px;margin:0 auto;padding:0 clamp(14px,3.5vw,44px)}
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(15,17,23,.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--bd)}
+.ni{max-width:1260px;margin:0 auto;padding:0 clamp(14px,3.5vw,44px);height:64px;display:flex;align-items:center;justify-content:space-between}
+.nl img{height:46px;border-radius:8px;background:#fff;padding:4px 10px}
+.nk{display:flex;gap:12px;align-items:center}.nk a{font-size:.6rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--wl);transition:color .2s}
+.nk a:hover,.nk a.ac{color:var(--or)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO */
+.hero{padding:clamp(84px,10vw,110px) 0 clamp(14px,2vw,22px);background:linear-gradient(145deg,#0f1117 0%,#111827 40%,#0c1425 100%);position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-30%;right:-5%;width:420px;height:420px;background:radial-gradient(circle,rgba(59,130,246,.05),transparent 65%);pointer-events:none}
+.ey{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;font-size:.56rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--bl)}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.4rem,2.8vw,2.2rem);font-weight:700;line-height:1.15;max-width:650px;margin-bottom:10px}
+.hero h1 em{font-style:italic;color:var(--or)}
+.hs{font-size:.78rem;color:var(--wd);max-width:520px;line-height:1.7;margin-bottom:14px}.hs strong{color:var(--or)}
+.sbar{display:flex;gap:5px;flex-wrap:wrap}
+.sb{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:3px;font-size:.56rem;font-weight:600}
+.sb.live{background:rgba(5,150,105,.1);color:var(--em);border:1px solid rgba(5,150,105,.25)}
+.sb.live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--em);animation:pulse 2s infinite}
+.sb.inf{background:rgba(59,130,246,.1);color:var(--bl);border:1px solid rgba(59,130,246,.25)}
+
+/* KPI BAR */
+.kpi-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:14px 0 8px}
+.kpi{background:var(--cd);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;text-align:center;animation:fadeIn .5s ease both}
+.kpi .kl{font-size:.46rem;color:var(--wl);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.kpi .kv{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--or)}
+.kpi .kc{font-size:.5rem;margin-top:1px}
+.kc.up{color:var(--em)}.kc.dn{color:var(--r)}
+
+/* SECTION */
+.sec{padding:clamp(14px,2vw,22px) 0}
+.sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(217,119,6,.2)}
+.sec-hdr h2{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700}
+.sec-hdr .badge{font-size:.48rem;font-weight:700;padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.04em}
+.badge-live{background:rgba(5,150,105,.12);color:#34d399;border:1px solid rgba(5,150,105,.25)}
+.badge-key{background:rgba(217,119,6,.12);color:#fbbf24;border:1px solid rgba(217,119,6,.25)}
+
+/* FX GRID */
+.fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:5px;margin-bottom:10px}
+.fx{background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:7px 8px;text-align:center;transition:all .2s;animation:fadeIn .4s ease both}
+.fx:hover{border-color:rgba(59,130,246,.3);background:var(--cd2)}
+.fx .fl{font-size:.44rem;color:var(--wl);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}
+.fx .fv{font-family:'Cormorant Garamond',serif;font-size:.92rem;font-weight:700;color:var(--or)}
+.fx .fc2{font-size:.46rem;margin-top:1px}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:8px;margin-bottom:12px}
+.chart-box{background:var(--cd);border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.chart-title{padding:8px 12px 4px;font-size:.72rem;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.chart-title .ct-val{font-family:'Cormorant Garamond',serif;color:var(--or);font-weight:700}
+.chart-area{height:110px;position:relative;margin:0 4px 4px}
+
+/* TABLES */
+.data-panel{background:var(--cd);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:8px}
+.dp-title{padding:8px 12px;font-size:.72rem;font-weight:600;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:5px}
+.dp-title .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.tbl{width:100%;border-collapse:collapse;font-size:.66rem}
+.tbl th{text-align:left;padding:4px 10px;font-size:.48rem;color:var(--wl);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bd);font-weight:600}
+.tbl td{padding:4px 10px;border-bottom:1px solid rgba(255,255,255,.03)}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl .v{color:var(--or);font-weight:600;font-family:'Cormorant Garamond',serif;font-size:.78rem}
+.tbl .pos{color:var(--em)}.tbl .neg{color:var(--r)}
+.tbl .rg{font-weight:500;color:var(--wd)}
+
+/* API REF CARDS */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:8px;margin-bottom:14px}
+.ref-card{background:var(--cd);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;border-left:4px solid var(--bl);transition:all .2s}
+.ref-card:hover{border-color:rgba(59,130,246,.3)}
+.ref-card.free{border-left-color:var(--em)}
+.ref-card.key{border-left-color:var(--or)}
+.ref-card h4{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-weight:700;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center}
+.ref-card p{font-size:.62rem;color:var(--wl);line-height:1.5;margin-bottom:6px}
+.ref-card .ep{font-family:'JetBrains Mono',monospace;font-size:.52rem;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);border-radius:3px;padding:4px 8px;color:#5eead4;word-break:break-all;display:block;margin-bottom:6px}
+.ref-card a.dl{font-size:.54rem;color:var(--bl);border:1px solid rgba(59,130,246,.25);padding:2px 6px;border-radius:2px;transition:all .2s}
+.ref-card a.dl:hover{background:rgba(59,130,246,.1)}
+
+/* LOADING */
+.ld{color:var(--wl);font-size:.64rem;display:flex;align-items:center;gap:6px;padding:12px}
+.ld::before{content:'';width:12px;height:12px;border:2px solid rgba(255,255,255,.12);border-top-color:var(--bl);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.err{color:var(--r);font-size:.6rem;background:rgba(192,57,43,.08);padding:6px 8px;border-radius:3px;margin:4px 0}
+
+/* CONTACT */
+.cb{background:var(--cd);border:1px solid var(--bd);border-left:4px solid var(--or);border-radius:6px;padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0}
+.cb .lb2{background:#fff;border-radius:6px;padding:3px 8px;flex-shrink:0}.cb .lb2 img{height:30px}
+.cb .tx h4{font-size:.78rem;font-weight:700}.cb .tx p{font-size:.6rem;color:var(--wl);line-height:1.6}.cb .tx a{color:var(--or)}
+footer{border-top:1px solid var(--bd);padding:8px 0;background:#0b0e14}
+.fi{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
+.fb{display:flex;align-items:center;gap:4px}.fb img{height:28px;border-radius:6px;background:#fff;padding:2px 5px}
+.fw{font-size:.62rem;color:rgba(255,255,255,.2)}.fw span{color:var(--r)}
+.fc3{font-size:.5rem;color:rgba(255,255,255,.15)}
+@media(max-width:700px){.nk .np{display:none}.fx-grid{grid-template-columns:repeat(4,1fr)}.kpi-bar{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<nav><div class="ni">
+<a href="https://www.saju.be/" class="nl"><img src="https://www.saju.be/Logo.png" alt="Saju srl"></a>
+<div class="nk"><a href="references.html" class="np">References</a><a href="#" class="np ac">Live Data</a><a href="https://www.saju.be/#rdv" class="np">Contact</a></div>
+</div></nav>
+
+<section class="hero"><div class="ctr">
+<div class="ey">&#x1F534; Saju Srl &middot; Live Market Intelligence Dashboard</div>
+<h1>Real-Time Market Data.<br><em>Every card fetches live results.</em></h1>
+<p class="hs">This dashboard <strong>calls real APIs</strong> and displays actual data: exchange rates, macro indicators, charts, EU industrial indices. Auto-refreshes every 5 minutes.</p>
+<div class="sbar">
+<span class="sb live">LIVE &mdash; Connected</span>
+<span class="sb inf">Last refresh: <span id="ts">&mdash;</span></span>
+<span class="sb inf">APIs: 4 free &middot; 3 key-required</span>
+</div>
+<!-- KPI BAR — filled by JS -->
+<div class="kpi-bar" id="kpiBar">
+<div class="kpi"><div class="kl">EUR/USD</div><div class="kv" id="k1">&mdash;</div><div class="kc" id="k1c">&nbsp;</div></div>
+<div class="kpi"><div class="kl">EUR/GBP</div><div class="kv" id="k2">&mdash;</div><div class="kc" id="k2c">&nbsp;</div></div>
+<div class="kpi"><div class="kl">EUR/JPY</div><div class="kv" id="k3">&mdash;</div><div class="kc" id="k3c">&nbsp;</div></div>
+<div class="kpi"><div class="kl">EUR/CHF</div><div class="kv" id="k4">&mdash;</div><div class="kc" id="k4c">&nbsp;</div></div>
+<div class="kpi"><div class="kl">EUR/CNY</div><div class="kv" id="k5">&mdash;</div><div class="kc" id="k5c">&nbsp;</div></div>
+<div class="kpi"><div class="kl">EUR/PLN</div><div class="kv" id="k6">&mdash;</div><div class="kc" id="k6c">&nbsp;</div></div>
+<div class="kpi"><div class="kl">EUR/SEK</div><div class="kv" id="k7">&mdash;</div><div class="kc" id="k7c">&nbsp;</div></div>
+<div class="kpi"><div class="kl">EUR/TRY</div><div class="kv" id="k8">&mdash;</div><div class="kc" id="k8c">&nbsp;</div></div>
+</div>
+</div></section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 1: LIVE FX RATES                      -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="sec"><div class="ctr">
+<div class="sec-hdr"><h2>&#x1F4B1; Exchange Rates &mdash; ECB via Frankfurter</h2><span class="badge badge-live">&#x2705; LIVE</span></div>
+<div class="fx-grid" id="fxAll"><div class="ld">Fetching 30+ currency rates from ECB...</div></div>
+<div id="fxMeta" style="font-size:.46rem;color:rgba(255,255,255,.25);margin-bottom:6px"></div>
+
+<!-- CHARTS ROW -->
+<div class="charts-row">
+<div class="chart-box">
+<div class="chart-title"><span>EUR/USD &mdash; 12 months</span><span class="ct-val" id="cv1">&mdash;</span></div>
+<div class="chart-area" id="ch1"><div class="ld">Loading chart...</div></div>
+</div>
+<div class="chart-box">
+<div class="chart-title"><span>EUR/GBP &mdash; 12 months</span><span class="ct-val" id="cv2">&mdash;</span></div>
+<div class="chart-area" id="ch2"><div class="ld">Loading chart...</div></div>
+</div>
+<div class="chart-box">
+<div class="chart-title"><span>EUR/CNY &mdash; 12 months</span><span class="ct-val" id="cv3">&mdash;</span></div>
+<div class="chart-area" id="ch3"><div class="ld">Loading chart...</div></div>
+</div>
+</div>
+</div></section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 2: WORLD BANK MACRO                   -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="sec" style="background:rgba(0,0,0,.15)"><div class="ctr">
+<div class="sec-hdr"><h2>&#x1F30D; World Bank &mdash; Global Macro Indicators</h2><span class="badge badge-live">&#x2705; LIVE</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:8px">
+<div class="data-panel">
+<div class="dp-title"><span class="dot" style="background:#34d399;animation:pulse 2s infinite"></span> CPI Inflation by Region (%)</div>
+<div id="wb-cpi"><div class="ld">Fetching inflation data...</div></div>
+</div>
+<div class="data-panel">
+<div class="dp-title"><span class="dot" style="background:#34d399;animation:pulse 2s infinite"></span> GDP Growth by Region (%)</div>
+<div id="wb-gdp"><div class="ld">Fetching GDP data...</div></div>
+</div>
+</div>
+</div></section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 3: EUROSTAT                           -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="sec"><div class="ctr">
+<div class="sec-hdr"><h2>&#x1F3ED; Eurostat &mdash; EU Industrial Indicators</h2><span class="badge badge-live">&#x2705; LIVE</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:8px">
+<div class="data-panel">
+<div class="dp-title"><span class="dot" style="background:#34d399;animation:pulse 2s infinite"></span> Producer Price Index (PPI) &mdash; EU-27 Manufacturing</div>
+<div id="eu-ppi"><div class="ld">Fetching Eurostat PPI data...</div></div>
+</div>
+<div class="data-panel">
+<div class="dp-title"><span class="dot" style="background:#34d399;animation:pulse 2s infinite"></span> Historical FX Snapshot &mdash; Key Industrial Currencies</div>
+<div id="fx-hist"><div class="ld">Fetching historical FX comparison...</div></div>
+</div>
+</div>
+</div></section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 4: API REFERENCE                      -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="sec" style="background:rgba(0,0,0,.15)"><div class="ctr">
+<div class="sec-hdr"><h2>&#x1F4E1; API Reference &mdash; All Data Sources</h2></div>
+<div class="ref-grid">
+
+<div class="ref-card free">
+<h4>Frankfurter (ECB) <span class="badge badge-live" style="font-size:.44rem">FREE</span></h4>
+<p>30+ currencies. Historical from 1999. No key. CORS enabled.</p>
+<code class="ep">GET https://api.frankfurter.app/latest?base=EUR</code>
+<a href="https://www.frankfurter.app/docs/" target="_blank" class="dl">&#x1F517; Documentation</a>
+</div>
+
+<div class="ref-card free">
+<h4>World Bank <span class="badge badge-live" style="font-size:.44rem">FREE</span></h4>
+<p>16,000+ indicators. 200+ countries. GDP, inflation, trade.</p>
+<code class="ep">GET https://api.worldbank.org/v2/country/WLD/indicator/FP.CPI.TOTL.ZG?format=json</code>
+<a href="https://datahelpdesk.worldbank.org/knowledgebase/articles/889392" target="_blank" class="dl">&#x1F517; Documentation</a>
+</div>
+
+<div class="ref-card free">
+<h4>Eurostat <span class="badge badge-live" style="font-size:.44rem">FREE</span></h4>
+<p>EU-27 PPI, labour costs, energy, trade. JSON-stat format.</p>
+<code class="ep">GET https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inpr_m</code>
+<a href="https://wikis.ec.europa.eu/display/EUROSTATHELP/API" target="_blank" class="dl">&#x1F517; Documentation</a>
+</div>
+
+<div class="ref-card key">
+<h4>FRED (St. Louis Fed) <span class="badge badge-key" style="font-size:.44rem">KEY</span></h4>
+<p>800k+ series: CPI, PPI, gold, oil, rates. Free registration.</p>
+<code class="ep">GET https://api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM</code>
+<a href="https://fred.stlouisfed.org/docs/api/fred/" target="_blank" class="dl">&#x1F511; Get Free Key</a>
+</div>
+
+<div class="ref-card key">
+<h4>Open Exchange Rates <span class="badge badge-key" style="font-size:.44rem">KEY</span></h4>
+<p>170+ currencies. Real-time + historical. 1,000 req/month free.</p>
+<code class="ep">GET https://openexchangerates.org/api/latest.json?app_id=YOUR_KEY</code>
+<a href="https://docs.openexchangerates.org/" target="_blank" class="dl">&#x1F517; Documentation</a>
+</div>
+
+<div class="ref-card key">
+<h4>Metals.dev <span class="badge badge-key" style="font-size:.44rem">KEY</span></h4>
+<p>Gold, silver, platinum, copper, aluminum. Spot prices 20+ currencies.</p>
+<code class="ep">GET https://api.metals.dev/v1/latest?api_key=YOUR_KEY&amp;currency=EUR</code>
+<a href="https://metals.dev/documentation" target="_blank" class="dl">&#x1F517; Documentation</a>
+</div>
+
+<div class="ref-card free">
+<h4>BIS Statistics <span class="badge badge-live" style="font-size:.44rem">FREE</span></h4>
+<p>Central bank data: effective exchange rates, credit, property prices. Since 1930.</p>
+<code class="ep">GET https://stats.bis.org/api/v2/data/WS_EER/...</code>
+<a href="https://www.bis.org/statistics/index.htm" target="_blank" class="dl">&#x1F517; Documentation</a>
+</div>
+
+</div>
+</div></section>
+
+<!-- CONTACT -->
+<section class="sec"><div class="ctr">
+<div class="cb">
+<div class="lb2"><a href="https://www.saju.be/"><img src="https://www.saju.be/Logo.png" alt="Saju"></a></div>
+<div class="tx"><h4>Need custom API integration or a tailored market intelligence report?</h4>
+<p><strong style="color:#fff">Mr. Fran&ccedil;ois Hanneuse</strong> &mdash; Saju Srl<br>
+&#x1F4E7; <a href="mailto:fh@saju.be">fh@saju.be</a> &middot; &#x1F4DE; +32 483 37 98 &middot; &#x1F310; <a href="https://www.saju.be/">www.saju.be</a><br>
+VAT: BE0785.280.227 &middot; Chauss&eacute;e d'Alsemberg 1108/6, 1180 Uccle, Belgium</p></div></div>
+</div></section>
+
+<footer><div class="ctr"><div class="fi">
+<div class="fb"><a href="https://www.saju.be/"><img src="https://www.saju.be/Logo.png" alt="Saju"></a><div class="fw">Saju<span> srl</span></div></div>
+<div class="fc3">&copy; 2026 Saju Srl &middot; Live data for illustrative purposes &middot; Auto-refresh 5 min</div>
+</div></div></footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════
+function fmt(v,c){
+  if(!v&&v!==0)return'—';
+  if(['JPY','KRW','CZK','SEK','HUF','ISK','RUB','TRY','PHP','IDR','INR','MXN','BRL','ZAR','THB','MYR','NOK','DKK','PLN','RON','BGN','HRK'].indexOf(c)>=0)return v.toFixed(2);
+  return v.toFixed(4);
+}
+function pctHTML(pct){
+  if(pct===null||pct===undefined)return'';
+  var cls=pct>=0?'up':'dn';
+  var arr=pct>=0?'\u25B2':'\u25BC';
+  return '<span class="kc '+cls+'">'+arr+' '+Math.abs(pct).toFixed(2)+'%</span>';
+}
+function getYday(){
+  var d=new Date();d.setDate(d.getDate()-1);
+  if(d.getDay()===0)d.setDate(d.getDate()-2);
+  if(d.getDay()===6)d.setDate(d.getDate()-1);
+  return d.toISOString().slice(0,10);
+}
+function makeChart(box,vals,dates,color,labelId){
+  var W=box.offsetWidth||350,H=box.offsetHeight||110;
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=mx-mn||0.01;
+  var pT=12,pB=12,pL=2,pR=2,cW=W-pL-pR,cH=H-pT-pB;
+  var path='',area='M '+pL+' '+(H-pB)+' ';
+  for(var i=0;i<dates.length;i++){
+    var x=pL+(i/(dates.length-1))*cW;
+    var y=pT+(1-(vals[i]-mn)/rng)*cH;
+    path+=(i===0?'M ':'L ')+x.toFixed(1)+' '+y.toFixed(1)+' ';
+    area+='L '+x.toFixed(1)+' '+y.toFixed(1)+' ';
+  }
+  area+='L '+(pL+cW).toFixed(1)+' '+(H-pB)+' Z';
+  var last=vals[vals.length-1],first=vals[0];
+  var chg=((last-first)/first*100);
+  var ly=pT+(1-(last-mn)/rng)*cH;
+  var id='gr'+Math.random().toString(36).slice(2,6);
+  var clr=chg>=0?'#059669':'#c0392b';
+  var svg='<svg width="'+W+'" height="'+H+'" style="display:block">';
+  svg+='<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".15"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>';
+  svg+='<path d="'+area+'" fill="url(#'+id+')"/>';
+  svg+='<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linejoin="round"/>';
+  svg+='<circle cx="'+(pL+cW).toFixed(1)+'" cy="'+ly.toFixed(1)+'" r="3" fill="'+color+'"/>';
+  svg+='<text x="'+(W-6)+'" y="12" text-anchor="end" fill="#d97706" font-size="11" font-weight="700" font-family="Cormorant Garamond,serif">'+last.toFixed(4)+'</text>';
+  svg+='<text x="'+(W-6)+'" y="24" text-anchor="end" fill="'+clr+'" font-size="8" font-family="DM Sans,sans-serif">'+(chg>=0?'\u25B2':'\u25BC')+' '+Math.abs(chg).toFixed(2)+'% YoY</text>';
+  svg+='<text x="4" y="12" fill="rgba(255,255,255,.2)" font-size="7">High: '+mx.toFixed(4)+'</text>';
+  svg+='<text x="4" y="'+(H-4)+'" fill="rgba(255,255,255,.2)" font-size="7">Low: '+mn.toFixed(4)+'</text>';
+  // Date labels
+  svg+='<text x="4" y="'+(H-14)+'" fill="rgba(255,255,255,.15)" font-size="6">'+dates[0]+'</text>';
+  svg+='<text x="'+(W-6)+'" y="'+(H-14)+'" text-anchor="end" fill="rgba(255,255,255,.15)" font-size="6">'+dates[dates.length-1]+'</text>';
+  svg+='</svg>';
+  box.innerHTML=svg;
+  if(labelId)document.getElementById(labelId).textContent=last.toFixed(4)+(chg>=0?' \u25B2':' \u25BC')+Math.abs(chg).toFixed(2)+'%';
+}
+
+// ═══════════════════════════════════════════════════════
+//  1. FRANKFURTER — ALL RATES + KPI BAR
+// ═══════════════════════════════════════════════════════
+(async function(){
+  try{
+    var rNow=await fetch('https://api.frankfurter.app/latest?base=EUR');
+    var rYst=await fetch('https://api.frankfurter.app/'+getYday()+'?base=EUR');
+    if(!rNow.ok)throw new Error('HTTP '+rNow.status);
+    var dNow=await rNow.json();
+    var dYst=rYst.ok?await rYst.json():null;
+    var allCurs=Object.keys(dNow.rates).sort();
+    // Fill FX grid
+    var g=document.getElementById('fxAll');
+    var h='';
+    allCurs.forEach(function(c,i){
+      var v=dNow.rates[c];
+      var yv=dYst?dYst.rates[c]:null;
+      var pct=yv?((v-yv)/yv*100):null;
+      h+='<div class="fx" style="animation-delay:'+(i*30)+'ms"><div class="fl">'+c+'</div><div class="fv">'+fmt(v,c)+'</div>';
+      if(pct!==null){
+        var cls=pct>=0?'up':'dn';
+        h+='<div class="fc2 '+cls+'">'+(pct>=0?'\u25B2':'\u25BC')+' '+Math.abs(pct).toFixed(2)+'%</div>';
+      }
+      h+='</div>';
+    });
+    g.innerHTML=h;
+    document.getElementById('fxMeta').textContent='Date: '+dNow.date+' \u00B7 Base: EUR \u00B7 '+allCurs.length+' currencies \u00B7 Source: European Central Bank';
+    document.getElementById('ts').textContent=dNow.date+' '+new Date().toLocaleTimeString();
+    // Fill KPI bar
+    var kpis=[['k1','USD'],['k2','GBP'],['k3','JPY'],['k4','CHF'],['k5','CNY'],['k6','PLN'],['k7','SEK'],['k8','TRY']];
+    kpis.forEach(function(kp){
+      var el=document.getElementById(kp[0]);
+      var elc=document.getElementById(kp[0]+'c');
+      var v=dNow.rates[kp[1]];
+      if(v){
+        el.textContent=fmt(v,kp[1]);
+        var yv=dYst?dYst.rates[kp[1]]:null;
+        if(yv){
+          var pct=((v-yv)/yv*100);
+          elc.className='kc '+(pct>=0?'up':'dn');
+          elc.textContent=(pct>=0?'\u25B2':'\u25BC')+' '+Math.abs(pct).toFixed(2)+'%';
+        }
+      }
+    });
+  }catch(e){
+    document.getElementById('fxAll').innerHTML='<div class="err">\u26A0 Frankfurter: '+e.message+'</div>';
+  }
+})();
+
+// ═══════════════════════════════════════════════════════
+//  2. THREE FX CHARTS (EUR/USD, EUR/GBP, EUR/CNY)
+// ═══════════════════════════════════════════════════════
+async function loadChart(pair,boxId,labelId,color){
+  try{
+    var end=new Date(),start=new Date();start.setFullYear(start.getFullYear()-1);
+    var url='https://api.frankfurter.app/'+start.toISOString().slice(0,10)+'..'+end.toISOString().slice(0,10)+'?base=EUR&to='+pair;
+    var r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
+    var d=await r.json();
+    var dates=Object.keys(d.rates).sort();
+    var vals=dates.map(function(dt){return d.rates[dt][pair]});
+    makeChart(document.getElementById(boxId),vals,dates,color,labelId);
+  }catch(e){
+    document.getElementById(boxId).innerHTML='<div class="err">\u26A0 '+e.message+'</div>';
+  }
+}
+loadChart('USD','ch1','cv1','#3b82f6');
+loadChart('GBP','ch2','cv2','#8b5cf6');
+loadChart('CNY','ch3','cv3','#ef4444');
+
+// ═══════════════════════════════════════════════════════
+//  3. WORLD BANK — CPI + GDP
+// ═══════════════════════════════════════════════════════
+async function fetchWBtable(indicators,targetId){
+  var box=document.getElementById(targetId);
+  var rows='';var ok=0;
+  for(var i=0;i<indicators.length;i++){
+    var ind=indicators[i];
+    try{
+      var r=await fetch('https://api.worldbank.org/v2/country/'+ind.c+'/indicator/'+ind.id+'?format=json&per_page=5&mrv=5');
+      if(!r.ok)continue;
+      var d=await r.json();
+      if(d&&d[1]){
+        var vals=d[1].filter(function(e){return e.value!==null}).slice(0,3);
+        if(vals.length>0){
+          var latest=vals[0];
+          var prev=vals.length>1?vals[1]:null;
+          var chg=prev?latest.value-prev.value:null;
+          rows+='<tr><td class="rg">'+ind.r+'</td>';
+          rows+='<td class="v">'+parseFloat(latest.value).toFixed(2)+'</td>';
+          rows+='<td>'+latest.date+'</td>';
+          if(chg!==null){
+            var cls2=ind.inv?(chg<=0?'pos':'neg'):(chg>=0?'pos':'neg');
+            rows+='<td class="'+cls2+'">'+(chg>=0?'+':'')+chg.toFixed(2)+' vs '+vals[1].date+'</td>';
+          }else{
+            rows+='<td>&mdash;</td>';
+          }
+          rows+='</tr>';ok++;
+        }
+      }
+    }catch(e){}
+  }
+  if(ok>0){
+    box.innerHTML='<table class="tbl"><thead><tr><th>Region</th><th>Value</th><th>Year</th><th>Change</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }else{
+    box.innerHTML='<div class="err">\u26A0 World Bank API temporarily unavailable</div>';
+  }
+}
+fetchWBtable([
+  {id:'FP.CPI.TOTL.ZG',c:'WLD',r:'\uD83C\uDF0D World'},
+  {id:'FP.CPI.TOTL.ZG',c:'EMU',r:'\uD83C\uDDEA\uD83C\uDDFA Euro Area'},
+  {id:'FP.CPI.TOTL.ZG',c:'USA',r:'\uD83C\uDDFA\uD83C\uDDF8 USA'},
+  {id:'FP.CPI.TOTL.ZG',c:'CHN',r:'\uD83C\uDDE8\uD83C\uDDF3 China'},
+  {id:'FP.CPI.TOTL.ZG',c:'JPN',r:'\uD83C\uDDEF\uD83C\uDDF5 Japan'},
+  {id:'FP.CPI.TOTL.ZG',c:'GBR',r:'\uD83C\uDDEC\uD83C\uDDE7 UK'},
+  {id:'FP.CPI.TOTL.ZG',c:'TUR',r:'\uD83C\uDDF9\uD83C\uDDF7 Turkey'},
+  {id:'FP.CPI.TOTL.ZG',c:'IND',r:'\uD83C\uDDEE\uD83C\uDDF3 India'}
+],'wb-cpi');
+fetchWBtable([
+  {id:'NY.GDP.MKTP.KD.ZG',c:'WLD',r:'\uD83C\uDF0D World'},
+  {id:'NY.GDP.MKTP.KD.ZG',c:'EMU',r:'\uD83C\uDDEA\uD83C\uDDFA Euro Area'},
+  {id:'NY.GDP.MKTP.KD.ZG',c:'USA',r:'\uD83C\uDDFA\uD83C\uDDF8 USA'},
+  {id:'NY.GDP.MKTP.KD.ZG',c:'CHN',r:'\uD83C\uDDE8\uD83C\uDDF3 China'},
+  {id:'NY.GDP.MKTP.KD.ZG',c:'JPN',r:'\uD83C\uDDEF\uD83C\uDDF5 Japan'},
+  {id:'NY.GDP.MKTP.KD.ZG',c:'DEU',r:'\uD83C\uDDE9\uD83C\uDDEA Germany'},
+  {id:'NY.GDP.MKTP.KD.ZG',c:'IND',r:'\uD83C\uDDEE\uD83C\uDDF3 India'}
+],'wb-gdp');
+
+// ═══════════════════════════════════════════════════════
+//  4. EUROSTAT PPI
+// ═══════════════════════════════════════════════════════
+(async function(){
+  var box=document.getElementById('eu-ppi');
+  try{
+    var url='https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inpr_m?geo=EU27_2020&indic_bt=PRIN&nace_r2=C&s_adj=SCA&unit=I15&sinceTimePeriod=2023-06&format=JSON';
+    var r=await fetch(url);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    var d=await r.json();
+    var timeCats=d.dimension.time.category;
+    var timeIds=Object.keys(timeCats.index).sort(function(a,b){return timeCats.index[a]-timeCats.index[b]});
+    var values=d.value;
+    var h='<table class="tbl"><thead><tr><th>Period</th><th>PPI (2015=100)</th><th>MoM Change</th></tr></thead><tbody>';
+    var prev=null;var count=0;
+    for(var i=timeIds.length-1;i>=0&&count<12;i--){
+      var idx=timeCats.index[timeIds[i]];
+      var val=values[idx];
+      if(val!==undefined&&val!==null){
+        var mom=prev!==null?((val-prev)/prev*100):null;
+        prev=val;
+        h+='<tr><td class="rg">'+timeIds[i]+'</td><td class="v">'+parseFloat(val).toFixed(1)+'</td>';
+        if(mom!==null){
+          h+='<td class="'+(mom>=0?'neg':'pos')+'">'+(mom>=0?'+':'')+mom.toFixed(2)+'%</td>';
+        }else{h+='<td>&mdash;</td>';}
+        h+='</tr>';count++;
+      }
+    }
+    h+='</tbody></table>';
+    h+='<div style="padding:4px 10px;font-size:.44rem;color:rgba(255,255,255,.2)">EU-27 Manufacturing PPI \u00B7 Seasonally adjusted \u00B7 2015=100 \u00B7 Source: Eurostat</div>';
+    box.innerHTML=count>0?h:'<div class="err">No PPI data</div>';
+  }catch(e){
+    box.innerHTML='<div class="err">\u26A0 Eurostat: '+e.message+'. API may require direct browser access.</div>';
+  }
+})();
+
+// ═══════════════════════════════════════════════════════
+//  5. HISTORICAL FX COMPARISON (5 years ago vs now)
+// ═══════════════════════════════════════════════════════
+(async function(){
+  var box=document.getElementById('fx-hist');
+  try{
+    var now=new Date();
+    var y1=new Date();y1.setFullYear(y1.getFullYear()-1);
+    var y3=new Date();y3.setFullYear(y3.getFullYear()-3);
+    var y5=new Date();y5.setFullYear(y5.getFullYear()-5);
+    var curs='USD,GBP,CHF,JPY,CNY,SEK,PLN,TRY';
+    var urls=[
+      'https://api.frankfurter.app/latest?base=EUR&to='+curs,
+      'https://api.frankfurter.app/'+y1.toISOString().slice(0,10)+'?base=EUR&to='+curs,
+      'https://api.frankfurter.app/'+y3.toISOString().slice(0,10)+'?base=EUR&to='+curs,
+      'https://api.frankfurter.app/'+y5.toISOString().slice(0,10)+'?base=EUR&to='+curs
+    ];
+    var results=await Promise.all(urls.map(function(u){return fetch(u).then(function(r){return r.json()})}));
+    var dNow=results[0],d1y=results[1],d3y=results[2],d5y=results[3];
+    var pairs=curs.split(',');
+    var h='<table class="tbl"><thead><tr><th>Pair</th><th>Now</th><th>1Y ago</th><th>\u0394 1Y</th><th>3Y ago</th><th>\u0394 3Y</th><th>5Y ago</th><th>\u0394 5Y</th></tr></thead><tbody>';
+    pairs.forEach(function(c){
+      var vNow=dNow.rates[c],v1=d1y.rates[c],v3=d3y.rates[c],v5=d5y.rates[c];
+      function delta(a,b){if(!a||!b)return'—';var p=((a-b)/b*100);return '<span class="'+(p>=0?'pos':'neg')+'">'+(p>=0?'+':'')+p.toFixed(1)+'%</span>';}
+      h+='<tr><td class="rg">EUR/'+c+'</td><td class="v">'+fmt(vNow,c)+'</td>';
+      h+='<td>'+fmt(v1,c)+'</td><td>'+delta(vNow,v1)+'</td>';
+      h+='<td>'+fmt(v3,c)+'</td><td>'+delta(vNow,v3)+'</td>';
+      h+='<td>'+fmt(v5,c)+'</td><td>'+delta(vNow,v5)+'</td></tr>';
+    });
+    h+='</tbody></table>';
+    h+='<div style="padding:4px 10px;font-size:.44rem;color:rgba(255,255,255,.2)">Comparison: current vs 1/3/5 years ago \u00B7 Source: ECB via Frankfurter</div>';
+    box.innerHTML=h;
+  }catch(e){
+    box.innerHTML='<div class="err">\u26A0 '+e.message+'</div>';
+  }
+})();
+
+// Auto-refresh every 5 minutes
+setInterval(function(){location.reload();},300000);
+</script>
+</body></html>
