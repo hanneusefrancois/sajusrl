@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<title>Saju Srl — Live Market Data · Commodity && FX Monitor</title>
+<style>
+:root{--bk:#0f1117;--cd:#171b24;--cd2:#1e2330;--bd:rgba(255,255,255,.13);--r:#c0392b;--rv:#d94030;--w:#fff;--wd:rgba(255,255,255,.88);--wl:rgba(255,255,255,.60);--em:#059669;--eb:#34d399;--tl:#0d9488;--tp:#14b8a6;--or:#b45309;--op:#d97706;--ol:#fbbf24;--ob:rgba(217,119,6,.3);--ac:#e2e8f0;--up:#34d399;--dn:#ef4444}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',sans-serif;background:var(--bk);color:var(--w);overflow-x:hidden;line-height:1.6;font-size:16px}img{max-width:100%;height:auto;display:block}a{color:inherit;text-decoration:none}
+.ctr{max-width:1200px;margin:0 auto;padding:0 clamp(18px,4vw,48px);position:relative;z-index:1}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(15,17,23,.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--bd)}.ni{max-width:1200px;margin:0 auto;padding:0 clamp(18px,4vw,48px);height:80px;display:flex;align-items:center;justify-content:space-between;gap:10px}.nl img{height:60px;border-radius:8px;background:#fff;padding:6px 14px}.nk{display:flex;gap:12px;align-items:center}.nk a{font-size:.66rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.38);transition:color .2s}.nk a:hover,.nk a.ac{color:var(--op)}.nc{background:var(--r);color:var(--w)!important;padding:5px 12px;border-radius:2px;font-size:.64rem!important}
+
+/* TICKER */
+.ticker{background:linear-gradient(90deg,#0a0c12,#12141e,#0a0c12);border-bottom:1px solid var(--bd);overflow:hidden;padding:6px 0;margin-top:80px}.ticker-inner{display:flex;gap:28px;animation:scroll 45s linear infinite;white-space:nowrap}.ticker-inner:hover{animation-play-state:paused}@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}.ti{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;color:var(--wl)}.ti .cur{color:var(--w);font-weight:600}.ti .val{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:.82rem}.ti .chg{font-size:.64rem;padding:1px 5px;border-radius:2px}.ti .chg.up{color:var(--up);background:rgba(52,211,153,.1)}.ti .chg.dn{color:var(--dn);background:rgba(239,68,68,.1)}
+
+/* HERO */
+.hero{padding:clamp(40px,6vw,70px) 0 clamp(30px,4vw,45px);position:relative}.hero::before{content:'';position:absolute;top:-40px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(217,119,6,.08) 0%,transparent 60%);pointer-events:none}.ey{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;font-size:.62rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--or)}.ey::before{content:'';width:14px;height:1px;background:var(--or)}.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,3.2vw,2.5rem);font-weight:700;line-height:1.15;margin-bottom:10px}.hero h1 em{font-style:italic;color:var(--op)}.hs2{font-size:.88rem;color:var(--wl);max-width:620px;line-height:1.7;margin-bottom:10px}.hs2 strong{color:var(--op)}
+.api-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);padding:4px 10px;border-radius:3px;font-size:.66rem;color:var(--eb);margin:3px 2px}.api-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--eb);animation:pulse 2s ease infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* SECTIONS */
+.sec{padding:clamp(28px,4vw,50px) 0}.rl{height:1px;background:linear-gradient(90deg,transparent,var(--bd),transparent)}
+.st{font-size:.62rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px;color:var(--op)}.st::before{content:'';width:14px;height:1px;background:var(--op)}.sh{font-family:'Cormorant Garamond',serif;font-size:clamp(1.2rem,2vw,1.6rem);font-weight:700;margin-bottom:4px}.sh em{font-style:italic;color:var(--op)}.ss2{font-size:.82rem;color:var(--wl);margin-bottom:20px}
+
+/* FX GRID */
+.fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}.fx-card{background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:14px;text-align:center;transition:all .3s;position:relative;overflow:hidden}.fx-card:hover{background:var(--cd2);border-color:var(--ob)}.fx-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--or)}.fx-pair{font-size:.68rem;color:var(--wl);letter-spacing:.06em;margin-bottom:4px}.fx-rate{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--w)}.fx-chg{font-size:.68rem;margin-top:3px;padding:2px 6px;border-radius:2px;display:inline-block}
+
+/* CHART */
+.chart-box{background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:18px;margin-bottom:14px}.chart-box h3{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700;margin-bottom:3px}.chart-box .sub{font-size:.72rem;color:var(--wl);margin-bottom:12px}.chart-svg{width:100%;height:220px;display:block}
+
+/* COMMODITY TABLE */
+.ctbl{width:100%;border-collapse:collapse;font-size:.8rem}.ctbl th{background:rgba(217,119,6,.12);color:var(--op);padding:8px 10px;text-align:left;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--ob)}.ctbl td{padding:8px 10px;border-bottom:1px solid var(--bd);color:var(--wd)}.ctbl tr:hover td{background:rgba(255,255,255,.03)}.ctbl .nm{font-weight:600;color:var(--w)}.ctbl .src{font-size:.66rem;color:var(--tl)}
+
+/* INFLATION CHART */
+.inf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.inf-card{background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:14px}.inf-card h4{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:700;margin-bottom:2px}.inf-card .iv{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;margin:4px 0}.inf-card .il{font-size:.68rem;color:var(--wl)}
+
+/* API DIRECTORY */
+.api-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:7px}.api-card{background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:14px;border-left:3px solid var(--tl);transition:background .3s}.api-card:hover{background:var(--cd2)}.api-card h4{font-family:'Cormorant Garamond',serif;font-size:.92rem;font-weight:700;margin-bottom:2px}.api-card .at{font-size:.66rem;color:var(--eb);margin-bottom:4px}.api-card p{font-size:.76rem;color:var(--wl);line-height:1.5;margin-bottom:5px}.api-card code{font-size:.64rem;background:rgba(255,255,255,.06);padding:2px 6px;border-radius:2px;color:var(--ol);word-break:break-all}
+.lk2{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;color:var(--tl);border:1px solid rgba(13,148,136,.3);padding:2px 7px;border-radius:2px;transition:all .2s;margin-top:4px}.lk2:hover{background:rgba(13,148,136,.12);color:var(--tp)}
+
+/* CONTACT */
+.cb{background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:clamp(14px,2vw,22px);display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:20px}.cb .lb2{background:#fff;border-radius:8px;padding:5px 10px}.cb .lb2 img{height:38px}.cb .tx h4{font-family:'Cormorant Garamond',serif;font-size:.92rem;font-weight:700;margin-bottom:3px}.cb .tx p{font-size:.74rem;color:var(--wl);line-height:1.6}.cb .tx a{color:var(--op)}
+footer{border-top:1px solid var(--bd);padding:12px 0;background:#0d1018}.fi{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.fb{display:flex;align-items:center;gap:5px}.fb img{height:40px;border-radius:8px;background:#fff;padding:3px 7px}.fw{font-family:'Cormorant Garamond',serif;font-size:.76rem;font-weight:600;color:rgba(255,255,255,.3)}.fw span{color:var(--r)}.fc{font-size:.64rem;color:rgba(255,255,255,.24)}
+.loading{color:var(--wl);font-size:.78rem;padding:20px;text-align:center}
+.bt{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:2px;font-family:inherit;font-size:.78rem;font-weight:600;transition:all .2s;border:none;cursor:pointer;white-space:nowrap}.br{background:var(--r);color:var(--w)}.br:hover{background:var(--rv)}
+@media(max-width:680px){.nk a:not(.nc){display:none}}
+</style></head>
+<body>
+
+<nav><div class="ni"><a href="https://www.saju.be/" class="nl"><img src="https://www.saju.be/Logo.png" alt="Saju srl"></a><div class="nk"><a href="references.html" class="ac">References</a><a href="https://www.saju.be/#rdv">Contact</a><a href="https://www.saju.be/#rdv" class="nc">📅</a></div></div></nav>
+
+<!-- LIVE TICKER -->
+<div class="ticker"><div class="ticker-inner" id="ticker"><span class="ti">Loading live rates...</span></div></div>
+
+<!-- HERO -->
+<section class="hero"><div class="ctr">
+<div class="ey">Saju Srl · Live Market Data</div>
+<h1>Real-time data feeds.<br><em>Powering the model.</em></h1>
+<p class="hs2">The Saju model draws on <strong>live institutional data</strong> to calibrate coefficients. Below: real-time exchange rates, historical commodity references, and the free APIs that feed the engine.</p>
+<div>
+<span class="api-badge"><span class="dot"></span> frankfurter.app — Live FX</span>
+<span class="api-badge"><span class="dot"></span> World Bank API — Macro data</span>
+<span class="api-badge"><span class="dot"></span> FRED API — Economic series</span>
+</div>
+</div></section><div class="rl"></div>
+
+<!-- S1: LIVE FX -->
+<section class="sec"><div class="ctr">
+<div class="st">📈 Live exchange rates · frankfurter.app</div>
+<h2 class="sh">Currency rates <em>right now.</em></h2>
+<p class="ss2">Fetched live from the ECB via frankfurter.app — no API key required. Updated every working day.</p>
+<div class="fx-grid" id="fxGrid"><div class="loading">⏳ Fetching live rates from ECB...</div></div>
+</div></section><div class="rl"></div>
+
+<!-- S2: HISTORICAL FX CHART -->
+<section class="sec"><div class="ctr">
+<div class="st">📊 Historical EUR/USD · 12 months</div>
+<div class="chart-box">
+<h3>EUR/USD Exchange Rate</h3>
+<div class="sub">Last 12 months · Source: frankfurter.app (ECB reference rates)</div>
+<svg class="chart-svg" id="fxChart" viewBox="0 0 800 200" preserveAspectRatio="none"></svg>
+</div>
+
+<div class="chart-box">
+<h3>EUR/GBP Exchange Rate</h3>
+<div class="sub">Last 12 months · Source: frankfurter.app (ECB reference rates)</div>
+<svg class="chart-svg" id="fxChart2" viewBox="0 0 800 200" preserveAspectRatio="none"></svg>
+</div>
+</div></section><div class="rl"></div>
+
+<!-- S3: WORLD BANK INFLATION -->
+<section class="sec"><div class="ctr">
+<div class="st">🌍 World Bank API · Macro indicators</div>
+<h2 class="sh">Global inflation <em>&& GDP data.</em></h2>
+<p class="ss2">Fetched from api.worldbank.org — free, no API key. Used for long-term coefficient calibration.</p>
+<div class="inf-grid" id="wbGrid"><div class="loading">⏳ Fetching World Bank data...</div></div>
+</div></section><div class="rl"></div>
+
+<!-- S4: COMMODITY REFERENCE TABLE -->
+<section class="sec"><div class="ctr">
+<div class="st">⛏️ Commodity price references</div>
+<h2 class="sh">Key commodities for <em>rolling stock pricing.</em></h2>
+<p class="ss2">Live links to institutional commodity price databases. Click any source to access current and historical data.</p>
+<table class="ctbl">
+<thead><tr><th>Commodity</th><th>Relevance to Rolling Stock</th><th>Live Data Source</th><th>Historical Depth</th></tr></thead>
+<tbody>
+<tr><td class="nm">🥇 Gold</td><td>Value anchor, monetary benchmark (1900=1.0)</td><td><a href="https://fred.stlouisfed.org/series/GOLDAMGBD228NLBM" target="_blank" class="src">🔗 FRED Gold Price</a></td><td>1968–today</td></tr>
+<tr><td class="nm">🛢️ Crude Oil (Brent)</td><td>Energy cost driver — 25-35% of locomotive TCO</td><td><a href="https://fred.stlouisfed.org/series/DCOILBRENTEU" target="_blank" class="src">🔗 FRED Brent Crude</a></td><td>1987–today</td></tr>
+<tr><td class="nm">🔩 Copper</td><td>Electrical wiring, motors, transformers</td><td><a href="https://fred.stlouisfed.org/series/PCOPPUSDM" target="_blank" class="src">🔗 FRED Copper</a></td><td>1990–today</td></tr>
+<tr><td class="nm">🪨 Iron Ore</td><td>Steel production — bogie frames, car bodies</td><td><a href="https://www.worldbank.org/en/research/commodity-markets" target="_blank" class="src">🔗 World Bank Pink Sheet</a></td><td>1960–today</td></tr>
+<tr><td class="nm">🔧 Steel (HRC)</td><td>Primary structural material — 40-60% of loco mass</td><td><a href="https://fred.stlouisfed.org/series/PSTEEL" target="_blank" class="src">🔗 FRED Steel Index</a></td><td>2003–today</td></tr>
+<tr><td class="nm">⚡ Aluminum</td><td>Car body panels, heat sinks, lightweight structures</td><td><a href="https://fred.stlouisfed.org/series/PALUMUSDM" target="_blank" class="src">🔗 FRED Aluminum</a></td><td>1990–today</td></tr>
+<tr><td class="nm">🔋 Lithium</td><td>Battery-ready locomotives — future demand driver</td><td><a href="https://www.usgs.gov/centers/national-minerals-information-center/lithium-statistics-and-information" target="_blank" class="src">🔗 USGS Lithium</a></td><td>2000–today</td></tr>
+<tr><td class="nm">🌿 Natural Gas</td><td>Energy, manufacturing costs, heating depots</td><td><a href="https://fred.stlouisfed.org/series/DHHNGSP" target="_blank" class="src">🔗 FRED Natural Gas</a></td><td>1997–today</td></tr>
+<tr><td class="nm">💶 EUR/USD</td><td>Currency risk for EUR-denominated contracts</td><td><a href="https://api.frankfurter.app/latest" target="_blank" class="src">🔗 frankfurter.app Live</a></td><td>1999–today</td></tr>
+<tr><td class="nm">📊 CPI (Euro Area)</td><td>Consumer inflation — labour cost driver</td><td><a href="https://fred.stlouisfed.org/series/EA19CPALTT01GYM" target="_blank" class="src">🔗 FRED Euro CPI</a></td><td>1996–today</td></tr>
+<tr><td class="nm">👷 Labour Cost Index (EU)</td><td>Maintenance personnel, depot operations</td><td><a href="https://ec.europa.eu/eurostat/databrowser/view/lc_lci_r2_q/default/table" target="_blank" class="src">🔗 Eurostat LCI</a></td><td>2008–today</td></tr>
+<tr><td class="nm">🔌 Electricity (EU)</td><td>Electric locomotive operating cost</td><td><a href="https://ec.europa.eu/eurostat/databrowser/view/nrg_pc_205/default/table" target="_blank" class="src">🔗 Eurostat Electricity</a></td><td>2007–today</td></tr>
+</tbody></table>
+</div></section><div class="rl"></div>
+
+<!-- S5: API DIRECTORY -->
+<section class="sec"><div class="ctr">
+<div class="st">🔌 Free API directory · No key required</div>
+<h2 class="sh">Open data APIs for <em>price modelling.</em></h2>
+<p class="ss2">All APIs below are free, require no authentication, and support CORS for browser-side fetching.</p>
+<div class="api-grid">
+
+<div class="api-card"><h4>frankfurter.app</h4><div class="at">✅ Free · No key · CORS · ECB data</div><p>Exchange rates for 30+ currencies. Historical data from 1999. Based on ECB reference rates.</p><code>GET https://api.frankfurter.app/latest?base=EUR</code><br><a href="https://www.frankfurter.app/docs/" target="_blank" class="lk2">🔗 Documentation</a></div>
+
+<div class="api-card"><h4>World Bank API</h4><div class="at">✅ Free · No key · 16,000+ indicators</div><p>GDP, inflation, commodity prices, trade data for 200+ countries. The backbone of macro calibration.</p><code>GET api.worldbank.org/v2/country/WLD/indicator/FP.CPI.TOTL.ZG?format=json</code><br><a href="https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation" target="_blank" class="lk2">🔗 Documentation</a></div>
+
+<div class="api-card"><h4>FRED API (St. Louis Fed)</h4><div class="at">✅ Free key · 800,000+ series</div><p>The world's largest economic database. Commodity prices, CPI, PPI, interest rates, employment data.</p><code>GET api.stlouisfed.org/fred/series/observations?series_id=GOLDAMGBD228NLBM</code><br><a href="https://fred.stlouisfed.org/docs/api/fred/" target="_blank" class="lk2">🔗 Documentation</a></div>
+
+<div class="api-card"><h4>Open Exchange Rates</h4><div class="at">✅ Free tier · 170+ currencies</div><p>Real-time and historical FX rates. Free plan: 1,000 requests/month. Ideal for currency risk modelling.</p><code>GET openexchangerates.org/api/latest.json</code><br><a href="https://openexchangerates.org/" target="_blank" class="lk2">🔗 Documentation</a></div>
+
+<div class="api-card"><h4>Metals.dev</h4><div class="at">✅ Free tier · Precious + industrial metals</div><p>Gold, silver, platinum, palladium, copper, aluminum. Real-time spot prices in 20+ currencies.</p><code>GET api.metals.dev/v1/latest?api_key=YOUR_KEY&&currency=EUR</code><br><a href="https://metals.dev/" target="_blank" class="lk2">🔗 Documentation</a></div>
+
+<div class="api-card"><h4>Eurostat API</h4><div class="at">✅ Free · No key · EU harmonised data</div><p>Industrial PPI, labour costs, energy prices, trade statistics. JSON/SDMX format. EU-27 harmonised.</p><code>GET ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/STS_INPR_M</code><br><a href="https://wikis.ec.europa.eu/display/EUROSTATHELP/API" target="_blank" class="lk2">🔗 Documentation</a></div>
+
+</div>
+</div></section><div class="rl"></div>
+
+<!-- CONTACT -->
+<section class="sec"><div class="ctr">
+<div class="cb"><div class="lb2"><a href="https://www.saju.be/"><img src="https://www.saju.be/Logo.png" alt="Saju"></a></div><div class="tx"><h4>Your coefficient. Your data. Bespoke.</h4><p><strong style="color:var(--w)">Mr. François Hanneuse</strong> — Saju Srl<br>📧 <a href="mailto:fh@saju.be">fh@saju.be</a> · 📞 +32 483 37 98 · 🌐 <a href="https://www.saju.be/">www.saju.be</a><br>TVA : BE0785.280.227 · Chaussée d'Alsemberg 1108 boîte 6, Uccle 1180</p></div></div>
+</div></section>
+
+<footer><div class="ctr"><div class="fi"><div class="fb"><a href="https://www.saju.be/"><img src="https://www.saju.be/Logo.png" alt="Saju"></a><div class="fw">Saju<span> srl</span></div></div><div class="fc">© 2026 Saju Srl · Live data from ECB, World Bank, FRED</div></div></div></footer>
+
+<script>
+// ═══ 1. LIVE FX RATES ═══
+async function loadFX(){
+  try{
+    const r=await fetch('https://api.frankfurter.app/latest?base=EUR');
+    const d=await r.json();
+    const pairs=[['USD','🇺🇸'],['GBP','🇬🇧'],['CHF','🇨🇭'],['JPY','🇯🇵'],['CNY','🇨🇳'],['SEK','🇸🇪'],['PLN','🇵🇱'],['CZK','🇨🇿'],['CAD','🇨🇦'],['AUD','🇦🇺'],['KRW','🇰🇷'],['INR','🇮🇳']];
+    // Get yesterday for comparison
+    const y=new Date();y.setDate(y.getDate()-3);
+    const ys=y.toISOString().slice(0,10);
+    const r2=await fetch('https://api.frankfurter.app/'+ys+'?base=EUR');
+    const d2=await r2.json();
+    
+    let html='';let ticker='';
+    pairs.forEach(([c,flag])=>{
+      const v=d.rates[c];const v2=d2.rates[c];
+      if(!v)return;
+      const chg=v2?((v-v2)/v2*100).toFixed(2):null;
+      const cls=chg>=0?'up':'dn';
+      const arrow=chg>=0?'▲':'▼';
+      const dp=c==='JPY'||c==='KRW'||c==='CZK'?2:4;
+      html+='<div class="fx-card"><div class="fx-pair">'+flag+' EUR/'+c+'</div><div class="fx-rate">'+v.toFixed(dp)+'</div>'+(chg?'<div class="fx-chg '+cls+'">'+arrow+' '+Math.abs(chg)+'%</div>':'')+'</div>';
+      ticker+='<span class="ti"><span class="cur">EUR/'+c+'</span> <span class="val">'+v.toFixed(dp)+'</span>'+(chg?' <span class="chg '+cls+'">'+arrow+Math.abs(chg)+'%</span>':'')+'</span>';
+    });
+    document.getElementById('fxGrid').innerHTML=html;
+    // Duplicate ticker for seamless scroll
+    const tickerEl=document.getElementById('ticker');
+    tickerEl.innerHTML=ticker+ticker;
+  }catch(e){document.getElementById('fxGrid').innerHTML='<div class="loading">⚠️ ECB API temporarily unavailable. <a href="https://api.frankfurter.app/latest" target="_blank" style="color:var(--op)">Try direct link</a></div>';}
+}
+
+// ═══ 2. HISTORICAL FX CHART ═══
+async function loadChart(pair,elId){
+  try{
+    const to=new Date().toISOString().slice(0,10);
+    const fr=new Date(Date.now()-365*24*3600*1000).toISOString().slice(0,10);
+    const r=await fetch('https://api.frankfurter.app/'+fr+'..'+to+'?base=EUR&to='+pair);
+    const d=await r.json();
+    const dates=Object.keys(d.rates).sort();
+    const vals=dates.map(dt=>d.rates[dt][pair]);
+    const mn=Math.min(...vals),mx=Math.max(...vals);
+    const W=800,H=200,pad=5;
+    const scX=(i)=>pad+(W-2*pad)*i/(vals.length-1);
+    const scY=(v)=>H-pad-(H-2*pad)*(v-mn)/(mx-mn||1);
+    
+    // Build SVG
+    let pts=vals.map((v,i)=>scX(i)+','+scY(v)).join(' ');
+    let area=scX(0)+','+H+' '+pts+' '+scX(vals.length-1)+','+H;
+    const last=vals[vals.length-1],first=vals[0];
+    const col=last>=first?'var(--up)':'var(--dn)';
+    const fillCol=last>=first?'rgba(52,211,153,.08)':'rgba(239,68,68,.08)';
+    
+    let svg='<polygon points="'+area+'" fill="'+fillCol+'" />';
+    svg+='<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2" />';
+    // Grid lines
+    for(let i=0;i<5;i++){const y=pad+(H-2*pad)*i/4;svg+='<line x1="'+pad+'" y1="'+y+'" x2="'+(W-pad)+'" y2="'+y+'" stroke="rgba(255,255,255,.06)" stroke-width="1" />';const lbl=(mx-(mx-mn)*i/4).toFixed(pair==='GBP'?4:3);svg+='<text x="'+(W-pad-2)+'" y="'+(y-3)+'" fill="rgba(255,255,255,.3)" font-size="10" text-anchor="end">'+lbl+'</text>';}
+    // Date labels
+    [0,Math.floor(dates.length/4),Math.floor(dates.length/2),Math.floor(3*dates.length/4),dates.length-1].forEach(i=>{svg+='<text x="'+scX(i)+'" y="'+(H-1)+'" fill="rgba(255,255,255,.25)" font-size="9" text-anchor="middle">'+dates[i].slice(5)+'</text>';});
+    // Current value label
+    svg+='<circle cx="'+scX(vals.length-1)+'" cy="'+scY(last)+'" r="3" fill="'+col+'" />';
+    svg+='<text x="'+scX(vals.length-1)+'" y="'+(scY(last)-8)+'" fill="'+col+'" font-size="12" font-weight="700" text-anchor="end">'+last.toFixed(4)+'</text>';
+    
+    document.getElementById(elId).innerHTML=svg;
+  }catch(e){}
+}
+
+// ═══ 3. WORLD BANK DATA ═══
+async function loadWB(){
+  const indicators=[
+    ['FP.CPI.TOTL.ZG','🌍','World Inflation (CPI)','% annual'],
+    ['NY.GDP.MKTP.KD.ZG','📈','World GDP Growth','% annual'],
+    ['FP.CPI.TOTL.ZG','🇪🇺','Euro Area Inflation','% annual','EMU'],
+    ['NY.GDP.MKTP.KD.ZG','🇺🇸','US GDP Growth','% annual','USA'],
+  ];
+  let html='';
+  for(const ind of indicators){
+    const [code,icon,name,unit,country]=ind;
+    const c=country||'WLD';
+    try{
+      const r=await fetch('https://api.worldbank.org/v2/country/'+c+'/indicator/'+code+'?format=json&per_page=5&mrv=1');
+      const d=await r.json();
+      if(d[1]&&d[1][0]){
+        const v=d[1][0].value;const yr=d[1][0].date;
+        const col=v>3?'var(--dn)':v>0?'var(--up)':'var(--wl)';
+        html+='<div class="inf-card"><h4>'+icon+' '+name+'</h4><div class="iv" style="color:'+col+'">'+(v?v.toFixed(2):'N/A')+'%</div><div class="il">'+yr+' · '+unit+' · Source: World Bank</div></div>';
+      }
+    }catch(e){}
+  }
+  if(html)document.getElementById('wbGrid').innerHTML=html;
+  else document.getElementById('wbGrid').innerHTML='<div class="loading">⚠️ World Bank API loading... <a href="https://api.worldbank.org/v2/country/WLD/indicator/FP.CPI.TOTL.ZG?format=json&per_page=5&mrv=1" target="_blank" style="color:var(--op)">Try direct</a></div>';
+}
+
+// ═══ INIT ═══
+loadFX();
+loadChart('USD','fxChart');
+loadChart('GBP','fxChart2');
+loadWB();
+// Auto-refresh FX every 5 minutes
+setInterval(loadFX,300000);
+</script>
+</body></html>
