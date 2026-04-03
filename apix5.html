@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Saju Srl — Dashboard macro & éducation</title>
+<style>
+/* --- Ton style CSS existant (inchangé) --- */
+:root{--bk:#0f1117;--cd:#141822;--cd2:#1a2030;--bd:rgba(255,255,255,.1);--w:#fff;--wd:rgba(255,255,255,.88);--wl:rgba(255,255,255,.5);--or:#d97706;--em:#059669;--r:#c0392b;--bl:#3b82f6}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}body{font-family:'DM Sans',sans-serif;background:var(--bk);color:var(--w);line-height:1.65;font-size:14px;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}a{color:inherit;text-decoration:none}.ctr{max-width:1280px;margin:0 auto;padding:0 clamp(14px,3.5vw,44px)}
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(15,17,23,.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--bd)}
+.ni{max-width:1280px;margin:0 auto;padding:0 clamp(14px,3.5vw,44px);height:54px;display:flex;align-items:center;justify-content:space-between}
+.nl img{height:40px;border-radius:8px;background:#fff;padding:4px 10px}
+.nk{display:flex;gap:12px;align-items:center}.nk a{font-size:.58rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--wl);transition:color .2s}.nk a:hover,.nk a.ac{color:var(--or)}
+.tw{position:fixed;top:54px;left:0;right:0;z-index:999;background:linear-gradient(90deg,#080c15,#0d1220 30%,#0d1220 70%,#080c15);border-bottom:1px solid rgba(217,119,6,.12);height:30px;overflow:hidden;display:flex;align-items:center}
+.tt{display:inline-flex;align-items:center;animation:ts2 90s linear infinite;white-space:nowrap}.tt:hover{animation-play-state:paused}
+@keyframes ts2{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}}
+.ti{display:inline-flex;align-items:center;gap:4px;padding:0 14px;font-size:.6rem;border-right:1px solid rgba(255,255,255,.04)}
+.ti .tl{color:rgba(255,255,255,.35);font-size:.48rem;text-transform:uppercase;letter-spacing:.03em}.ti .tv{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:.76rem;color:var(--or)}
+.ti .tu{font-size:.46rem;font-weight:600}.tu.up{color:#34d399}.tu.dn{color:#f87171}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.hero{padding:clamp(106px,11vw,128px) 0 clamp(12px,2vw,20px);background:linear-gradient(145deg,#0f1117,#111827 40%,#0c1425)}
+.ey{display:inline-flex;align-items:center;gap:6px;margin-bottom:6px;font-size:.54rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--bl)}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.3rem,2.6vw,2rem);font-weight:700;line-height:1.15;max-width:620px;margin-bottom:8px}.hero h1 em{font-style:italic;color:var(--or)}
+.hs{font-size:.74rem;color:var(--wd);max-width:500px;line-height:1.7;margin-bottom:12px}.hs strong{color:var(--or)}
+.sbar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}.sb{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:.52rem;font-weight:600}
+.sb.live{background:rgba(5,150,105,.1);color:var(--em);border:1px solid rgba(5,150,105,.2)}.sb.live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--em);animation:pulse 2s infinite}
+.sb.inf{background:rgba(59,130,246,.08);color:var(--bl);border:1px solid rgba(59,130,246,.2)}
+.kpi-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:5px;margin:10px 0 6px}
+.kpi{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:8px 10px;text-align:center;animation:fadeIn .4s ease both}
+.kpi .kl{font-size:.42rem;color:var(--wl);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}.kpi .kv{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;color:var(--or)}.kpi .kc{font-size:.46rem;margin-top:1px}.kc.up{color:var(--em)}.kc.dn{color:var(--r)}
+.sec{padding:clamp(12px,1.8vw,18px) 0}.sh{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(217,119,6,.18)}
+.sh h2{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700}.badge{font-size:.44rem;font-weight:700;padding:2px 5px;border-radius:2px;text-transform:uppercase;letter-spacing:.04em}
+.bg2{background:rgba(5,150,105,.1);color:#34d399;border:1px solid rgba(5,150,105,.2)}.bk2{background:rgba(217,119,6,.1);color:#fbbf24;border:1px solid rgba(217,119,6,.2)}
+.fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:4px;margin-bottom:8px}
+.fx{background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:6px;text-align:center;transition:all .15s;animation:fadeIn .3s ease both}.fx:hover{border-color:rgba(59,130,246,.25);background:var(--cd2)}
+.fx .fl{font-size:.42rem;color:var(--wl);text-transform:uppercase;letter-spacing:.04em}.fx .fv{font-family:'Cormorant Garamond',serif;font-size:.86rem;font-weight:700;color:var(--or)}.fx .fc2{font-size:.42rem}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:6px;margin-bottom:10px}
+.cb2{background:var(--cd);border:1px solid var(--bd);border-radius:5px;overflow:hidden}.ct2{padding:6px 10px 3px;font-size:.68rem;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.ct2 .cv{font-family:'Cormorant Garamond',serif;color:var(--or);font-weight:700;font-size:.76rem}.ca{height:90px;position:relative;margin:0 3px 3px}
+.dp{background:var(--cd);border:1px solid var(--bd);border-radius:5px;overflow:hidden;margin-bottom:6px}
+.dt2{padding:6px 10px;font-size:.68rem;font-weight:600;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:4px}
+.dt2 .dot{width:5px;height:5px;border-radius:50%;display:inline-block;background:#34d399;animation:pulse 2s infinite}
+.tbl{width:100%;border-collapse:collapse;font-size:.62rem}.tbl th{text-align:left;padding:3px 8px;font-size:.44rem;color:var(--wl);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--bd);font-weight:600}
+.tbl td{padding:3px 8px;border-bottom:1px solid rgba(255,255,255,.025)}.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.tbl .v{color:var(--or);font-weight:600;font-family:'Cormorant Garamond',serif;font-size:.74rem}.tbl .pos{color:var(--em)}.tbl .neg{color:var(--r)}.tbl .rg{font-weight:500;color:var(--wd)}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,170px),1fr));gap:6px;margin-bottom:10px}
+.fc{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:10px 12px;border-top:3px solid var(--or);transition:all .15s}.fc:hover{border-color:rgba(217,119,6,.25)}
+.fc .fl2{font-size:.46rem;color:var(--wl);text-transform:uppercase;letter-spacing:.04em;margin-bottom:1px}
+.fc .fv2{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--or);margin-bottom:1px}
+.fc .fu{font-size:.44rem;color:rgba(255,255,255,.25)}.fc .fd{font-size:.4rem;color:rgba(255,255,255,.18);margin-top:1px}.fc .fch{height:36px;margin-top:4px}
+.nl2{display:grid;grid-template-columns:1fr;gap:4px;margin-bottom:10px}
+.nc{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:10px 14px;border-left:3px solid var(--bl);transition:all .15s;animation:fadeIn .3s ease both}
+.nc:hover{border-color:rgba(59,130,246,.2);background:var(--cd2)}
+.nc .nt{font-size:.72rem;font-weight:600;margin-bottom:3px;line-height:1.3}.nc .nt a{color:var(--or);text-decoration:none}.nc .nt a:hover{text-decoration:underline}
+.nc .ns{font-size:.56rem;color:var(--wl);line-height:1.5;margin-bottom:3px}.nc .nm{font-size:.42rem;color:rgba(255,255,255,.25)}
+.nc.wiki{border-left-color:#059669}.nc.hn{border-left-color:#ff6600}.nc.guard{border-left-color:#c70000}
+.rg2{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:6px;margin-bottom:12px}
+.rc{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:10px 12px;border-left:3px solid var(--bl);transition:all .15s}.rc:hover{border-color:rgba(59,130,246,.25)}
+.rc.free{border-left-color:var(--em)}.rc.key{border-left-color:var(--or)}
+.rc h4{font-family:'Cormorant Garamond',serif;font-size:.82rem;font-weight:700;margin-bottom:2px;display:flex;justify-content:space-between;align-items:center}
+.rc p{font-size:.58rem;color:var(--wl);line-height:1.4;margin-bottom:4px}
+.rc .ep{font-family:'JetBrains Mono',monospace;font-size:.48rem;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06);border-radius:2px;padding:3px 6px;color:#5eead4;word-break:break-all;display:block;margin-bottom:4px}
+.rc a.dl{font-size:.5rem;color:var(--bl);border:1px solid rgba(59,130,246,.2);padding:2px 5px;border-radius:2px}
+.ld{color:var(--wl);font-size:.6rem;display:flex;align-items:center;gap:5px;padding:10px}.ld::before{content:'';width:11px;height:11px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--bl);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.err{color:var(--r);font-size:.56rem;background:rgba(192,57,43,.06);padding:5px 7px;border-radius:2px;margin:3px 0}
+.contact{background:var(--cd);border:1px solid var(--bd);border-left:3px solid var(--or);border-radius:5px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.contact .lb{background:#fff;border-radius:5px;padding:3px 7px;flex-shrink:0}.contact .lb img{height:26px}
+.contact .tx h4{font-size:.72rem;font-weight:700}.contact .tx p{font-size:.56rem;color:var(--wl);line-height:1.5}.contact .tx a{color:var(--or)}
+footer{border-top:1px solid var(--bd);padding:6px 0;background:#0b0e14}.fi{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px}
+.fb{display:flex;align-items:center;gap:3px}.fb img{height:24px;border-radius:5px;background:#fff;padding:2px 4px}.fw2{font-size:.56rem;color:rgba(255,255,255,.18)}
+@media(max-width:700px){.nk .np{display:none}.fx-grid{grid-template-columns:repeat(4,1fr)}.kpi-bar{grid-template-columns:repeat(3,1fr)}.fg{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<nav><div class="ni"><a href="https://sajusrl.netlify.app/" class="nl"><img src="https://sajusrl.netlify.app/Logo.png" alt="Saju srl"></a>
+<div class="nk"><a href="#" class="np ac">Live Data</a><a href="https://sajusrl.netlify.app/" class="np">Contact</a></div></div></nav>
+<div class="tw"><div class="tt" id="ticker"><span class="ti"><span class="tl">Connecting</span><span class="tv">...</span></span></div></div>
+<section class="hero"><div class="ctr">
+<div class="ey">&#x1F534; Saju Srl &#183; Live Market Intelligence</div>
+<h1>Données macro, éducation & matières premières.<br><em>World Bank, FRED, Eurostat, actualités.</em></h1>
+<p class="hs">Appels directs aux API <strong>World Bank (inflation, matières premières, population, diplômés)</strong>, FRED, Eurostat, Wikipedia, Hacker News, The Guardian.</p>
+<div class="sbar"><span class="sb live">LIVE</span><span class="sb inf">Mise à jour: <span id="ts">&#8212;</span></span><span class="sb inf">+10 sources</span></div>
+<div class="kpi-bar">
+<div class="kpi"><div class="kl">EUR/USD</div><div class="kv" id="k1">&#8212;</div><div class="kc" id="k1c">&#160;</div></div>
+<div class="kpi"><div class="kl">EUR/GBP</div><div class="kv" id="k2">&#8212;</div><div class="kc" id="k2c">&#160;</div></div>
+<div class="kpi"><div class="kl">EUR/CNY</div><div class="kv" id="k3">&#8212;</div><div class="kc" id="k3c">&#160;</div></div>
+<div class="kpi"><div class="kl">GOLD $/oz</div><div class="kv" id="k4">&#8212;</div><div class="kc" id="k4c">&#160;</div></div>
+<div class="kpi"><div class="kl">OIL WTI $</div><div class="kv" id="k5">&#8212;</div><div class="kc" id="k5c">&#160;</div></div>
+<div class="kpi"><div class="kl">FED RATE %</div><div class="kv" id="k6">&#8212;</div><div class="kc" id="k6c">&#160;</div></div>
+<div class="kpi"><div class="kl">BTC/EUR</div><div class="kv" id="k7">&#8212;</div><div class="kc" id="k7c">&#160;</div></div>
+<div class="kpi"><div class="kl">COPPER</div><div class="kv" id="k8">&#8212;</div><div class="kc" id="k8c">&#160;</div></div>
+</div></div></section>
+
+<!-- SECTION TAUX DE CHANGE (inchangée) -->
+<section class="sec"><div class="ctr"><div class="sh"><h2>&#x1F4B1; Taux de change — BCE</h2><span class="badge bg2">&#x2705; LIVE</span></div>
+<div class="fx-grid" id="fxAll"><div class="ld">Chargement des taux ECB...</div></div><div id="fxM" style="font-size:.42rem;color:rgba(255,255,255,.2);margin-bottom:4px"></div>
+<div class="cg">
+<div class="cb2"><div class="ct2"><span>EUR/USD 12m</span><span class="cv" id="cv1">&#8212;</span></div><div class="ca" id="ch1"><div class="ld">Chargement...</div></div></div>
+<div class="cb2"><div class="ct2"><span>EUR/GBP 12m</span><span class="cv" id="cv2">&#8212;</span></div><div class="ca" id="ch2"><div class="ld">Chargement...</div></div></div>
+<div class="cb2"><div class="ct2"><span>EUR/CNY 12m</span><span class="cv" id="cv3">&#8212;</span></div><div class="ca" id="ch3"><div class="ld">Chargement...</div></div></div>
+<div class="cb2"><div class="ct2"><span>EUR/TRY 12m</span><span class="cv" id="cv4">&#8212;</span></div><div class="ca" id="ch4"><div class="ld">Chargement...</div></div></div>
+</div></div></section>
+
+<!-- FRED (inchangé) -->
+<section class="sec" style="background:rgba(217,119,6,.02)"><div class="ctr"><div class="sh"><h2>&#x1F4CA; FRED — Réserve fédérale</h2><span class="badge bg2">&#x2705; LIVE KEY</span></div>
+<div class="fg" id="fredG"><div class="ld">Connexion à FRED...</div></div></div></section>
+
+<!-- COINGECKO (inchangé) -->
+<section class="sec"><div class="ctr"><div class="sh"><h2>&#x1FA99; CoinGecko — Crypto</h2><span class="badge bg2">&#x2705; FREE</span></div>
+<div class="fg" id="cryptoG"><div class="ld">Chargement CoinGecko...</div></div></div></section>
+
+<!-- WORLD BANK : 4 indicateurs historiques (INFLATION, MATIÈRES PREMIÈRES, POPULATION, FEMMES DIPLÔMÉES) -->
+<section class="sec" style="background:rgba(0,0,0,.12)"><div class="ctr"><div class="sh"><h2>&#x1F30D; Banque mondiale — Données historiques longues</h2><span class="badge bg2">&#x2705; API directe</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:6px">
+<div class="dp"><div class="dt2"><span class="dot"></span> 📈 Inflation (prix conso, % annuel)</div><div id="wbInflation"><div class="ld">Chargement...</div></div></div>
+<div class="dp"><div class="dt2"><span class="dot"></span> ⛏️ Prix matières premières (USD)</div><div id="wbCommodities"><div class="ld">Chargement...</div></div></div>
+<div class="dp"><div class="dt2"><span class="dot"></span> 👥 Population totale</div><div id="wbDemography"><div class="ld">Chargement...</div></div></div>
+<div class="dp"><div class="dt2"><span class="dot"></span> 🎓 Femmes diplômées (enseignement supérieur, %)</div><div id="wbEdu"><div class="ld">Chargement...</div></div></div>
+</div></div></section>
+
+<!-- EUROSTAT & FX HISTORY -->
+<section class="sec"><div class="ctr"><div class="sh"><h2>&#x1F3ED; Eurostat + Historique FX</h2><span class="badge bg2">&#x2705; LIVE</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:6px">
+<div class="dp"><div class="dt2"><span class="dot"></span> PPI — UE-27</div><div id="euP"><div class="ld">Chargement...</div></div></div>
+<div class="dp"><div class="dt2"><span class="dot"></span> FX: aujourd'hui vs 1/3/5 ans</div><div id="fxH"><div class="ld">Chargement...</div></div></div>
+</div></div></section>
+
+<!-- ACTUALITÉS & SAVOIR -->
+<section class="sec" style="background:rgba(59,130,246,.02)"><div class="ctr"><div class="sh"><h2>&#x1F4F0; Actualités et connaissances</h2><span class="badge bg2">&#x2705; APIs gratuites</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:6px">
+<div class="dp"><div class="dt2"><span class="dot" style="background:#059669"></span> &#x1F30D; Wikipedia — Article à la une</div><div id="wikiF"><div class="ld">Chargement...</div></div></div>
+<div class="dp"><div class="dt2"><span class="dot" style="background:#059669"></span> &#x1F4C5; Wikipedia — Ce jour dans l'histoire</div><div id="wikiD"><div class="ld">Chargement...</div></div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:6px;margin-top:6px">
+<div class="dp"><div class="dt2"><span class="dot" style="background:#ff6600"></span> &#x1F525; Hacker News — Top stories</div><div id="hnS"><div class="ld">Chargement...</div></div></div>
+<div class="dp"><div class="dt2"><span class="dot" style="background:#c70000"></span> &#x1F4F0; The Guardian — Monde</div><div id="guardS"><div class="ld">Chargement...</div></div></div>
+</div>
+</div></section>
+
+<!-- API ALTERNATIVES (explications) -->
+<section class="sec" style="background:rgba(0,0,0,.12)"><div class="ctr"><div class="sh"><h2>&#x1F4E1; Pistes pour enrichir le dashboard</h2></div>
+<div class="rg2">
+<div class="rc free"><h4>📡 Actualités géopolitiques</h4><p>newsapi.org (100 req/jour, WSJ, BBC, etc.) · Radio France (open API podcasts, France Culture)</p><code class="ep">https://newsapi.org/v2/top-headlines?country=fr</code><a href="https://newsapi.org/" target="_blank" class="dl">Documentation</a></div>
+<div class="rc free"><h4>🔬 Revues & institutions scientifiques</h4><p>arXiv (prépublications) · HAL (archive ouverte française) · Collège de France (podcasts via Radio France)</p><code class="ep">export.arxiv.org/api/query?search_query=all:electron</code><a href="https://arxiv.org/help/api" target="_blank" class="dl">arXiv API</a></div>
+<div class="rc free"><h4>🌍 GIEC & données climat</h4><p>World Bank Climate Knowledge Portal · Open-Meteo Climate API (données CMIP6)</p><code class="ep">https://climateknowledgeportal.worldbank.org/api/data/...</code><a href="https://open-meteo.com/en/docs/climate-api" target="_blank" class="dl">Open-Meteo</a></div>
+<div class="rc free"><h4>📰 Presse internationale gratuite</h4><p>Asahi Shimbun (pas d'API officielle, mais certains agrégateurs comme NewsData.io la couvrent)</p><code class="ep">newsdata.io/api/1/news?country=jp</code><a href="https://newsdata.io/" target="_blank" class="dl">NewsData.io</a></div>
+</div></div></section>
+
+<section class="sec"><div class="ctr"><div class="contact">
+<div class="lb"><a href="https://sajusrl.netlify.app/"><img src="https://sajusrl.netlify.app/Logo.png" alt="Saju"></a></div>
+<div class="tx"><h4>Intégration API sur mesure ou rapport personnalisé ?</h4>
+<p><strong style="color:#fff">Mr. François Hanneuse</strong> — Saju Srl<br>
+&#x1F4E7; <a href="mailto:fh@saju.be">fh@saju.be</a> · &#x1F4DE; +32 483 37 98 · &#x1F310; <a href="https://sajusrl.netlify.app/">www.saju.be</a><br>
+VAT: BE0785.280.227 · Ch. d'Alsemberg 1108/6, 1180 Uccle</p></div></div></div></section>
+
+<footer><div class="ctr"><div class="fi"><div class="fb"><a href="https://sajusrl.netlify.app/"><img src="https://sajusrl.netlify.app/Logo.png" alt="Saju"></a><div class="fw2">Saju srl</div></div>
+<div class="fw2">© 2026 Saju Srl · Actualisation auto toutes les 5 min</div></div></div></footer>
+
+<script>
+// ======================== CONFIGURATION ========================
+var FK = "daa32649c83b49b9d44ecc38b1bcf3b9"; // FRED API key (valide)
+var TD = []; var U = "\u25B2", D = "\u25BC";
+
+function fmt(v,c){ if(v==null) return "\u2014"; var h=["JPY","KRW","CZK","SEK","HUF","ISK","TRY","PLN","NOK","DKK","RON","BGN","INR","MXN","BRL","ZAR","THB","PHP","IDR","MYR","RUB"]; return h.indexOf(c)>=0 ? v.toFixed(2) : v.toFixed(4); }
+function gyd(){ var d=new Date(); d.setDate(d.getDate()-1); if(d.getDay()===0) d.setDate(d.getDate()-2); if(d.getDay()===6) d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+function addT(l,v,p){ TD.push({l:l,v:v,p:p}); }
+function drawT(){ if(!TD.length) return; var h=""; for(var r=0;r<3;r++) TD.forEach(function(t){ h+='<span class="ti"><span class="tl">'+t.l+'</span><span class="tv">'+t.v+'</span>'; if(t.p!=null) h+='<span class="tu '+(t.p>=0?"up":"dn")+'">'+(t.p>=0?U:D)+" "+Math.abs(t.p).toFixed(2)+'%</span>'; h+="</span>"; }); document.getElementById("ticker").innerHTML=h; }
+function setK(id,val,pct){ var e=document.getElementById(id); if(e) e.textContent=val; if(pct!=null){ var c=document.getElementById(id+"c"); if(c){ c.className="kc "+(pct>=0?"up":"dn"); c.textContent=(pct>=0?U:D)+" "+Math.abs(pct).toFixed(2)+"%"; } } }
+
+// ======================== 1. FRANKFURTER (taux) ========================
+(async function(){ try{ var r1=await fetch("https://api.frankfurter.app/latest?base=EUR"), r2=await fetch("https://api.frankfurter.app/"+gyd()+"?base=EUR"); if(!r1.ok) throw new Error("HTTP "+r1.status); var d1=await r1.json(), d2=r2.ok?await r2.json():null; var cs=Object.keys(d1.rates).sort(), g=document.getElementById("fxAll"), h=""; cs.forEach(function(c,i){ var v=d1.rates[c], yv=d2?d2.rates[c]:null, p=yv?((v-yv)/yv*100):null; h+='<div class="fx" style="animation-delay:'+(i*20)+'ms"><div class="fl">'+c+'</div><div class="fv">'+fmt(v,c)+"</div>"; if(p!=null) h+='<div class="fc2 '+(p>=0?"up":"dn")+'">'+(p>=0?U:D)+" "+Math.abs(p).toFixed(2)+"%</div>"; h+="</div>"; addT("EUR/"+c, fmt(v,c), p); }); g.innerHTML=h; document.getElementById("fxM").textContent="Date: "+d1.date+" · Base: EUR · "+cs.length+" devises · BCE"; document.getElementById("ts").textContent=d1.date+" "+new Date().toLocaleTimeString(); [["k1","USD"],["k2","GBP"],["k3","CNY"]].forEach(function(kp){ var v=d1.rates[kp[1]], yv=d2?d2.rates[kp[1]]:null; if(v) setK(kp[0], fmt(v,kp[1]), yv?((v-yv)/yv*100):null); }); drawT(); }catch(e){ document.getElementById("fxAll").innerHTML='<div class="err">⚠️ '+e.message+"</div>"; } })();
+
+// ======================== 2. GRAPHIQUES FX (12 mois) ========================
+async function lc(pair,bid,lid,col){ try{ var e=new Date(), s=new Date(); s.setFullYear(s.getFullYear()-1); var r=await fetch("https://api.frankfurter.app/"+s.toISOString().slice(0,10)+".."+e.toISOString().slice(0,10)+"?base=EUR&to="+pair); if(!r.ok) throw new Error("HTTP "+r.status); var d=await r.json(), dt=Object.keys(d.rates).sort(), vl=dt.map(function(t){ return d.rates[t][pair]; }); mkC(document.getElementById(bid), vl, dt, col, lid); }catch(e){ document.getElementById(bid).innerHTML='<div class="err">⚠️ '+e.message+"</div>"; } }
+function mkC(box,vl,dt,col,lid){ var W2=box.offsetWidth||280, H2=box.offsetHeight||90; var mn=Math.min.apply(null,vl), mx=Math.max.apply(null,vl), rg=mx-mn||.01; var p="", a="M 2 "+(H2-12)+" "; for(var i=0;i<vl.length;i++){ var x=2+(i/(vl.length-1))*(W2-4), y=10+(1-(vl[i]-mn)/rg)*(H2-22); p+=(i?"L ":"M ")+x.toFixed(1)+" "+y.toFixed(1)+" "; a+="L "+x.toFixed(1)+" "+y.toFixed(1)+" "; } a+="L "+(W2-2)+" "+(H2-12)+" Z"; var last=vl[vl.length-1], chg=((last-vl[0])/vl[0]*100), ly=10+(1-(last-mn)/rg)*(H2-22); var cc=chg>=0?"#059669":"#c0392b", id="c"+Math.random().toString(36).slice(2,6); var s='<svg width="'+W2+'" height="'+H2+'" style="display:block"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity=".15"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><path d="'+a+'" fill="url(#'+id+')"/><path d="'+p+'" fill="none" stroke="'+col+'" stroke-width="1.5" stroke-linejoin="round"/><circle cx="'+(W2-2)+'" cy="'+ly.toFixed(1)+'" r="2.5" fill="'+col+'"/><text x="'+(W2-4)+'" y="10" text-anchor="end" fill="#d97706" font-size="10" font-weight="700" font-family="Cormorant Garamond,serif">'+last.toFixed(4)+'</text><text x="'+(W2-4)+'" y="20" text-anchor="end" fill="'+cc+'" font-size="7.5">'+(chg>=0?U:D)+" "+Math.abs(chg).toFixed(2)+'% YoY</text><text x="3" y="10" fill="rgba(255,255,255,.15)" font-size="6">H:'+mx.toFixed(4)+'</text><text x="3" y="'+(H2-4)+'" fill="rgba(255,255,255,.15)" font-size="6">L:'+mn.toFixed(4)+'</text></svg>'; box.innerHTML=s; if(lid){ var el=document.getElementById(lid); if(el) el.innerHTML=last.toFixed(4)+' <span style="font-size:.55rem;color:'+cc+'">'+(chg>=0?U:D)+Math.abs(chg).toFixed(2)+"%</span>"; } }
+lc("USD","ch1","cv1","#3b82f6"); lc("GBP","ch2","cv2","#8b5cf6"); lc("CNY","ch3","cv3","#ef4444"); lc("TRY","ch4","cv4","#f59e0b");
+
+// ======================== 3. FRED (avec clé) ========================
+(async function(){ var SS=[{id:"GOLDAMGBD228NLBM",n:"Or",u:"$/oz",col:"#d97706",d:2,k:"k4"},{id:"DCOILWTICO",n:"WTI Pétrole",u:"$/baril",col:"#3b82f6",d:2,k:"k5"},{id:"DFF",n:"Taux Fed Funds",u:"%",col:"#ef4444",d:2,k:"k6"},{id:"PCOPPUSDM",n:"Cuivre",u:"$/t",col:"#f59e0b",d:2,k:"k8"},{id:"CPIAUCSL",n:"IPC US",u:"1982=100",col:"#8b5cf6",d:1,k:null},{id:"PPIACO",n:"PPI global",u:"1982=100",col:"#059669",d:1,k:null},{id:"DEXUSEU",n:"USD/EUR",u:"taux",col:"#0d9488",d:4,k:null},{id:"T10YIE",n:"Anticipations inflation 10 ans",u:"%",col:"#ec4899",d:2,k:null}]; var grid=document.getElementById("fredG"), cards=""; for(var i=0;i<SS.length;i++){ var s=SS[i]; try{ var url="https://api.stlouisfed.org/fred/series/observations?series_id="+s.id+"&api_key="+FK+"&file_type=json&sort_order=desc&limit=60"; var r=await fetch(url); if(!r.ok) throw new Error(s.id+": "+r.status); var d=await r.json(); var obs=d.observations.filter(function(o){ return o.value!=="." }); if(obs.length>0){ var lat=parseFloat(obs[0].value), prv=obs.length>1?parseFloat(obs[1].value):null, pct=prv?((lat-prv)/prv*100):null; var vals=obs.slice(0,30).reverse().map(function(o){ return parseFloat(o.value) }); cards+='<div class="fc"><div class="fl2">'+s.n+'</div><div class="fv2">'+lat.toFixed(s.d)+'</div><div class="fu">'+s.u+"</div>"; if(pct!=null) cards+='<div style="font-size:.48rem" class="'+(pct>=0?"neg":"pos")+'">'+(pct>=0?U:D)+" "+Math.abs(pct).toFixed(2)+"% vs préc.</div>"; cards+='<div class="fd">'+obs[0].date+"</div>"; if(vals.length>4) cards+='<div class="fch">'+mSVG(vals,155,36,s.col)+"</div>"; cards+="</div>"; addT(s.n, lat.toFixed(s.d)+" "+s.u, pct); if(s.k) setK(s.k, s.d<=2?lat.toFixed(s.d):lat.toFixed(0), pct); } }catch(e){ cards+='<div class="fc"><div class="fl2">'+s.n+'</div><div class="err">⚠️ '+e.message+"</div></div>"; } } grid.innerHTML=cards||'<div class="err">Aucune donnée FRED</div>'; drawT(); })();
+function mSVG(vl,W,H,c){ var mn=Math.min.apply(null,vl), mx=Math.max.apply(null,vl), rg=mx-mn||1; var p="", a="M 0 "+H+" "; for(var i=0;i<vl.length;i++){ var x=(i/(vl.length-1))*W, y=2+(1-(vl[i]-mn)/rg)*(H-4); p+=(i?"L ":"M ")+x.toFixed(1)+" "+y.toFixed(1)+" "; a+="L "+x.toFixed(1)+" "+y.toFixed(1)+" "; } a+="L "+W+" "+H+" Z"; var id="s"+Math.random().toString(36).slice(2,6); return '<svg width="'+W+'" height="'+H+'" style="display:block"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+c+'" stop-opacity=".2"/><stop offset="100%" stop-color="'+c+'" stop-opacity="0"/></linearGradient></defs><path d="'+a+'" fill="url(#'+id+')"/><path d="'+p+'" fill="none" stroke="'+c+'" stroke-width="1.2"/></svg>'; }
+
+// ======================== 4. COINGECKO ========================
+(async function(){ var grid=document.getElementById("cryptoG"); try{ var r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,solana&vs_currencies=eur,usd&include_24hr_change=true&include_market_cap=true"); if(!r.ok) throw new Error("CoinGecko "+r.status); var d=await r.json(); var coins=[{id:"bitcoin",sym:"BTC",col:"#f7931a"},{id:"ethereum",sym:"ETH",col:"#627eea"},{id:"ripple",sym:"XRP",col:"#00aae4"},{id:"solana",sym:"SOL",col:"#9945ff"}]; var h=""; coins.forEach(function(c){ if(d[c.id]){ var eur=d[c.id].eur, usd=d[c.id].usd, chg=d[c.id].eur_24h_change, mc=d[c.id].eur_market_cap; h+='<div class="fc" style="border-top-color:'+c.col+'"><div class="fl2">'+c.sym+'/EUR</div><div class="fv2">'+(eur>1000?eur.toLocaleString("en",{maximumFractionDigits:0}):eur.toFixed(2))+'</div><div class="fu">$'+(usd>1000?usd.toLocaleString("en",{maximumFractionDigits:0}):usd.toFixed(2))+" USD</div>"; if(chg!=null) h+='<div style="font-size:.48rem" class="'+(chg>=0?"pos":"neg")+'">'+(chg>=0?U:D)+" "+Math.abs(chg).toFixed(2)+"% 24h</div>"; if(mc) h+='<div class="fd">Cap. marché: €'+(mc/1e9).toFixed(1)+" Md</div>"; h+="</div>"; addT(c.sym, "€"+(eur>1000?Math.round(eur).toLocaleString():eur.toFixed(2)), chg); if(c.id==="bitcoin") setK("k7", Math.round(eur).toLocaleString(), chg); } }); grid.innerHTML=h||'<div class="err">Aucune donnée crypto</div>'; drawT(); }catch(e){ grid.innerHTML='<div class="err">⚠️ CoinGecko: '+e.message+"</div>"; } })();
+
+// ======================== 5. WORLD BANK — FONCTION GÉNÉRIQUE ROBUSTE ========================
+async function wbFetch(indicators, containerId, title) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '<div class="ld">Chargement des données historiques...</div>';
+    let output = '';
+    for (const item of indicators) {
+        const { code, country, label } = item;
+        const url = `https://api.worldbank.org/v2/country/${code}/indicator/${label}?format=json&per_page=20000`;
+        try {
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            let observations = data[1];
+            if (!observations || !observations.length) throw new Error('Aucune donnée brute');
+            // Filtrer les null et garder toutes les années
+            const valid = observations.filter(o => o.value !== null && o.value !== "");
+            if (valid.length === 0) throw new Error('Toutes les valeurs sont nulles');
+            // Trier par année décroissante (plus récente en premier)
+            valid.sort((a,b) => parseInt(b.date) - parseInt(a.date));
+            output += `<div style="margin-top: 15px; margin-bottom: 5px;"><strong>${country}</strong></div>`;
+            output += `<table class="tbl" style="margin-bottom: 20px;"><thead><tr><th>Année</th><th>Valeur</th><th>Variation annuelle</th></tr></thead><tbody>`;
+            let prev = null;
+            for (const obs of valid) {
+                let valNum = parseFloat(obs.value);
+                if (isNaN(valNum)) continue;
+                let displayVal = (label === 'SP.POP.TOTL') ? valNum.toLocaleString('en') : valNum.toFixed(2);
+                let changeHtml = '—', changeClass = '';
+                if (prev !== null) {
+                    let diff = valNum - prev;
+                    changeClass = diff >= 0 ? 'pos' : 'neg';
+                    let sym = diff >= 0 ? '▲' : '▼';
+                    changeHtml = `<span class="${changeClass}">${sym} ${Math.abs(diff).toFixed(2)}</span>`;
+                }
+                output += `<tr><td class="rg">${obs.date}</td><td class="v">${displayVal}</td><td class="${changeClass}">${changeHtml}</td></tr>`;
+                prev = valNum;
+            }
+            output += `</tbody></table>`;
+        } catch (err) {
+            console.warn(`WB ${label} ${country} : ${err.message}`);
+            output += `<div class="err">⚠️ ${country} : ${err.message}</div>`;
+        }
+    }
+    if (output === '') container.innerHTML = `<div class="err">❌ Aucune donnée récupérée</div>`;
+    else container.innerHTML = `<div>${output}<div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">Source : Banque mondiale – ${title}</div></div>`;
+}
+
+// ======================== LISTES DES PAYS (codes ISO valides) ========================
+// Inflation (FP.CPI.TOTL.ZG)
+const inflIndicators = [
+    { code: 'CHN', country: 'Chine', label: 'FP.CPI.TOTL.ZG' }, { code: 'IND', country: 'Inde', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'USA', country: 'États-Unis', label: 'FP.CPI.TOTL.ZG' }, { code: 'JPN', country: 'Japon', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'EUU', country: 'Union européenne', label: 'FP.CPI.TOTL.ZG' }, { code: 'FRA', country: 'France', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'DEU', country: 'Allemagne', label: 'FP.CPI.TOTL.ZG' }, { code: 'BEL', country: 'Belgique', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'GBR', country: 'Royaume-Uni', label: 'FP.CPI.TOTL.ZG' }, { code: 'TUR', country: 'Turquie', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'MYS', country: 'Malaisie', label: 'FP.CPI.TOTL.ZG' }, { code: 'TWN', country: 'Taïwan', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'VNM', country: 'Vietnam', label: 'FP.CPI.TOTL.ZG' }, { code: 'KOR', country: 'Corée du Sud', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'CAN', country: 'Canada', label: 'FP.CPI.TOTL.ZG' }, { code: 'AUS', country: 'Australie', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'SAU', country: 'Arabie Saoudite', label: 'FP.CPI.TOTL.ZG' }, { code: 'ARE', country: 'EAU', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'QAT', country: 'Qatar', label: 'FP.CPI.TOTL.ZG' }, { code: 'KWT', country: 'Koweït', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'OMN', country: 'Oman', label: 'FP.CPI.TOTL.ZG' }, { code: 'BHR', country: 'Bahreïn', label: 'FP.CPI.TOTL.ZG' },
+    { code: 'RUS', country: 'Russie', label: 'FP.CPI.TOTL.ZG' }
+];
+
+// Matières premières (codes Pink Sheet)
+const commodIndicators = [
+    { code: 'WLD', country: 'Pétrole (Brent)', label: 'POILBRE' }, { code: 'WLD', country: 'Gaz naturel (UE)', label: 'PNGASEEURM' },
+    { code: 'WLD', country: 'Aluminium', label: 'PALUM' }, { code: 'WLD', country: 'Cuivre', label: 'PCOPP' },
+    { code: 'WLD', country: 'Nickel', label: 'PNICK' }, { code: 'WLD', country: 'Or', label: 'PGOLD' },
+    { code: 'WLD', country: 'Blé', label: 'PWHEAMT' }, { code: 'WLD', country: 'Sucre', label: 'PSUGAISA' },
+    { code: 'WLD', country: 'Viande (bœuf)', label: 'PMTAMBEEF' }
+];
+
+// Population totale (SP.POP.TOTL) — mêmes pays que l'inflation
+const popIndicators = inflIndicators.map(i => ({ code: i.code, country: i.country, label: 'SP.POP.TOTL' }));
+
+// Éducation : femmes diplômées du supérieur (SE.TER.CUAT.BA.FE.ZS) — beaucoup plus fiable que STEM pur
+const eduIndicators = inflIndicators.map(i => ({ code: i.code, country: i.country, label: 'SE.TER.CUAT.BA.FE.ZS' }));
+
+// LANCER LES 4 APPELS WORLD BANK
+wbFetch(inflIndicators, 'wbInflation', "Inflation, prix à la consommation (%)");
+wbFetch(commodIndicators, 'wbCommodities', "Prix spot (USD) - World Bank Pink Sheet");
+wbFetch(popIndicators, 'wbDemography', "Population totale (estimations)");
+wbFetch(eduIndicators, 'wbEdu', "Part des femmes diplômées du supérieur (% des 25+ ans)");
+
+// ======================== 6. EUROSTAT ========================
+(async function(){ var box=document.getElementById("euP"); try{ var r=await fetch("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inpr_m?geo=EU27_2020&indic_bt=PRIN&nace_r2=C&s_adj=SCA&unit=I15&sinceTimePeriod=2023-06&format=JSON"); if(!r.ok) throw new Error("HTTP "+r.status); var d=await r.json(); var tc=d.dimension.time.category, ti=Object.keys(tc.index).sort(function(a,b){ return tc.index[a]-tc.index[b] }), vl=d.value; var h='<table class="tbl"><thead><tr><th>Période</th><th>PPI (2015=100)</th><th>MoM</th></tr></thead><tbody>', prev=null, cnt=0; for(var i=ti.length-1;i>=0&&cnt<12;i--){ var idx=tc.index[ti[i]], val=vl[idx]; if(val!=null){ var mom=prev!=null?((val-prev)/prev*100):null; prev=val; h+='<tr><td class="rg">'+ti[i]+'</td><td class="v">'+parseFloat(val).toFixed(1)+"</td>"; h+=mom!=null?'<td class="'+(mom>=0?"neg":"pos")+'">'+(mom>=0?"+":"")+mom.toFixed(2)+"%</td>":"<td>—</td>"; h+="</tr>"; cnt++; } } h+='</tbody></table><div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">UE-27 PPI manufacturier · 2015=100</div>'; box.innerHTML=cnt>0?h:'<div class="err">Aucune donnée PPI</div>'; }catch(e){ box.innerHTML='<div class="err">⚠️ Eurostat: '+e.message+"</div>"; } })();
+
+// ======================== 7. FX HISTORIQUE 1/3/5 ANS ========================
+(async function(){ var box=document.getElementById("fxH"); try{ var y1=new Date(), y3=new Date(), y5=new Date(); y1.setFullYear(y1.getFullYear()-1); y3.setFullYear(y3.getFullYear()-3); y5.setFullYear(y5.getFullYear()-5); var c="USD,GBP,CHF,JPY,CNY,SEK,PLN,TRY"; var res=await Promise.all([ fetch("https://api.frankfurter.app/latest?base=EUR&to="+c).then(r=>r.json()), fetch("https://api.frankfurter.app/"+y1.toISOString().slice(0,10)+"?base=EUR&to="+c).then(r=>r.json()), fetch("https://api.frankfurter.app/"+y3.toISOString().slice(0,10)+"?base=EUR&to="+c).then(r=>r.json()), fetch("https://api.frankfurter.app/"+y5.toISOString().slice(0,10)+"?base=EUR&to="+c).then(r=>r.json()) ]); var dN=res[0], d1=res[1], d3=res[2], d5=res[3]; var h='<table class="tbl"><thead><tr><th>Paire</th><th>Aujourd’hui</th><th>1 an</th><th>Δ</th><th>3 ans</th><th>Δ</th><th>5 ans</th><th>Δ</th></tr></thead><tbody>'; c.split(",").forEach(function(p){ var vN=dN.rates[p], v1=d1.rates[p], v3=d3.rates[p], v5=d5.rates[p]; function dl(a,b){ if(!a||!b) return "—"; var pc=((a-b)/b*100); return '<span class="'+(pc>=0?"pos":"neg")+'">'+(pc>=0?"+":"")+pc.toFixed(1)+"%</span>"; } h+='<tr><td class="rg">EUR/'+p+'</td><td class="v">'+fmt(vN,p)+"</td><td>"+fmt(v1,p)+"</td><td>"+dl(vN,v1)+"</td><td>"+fmt(v3,p)+"</td><td>"+dl(vN,v3)+"</td><td>"+fmt(v5,p)+"</td><td>"+dl(vN,v5)+"</td></tr>"; }); h+='</tbody></table><div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">vs 1/3/5 ans · BCE</div>'; box.innerHTML=h; }catch(e){ box.innerHTML='<div class="err">⚠️ '+e.message+"</div>"; } })();
+
+// ======================== 8. WIKIPEDIA ========================
+(async function(){ var now=new Date(); var mm=String(now.getMonth()+1).padStart(2,"0"), dd=String(now.getDate()).padStart(2,"0"); try{ var r=await fetch("https://en.wikipedia.org/api/rest_v1/feed/featured/"+now.getFullYear()+"/"+mm+"/"+dd); if(r.ok){ var d=await r.json(); var box=document.getElementById("wikiF"); var h='<div class="nl2">'; if(d.tfa) h+='<div class="nc wiki"><div class="nt"><a href="https://en.wikipedia.org/wiki/'+encodeURIComponent(d.tfa.normalizedtitle)+'" target="_blank">'+d.tfa.normalizedtitle+'</a></div><div class="ns">'+((d.tfa.extract||"").substring(0,280))+'...</div><div class="nm">Article à la une · Wikipedia</div></div>'; if(d.mostread && d.mostread.articles) d.mostread.articles.slice(0,5).forEach(function(a){ h+='<div class="nc wiki"><div class="nt"><a href="'+a.content_urls.desktop.page+'" target="_blank">'+a.normalizedtitle+'</a></div><div class="ns">'+((a.extract||"").substring(0,200))+'...</div><div class="nm">'+a.views.toLocaleString()+' vues · Les plus lus</div></div>'; }); h+="</div>"; box.innerHTML=h; } }catch(e){ document.getElementById("wikiF").innerHTML='<div class="err">⚠️ Wikipedia: '+e.message+"</div>"; } try{ var r2=await fetch("https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/"+mm+"/"+dd); if(r2.ok){ var d2=await r2.json(); var box2=document.getElementById("wikiD"); var h2='<div class="nl2">'; if(d2.events) d2.events.slice(0,8).forEach(function(ev){ h2+='<div class="nc wiki"><div class="nt">'+ev.year+' — '+ev.text.substring(0,200)+'</div><div class="nm">Ce jour dans l’histoire · '+mm+'/'+dd+'</div></div>'; }); h2+="</div>"; box2.innerHTML=h2; } }catch(e){ document.getElementById("wikiD").innerHTML='<div class="err">⚠️ '+e.message+"</div>"; } })();
+
+// ======================== 9. HACKER NEWS ========================
+(async function(){ var box=document.getElementById("hnS"); try{ var r=await fetch("https://hacker-news.firebaseio.com/v0/topstories.json"); if(!r.ok) throw new Error("HN "+r.status); var ids=await r.json(); var top=ids.slice(0,10); var h='<div class="nl2">'; for(var i=0;i<top.length;i++){ try{ var ri=await fetch("https://hacker-news.firebaseio.com/v0/item/"+top[i]+".json"); if(ri.ok){ var it=await ri.json(); if(it && it.title){ h+='<div class="nc hn"><div class="nt">'+(it.url?'<a href="'+it.url+'" target="_blank">':'')+it.title+(it.url?'</a>':'')+'</div><div class="nm">'+(it.score||0)+' pts · '+(it.by||"anon")+' · <a href="https://news.ycombinator.com/item?id='+it.id+'" target="_blank" style="color:#ff6600">commentaires</a></div></div>'; } } }catch(e2){} } h+="</div>"; box.innerHTML=h; }catch(e){ box.innerHTML='<div class="err">⚠️ HN: '+e.message+"</div>"; } })();
+
+// ======================== 10. THE GUARDIAN ========================
+(async function(){ var box=document.getElementById("guardS"); try{ var r=await fetch("https://content.guardianapis.com/search?section=world&page-size=8&show-fields=trailText&api-key=test"); if(!r.ok) throw new Error("Guardian "+r.status); var d=await r.json(); if(d.response && d.response.results){ var h='<div class="nl2">'; d.response.results.forEach(function(a){ h+='<div class="nc guard"><div class="nt"><a href="'+a.webUrl+'" target="_blank">'+a.webTitle+'</a></div>'; if(a.fields && a.fields.trailText) h+='<div class="ns">'+a.fields.trailText.substring(0,200)+'</div>'; h+='<div class="nm">'+new Date(a.webPublicationDate).toLocaleDateString()+" · The Guardian · "+a.sectionName+"</div></div>"; }); h+="</div>"; box.innerHTML=h; } }catch(e){ box.innerHTML='<div class="err">⚠️ Guardian: '+e.message+"</div>"; } })();
+
+// Rafraîchissement toutes les 5 minutes
+setInterval(function(){ location.reload(); }, 300000);
+</script>
+</body>
+</html>
