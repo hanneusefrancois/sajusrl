@@ -1,4 +1,6 @@
-https://newsdata.io/api/1/latest? 
+import requests
+
+url = "https://newsdata.io/api/1/latest? 
   apikey=pub_4344aca7b7664dc3a180f8e11026bbf1
   &q="geopolitical shift" OR "economic impact"
   &country=de,us,be,jp,cn
@@ -7,4 +9,7 @@ https://newsdata.io/api/1/latest?
   &image=1
   &video=0
   &removeduplicate=1
-  &sort=relevancy
+  &sort=relevancy"
+response = requests.get(url)
+data = response.json()
+print(data)
