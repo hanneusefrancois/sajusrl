@@ -113,8 +113,8 @@ footer{border-top:1px solid var(--bd);padding:6px 0;background:#0b0e14}.fi{displ
 <section class="sec"><div class="ctr"><div class="sh"><h2>&#x1FA99; CoinGecko — Crypto</h2><span class="badge bg2">&#x2705; FREE</span></div>
 <div class="fg" id="cryptoG"><div class="ld">Chargement CoinGecko...</div></div></div></section>
 
-<!-- WORLD BANK : 4 indicateurs historiques -->
-<section class="sec" style="background:rgba(0,0,0,.12)"><div class="ctr"><div class="sh"><h2>&#x1F30D; Banque mondiale — Données historiques longues</h2><span class="badge bg2">&#x2705; API directe</span></div>
+<!-- WORLD BANK : 4 indicateurs historiques (version parallélisée) -->
+<section class="sec" style="background:rgba(0,0,0,.12)"><div class="ctr"><div class="sh"><h2>&#x1F30D; Banque mondiale — Données historiques longues</h2><span class="badge bg2">&#x2705; API directe (chargement rapide)</span></div>
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:6px">
 <div class="dp"><div class="dt2"><span class="dot"></span> 📈 Inflation (prix conso, % annuel)</div><div id="wbInflation"><div class="ld">Chargement...</div></div></div>
 <div class="dp"><div class="dt2"><span class="dot"></span> ⛏️ Prix matières premières (USD)</div><div id="wbCommodities"><div class="ld">Chargement...</div></div></div>
@@ -129,7 +129,7 @@ footer{border-top:1px solid var(--bd);padding:6px 0;background:#0b0e14}.fi{displ
 <div class="dp"><div class="dt2"><span class="dot"></span> FX: aujourd'hui vs 1/3/5 ans</div><div id="fxH"><div class="ld">Chargement...</div></div></div>
 </div></div></section>
 
-<!-- ACTUALITÉS GÉOPOLITIQUES & ÉCONOMIQUES VIA NEWSDATA.IO (version multilingue) -->
+<!-- ACTUALITÉS GÉOPOLITIQUES & ÉCONOMIQUES VIA NEWSDATA.IO -->
 <section class="sec" style="background:rgba(59,130,246,.02)"><div class="ctr"><div class="sh"><h2>&#x1F4F0; Actualités géopolitiques & économiques</h2><span class="badge bg2">&#x2705; NewsData.io</span></div>
 <div class="dp"><div class="dt2"><span class="dot" style="background:#ff6600"></span> &#x1F310; Dernières nouvelles (multilingue)</div><div id="newsDataContainer"><div class="ld">Chargement des actualités...</div></div></div>
 </div></section>
@@ -167,7 +167,7 @@ VAT: BE0785.280.227 · Ch. d'Alsemberg 1108/6, 1180 Uccle</p></div></div></div><
 
 <script>
 // ======================== CONFIGURATION ========================
-var FK = "daa32649c83b49b9d44ecc38b1bcf3b9"; // FRED API key (valide)
+var FK = "daa32649c83b49b9d44ecc38b1bcf3b9"; // FRED API key
 var TD = []; var U = "\u25B2", D = "\u25BC";
 
 function fmt(v,c){ if(v==null) return "\u2014"; var h=["JPY","KRW","CZK","SEK","HUF","ISK","TRY","PLN","NOK","DKK","RON","BGN","INR","MXN","BRL","ZAR","THB","PHP","IDR","MYR","RUB"]; return h.indexOf(c)>=0 ? v.toFixed(2) : v.toFixed(4); }
@@ -191,71 +191,90 @@ function mSVG(vl,W,H,c){ var mn=Math.min.apply(null,vl), mx=Math.max.apply(null,
 // ======================== 4. COINGECKO ========================
 (async function(){ var grid=document.getElementById("cryptoG"); try{ var r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,solana&vs_currencies=eur,usd&include_24hr_change=true&include_market_cap=true"); if(!r.ok) throw new Error("CoinGecko "+r.status); var d=await r.json(); var coins=[{id:"bitcoin",sym:"BTC",col:"#f7931a"},{id:"ethereum",sym:"ETH",col:"#627eea"},{id:"ripple",sym:"XRP",col:"#00aae4"},{id:"solana",sym:"SOL",col:"#9945ff"}]; var h=""; coins.forEach(function(c){ if(d[c.id]){ var eur=d[c.id].eur, usd=d[c.id].usd, chg=d[c.id].eur_24h_change, mc=d[c.id].eur_market_cap; h+='<div class="fc" style="border-top-color:'+c.col+'"><div class="fl2">'+c.sym+'/EUR</div><div class="fv2">'+(eur>1000?eur.toLocaleString("en",{maximumFractionDigits:0}):eur.toFixed(2))+'</div><div class="fu">$'+(usd>1000?usd.toLocaleString("en",{maximumFractionDigits:0}):usd.toFixed(2))+" USD</div>"; if(chg!=null) h+='<div style="font-size:.48rem" class="'+(chg>=0?"pos":"neg")+'">'+(chg>=0?U:D)+" "+Math.abs(chg).toFixed(2)+"% 24h</div>"; if(mc) h+='<div class="fd">Cap. marché: €'+(mc/1e9).toFixed(1)+" Md</div>"; h+="</div>"; addT(c.sym, "€"+(eur>1000?Math.round(eur).toLocaleString():eur.toFixed(2)), chg); if(c.id==="bitcoin") setK("k7", Math.round(eur).toLocaleString(), chg); } }); grid.innerHTML=h||'<div class="err">Aucune donnée crypto</div>'; drawT(); }catch(e){ grid.innerHTML='<div class="err">⚠️ CoinGecko: '+e.message+"</div>"; } })();
 
-// ======================== 5. WORLD BANK — VERSION SÉQUENTIELLE & ROBUSTE ========================
-async function wbFetch(indicators, containerId, title) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '<div class="ld">Chargement des données historiques...</div>';
-    let output = '';
-    // Exécution séquentielle pour éviter les surcharges
-    for (const item of indicators) {
-        const { code, country, label } = item;
-        const url = `https://api.worldbank.org/v2/country/${code}/indicator/${label}?format=json&per_page=50`; // max 30 ans
-        try {
-            const resp = await fetch(url);
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-            const data = await resp.json();
-            let observations = data[1];
-            if (!observations || !observations.length) throw new Error('Aucune donnée brute');
-            const valid = observations.filter(o => o.value !== null && o.value !== "");
-            if (valid.length === 0) throw new Error('Toutes les valeurs sont nulles');
-            valid.sort((a,b) => parseInt(b.date) - parseInt(a.date));
-            // On ne garde que les 20 dernières années pour alléger l'affichage
-            const recent = valid.slice(0, 20);
-            output += `<div style="margin-top: 15px; margin-bottom: 5px;"><strong>${country}</strong></div>`;
-            output += `<table class="tbl" style="margin-bottom: 20px;"><thead><tr><th>Année</th><th>Valeur</th><th>Variation annuelle</th></tr></thead><tbody>`;
-            let prev = null;
-            for (const obs of recent) {
-                let valNum = parseFloat(obs.value);
-                if (isNaN(valNum)) continue;
-                let displayVal = (label === 'SP.POP.TOTL') ? valNum.toLocaleString('en') : valNum.toFixed(2);
-                let changeHtml = '—', changeClass = '';
-                if (prev !== null) {
-                    let diff = valNum - prev;
-                    changeClass = diff >= 0 ? 'pos' : 'neg';
-                    let sym = diff >= 0 ? '▲' : '▼';
-                    changeHtml = `<span class="${changeClass}">${sym} ${Math.abs(diff).toFixed(2)}</span>`;
-                }
-                output += `<tr><td class="rg">${obs.date}</td><td class="v">${displayVal}</td><td class="${changeClass}">${changeHtml}</td></tr>`;
-                prev = valNum;
+// ======================== WORLD BANK - VERSION PARALLÉLISÉE AVEC LIMITE DE CONCURRENCE ========================
+// Fonction utilitaire pour limiter le nombre de promesses simultanées
+async function parallelLimit(tasks, limit) {
+    const results = [];
+    const executing = [];
+    for (const task of tasks) {
+        const p = Promise.resolve().then(() => task());
+        results.push(p);
+        if (limit <= tasks.length) {
+            const e = p.then(() => executing.splice(executing.indexOf(e), 1));
+            executing.push(e);
+            if (executing.length >= limit) {
+                await Promise.race(executing);
             }
-            output += `</tbody>赶</table>`;
-            // Petit délai pour éviter de saturer le navigateur
-            await new Promise(r => setTimeout(r, 150));
-        } catch (err) {
-            console.warn(`WB ${label} ${country} : ${err.message}`);
-            output += `<div class="err">⚠️ ${country} : ${err.message}</div>`;
         }
     }
-    if (output === '') container.innerHTML = `<div class="err">❌ Aucune donnée récupérée</div>`;
-    else container.innerHTML = `<div>${output}<div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">Source : Banque mondiale – ${title} (20 dernières années)</div></div>`;
+    return Promise.all(results);
 }
 
-// Listes des pays (inchangées)
-const inflIndicators = [
-    { code: 'CHN', country: 'Chine', label: 'FP.CPI.TOTL.ZG' }, { code: 'IND', country: 'Inde', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'USA', country: 'États-Unis', label: 'FP.CPI.TOTL.ZG' }, { code: 'JPN', country: 'Japon', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'EUU', country: 'Union européenne', label: 'FP.CPI.TOTL.ZG' }, { code: 'FRA', country: 'France', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'DEU', country: 'Allemagne', label: 'FP.CPI.TOTL.ZG' }, { code: 'BEL', country: 'Belgique', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'GBR', country: 'Royaume-Uni', label: 'FP.CPI.TOTL.ZG' }, { code: 'TUR', country: 'Turquie', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'MYS', country: 'Malaisie', label: 'FP.CPI.TOTL.ZG' }, { code: 'TWN', country: 'Taïwan', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'VNM', country: 'Vietnam', label: 'FP.CPI.TOTL.ZG' }, { code: 'KOR', country: 'Corée du Sud', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'CAN', country: 'Canada', label: 'FP.CPI.TOTL.ZG' }, { code: 'AUS', country: 'Australie', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'SAU', country: 'Arabie Saoudite', label: 'FP.CPI.TOTL.ZG' }, { code: 'ARE', country: 'EAU', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'QAT', country: 'Qatar', label: 'FP.CPI.TOTL.ZG' }, { code: 'KWT', country: 'Koweït', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'OMN', country: 'Oman', label: 'FP.CPI.TOTL.ZG' }, { code: 'BHR', country: 'Bahreïn', label: 'FP.CPI.TOTL.ZG' },
-    { code: 'RUS', country: 'Russie', label: 'FP.CPI.TOTL.ZG' }
+// Récupération des données pour un pays et un indicateur
+async function fetchCountryData(code, country, label) {
+    const url = `https://api.worldbank.org/v2/country/${code}/indicator/${label}?format=json&per_page=30`;
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        const observations = data[1];
+        if (!observations || !observations.length) throw new Error('Aucune donnée');
+        const valid = observations.filter(o => o.value !== null && o.value !== "");
+        if (valid.length === 0) throw new Error('Valeurs nulles');
+        valid.sort((a,b) => parseInt(b.date) - parseInt(a.date));
+        const recent = valid.slice(0, 20);
+        let tableRows = '';
+        let prev = null;
+        for (const obs of recent) {
+            let valNum = parseFloat(obs.value);
+            if (isNaN(valNum)) continue;
+            let displayVal = (label === 'SP.POP.TOTL') ? valNum.toLocaleString('en') : valNum.toFixed(2);
+            let changeHtml = '—', changeClass = '';
+            if (prev !== null) {
+                let diff = valNum - prev;
+                changeClass = diff >= 0 ? 'pos' : 'neg';
+                let sym = diff >= 0 ? '▲' : '▼';
+                changeHtml = `<span class="${changeClass}">${sym} ${Math.abs(diff).toFixed(2)}</span>`;
+            }
+            tableRows += `<tr><td class="rg">${obs.date}</td><td class="v">${displayVal}</td><td class="${changeClass}">${changeHtml}</td></tr>`;
+            prev = valNum;
+        }
+        if (tableRows === '') throw new Error('Aucune ligne valide');
+        return `<div style="margin-top: 15px; margin-bottom: 5px;"><strong>${country}</strong></div>
+                <table class="tbl" style="margin-bottom: 20px;"><thead><tr><th>Année</th><th>Valeur</th><th>Variation annuelle</th></tr></thead><tbody>${tableRows}</tbody></table>`;
+    } catch (err) {
+        console.warn(`WB ${label} ${country} : ${err.message}`);
+        return `<div class="err">⚠️ ${country} : ${err.message}</div>`;
+    }
+}
+
+// Charger un indicateur pour tous les pays (parallèle avec limite)
+async function loadIndicator(indicators, containerId, title) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '<div class="ld">Chargement des données...</div>';
+    const tasks = indicators.map(item => () => fetchCountryData(item.code, item.country, item.label));
+    const results = await parallelLimit(tasks, 3); // 3 requêtes simultanées max
+    const html = results.join('');
+    if (html === '') container.innerHTML = '<div class="err">❌ Aucune donnée récupérée</div>';
+    else container.innerHTML = `<div>${html}<div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">Source : Banque mondiale – ${title} (20 dernières années)</div></div>`;
+}
+
+// Listes des pays (réduite aux prioritaires)
+const countriesList = [
+    { code: 'USA', country: 'États-Unis' }, { code: 'CHN', country: 'Chine' }, { code: 'IND', country: 'Inde' },
+    { code: 'JPN', country: 'Japon' }, { code: 'FRA', country: 'France' }, { code: 'DEU', country: 'Allemagne' },
+    { code: 'BEL', country: 'Belgique' }, { code: 'GBR', country: 'Royaume-Uni' }, { code: 'TUR', country: 'Turquie' },
+    { code: 'MYS', country: 'Malaisie' }, { code: 'TWN', country: 'Taïwan' }, { code: 'VNM', country: 'Vietnam' },
+    { code: 'KOR', country: 'Corée du Sud' }, { code: 'CAN', country: 'Canada' }, { code: 'AUS', country: 'Australie' },
+    { code: 'RUS', country: 'Russie' }, { code: 'SAU', country: 'Arabie Saoudite' }, { code: 'ARE', country: 'EAU' },
+    { code: 'QAT', country: 'Qatar' }, { code: 'KWT', country: 'Koweït' }, { code: 'OMN', country: 'Oman' },
+    { code: 'BHR', country: 'Bahreïn' }
 ];
+// Ajout de l'UE pour l'inflation et la population
+const inflationIndicators = [{ code: 'EUU', country: 'Union européenne' }, ...countriesList].map(c => ({ code: c.code, country: c.country, label: 'FP.CPI.TOTL.ZG' }));
+const popIndicators = [{ code: 'EUU', country: 'Union européenne' }, ...countriesList].map(c => ({ code: c.code, country: c.country, label: 'SP.POP.TOTL' }));
+const eduIndicators = countriesList.map(c => ({ code: c.code, country: c.country, label: 'SE.TER.CUAT.BA.FE.ZS' }));
 const commodIndicators = [
     { code: 'WLD', country: 'Pétrole (Brent)', label: 'POILBRE' }, { code: 'WLD', country: 'Gaz naturel (UE)', label: 'PNGASEEURM' },
     { code: 'WLD', country: 'Aluminium', label: 'PALUM' }, { code: 'WLD', country: 'Cuivre', label: 'PCOPP' },
@@ -263,16 +282,12 @@ const commodIndicators = [
     { code: 'WLD', country: 'Blé', label: 'PWHEAMT' }, { code: 'WLD', country: 'Sucre', label: 'PSUGAISA' },
     { code: 'WLD', country: 'Viande (bœuf)', label: 'PMTAMBEEF' }
 ];
-const popIndicators = inflIndicators.map(i => ({ code: i.code, country: i.country, label: 'SP.POP.TOTL' }));
-const eduIndicators = inflIndicators.map(i => ({ code: i.code, country: i.country, label: 'SE.TER.CUAT.BA.FE.ZS' }));
 
-// Lancer les 4 appels World Bank de manière séquentielle (pour éviter les conflits)
-(async function() {
-    await wbFetch(inflIndicators, 'wbInflation', "Inflation, prix à la consommation (%)");
-    await wbFetch(commodIndicators, 'wbCommodities', "Prix spot (USD) - World Bank Pink Sheet");
-    await wbFetch(popIndicators, 'wbDemography', "Population totale (estimations)");
-    await wbFetch(eduIndicators, 'wbEdu', "Part des femmes diplômées du supérieur (% des 25+ ans)");
-})();
+// Lancer les 4 indicateurs en parallèle (chacun avec sa propre limite de 3 requêtes simultanées)
+loadIndicator(inflationIndicators, 'wbInflation', "Inflation, prix à la consommation (%)");
+loadIndicator(commodIndicators, 'wbCommodities', "Prix spot (USD) - World Bank Pink Sheet");
+loadIndicator(popIndicators, 'wbDemography', "Population totale (estimations)");
+loadIndicator(eduIndicators, 'wbEdu', "Part des femmes diplômées du supérieur (% des 25+ ans)");
 
 // ======================== 6. EUROSTAT ========================
 (async function(){ var box=document.getElementById("euP"); try{ var r=await fetch("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inpr_m?geo=EU27_2020&indic_bt=PRIN&nace_r2=C&s_adj=SCA&unit=I15&sinceTimePeriod=2023-06&format=JSON"); if(!r.ok) throw new Error("HTTP "+r.status); var d=await r.json(); var tc=d.dimension.time.category, ti=Object.keys(tc.index).sort(function(a,b){ return tc.index[a]-tc.index[b] }), vl=d.value; var h='<table class="tbl"><thead><tr><th>Période</th><th>PPI (2015=100)</th><th>MoM</th></tr></thead><tbody>', prev=null, cnt=0; for(var i=ti.length-1;i>=0&&cnt<12;i--){ var idx=tc.index[ti[i]], val=vl[idx]; if(val!=null){ var mom=prev!=null?((val-prev)/prev*100):null; prev=val; h+='<tr><td class="rg">'+ti[i]+'</td><td class="v">'+parseFloat(val).toFixed(1)+"</td>"; h+=mom!=null?'<td class="'+(mom>=0?"neg":"pos")+'">'+(mom>=0?"+":"")+mom.toFixed(2)+"%</td>":"<td>—</td>"; h+="</tr>"; cnt++; } } h+='</tbody></table><div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">UE-27 PPI manufacturier · 2015=100</div>'; box.innerHTML=cnt>0?h:'<div class="err">Aucune donnée PPI</div>'; }catch(e){ box.innerHTML='<div class="err">⚠️ Eurostat: '+e.message+"</div>"; } })();
@@ -289,12 +304,11 @@ const eduIndicators = inflIndicators.map(i => ({ code: i.code, country: i.countr
 // ======================== 10. THE GUARDIAN ========================
 (async function(){ var box=document.getElementById("guardS"); try{ var r=await fetch("https://content.guardianapis.com/search?section=world&page-size=8&show-fields=trailText&api-key=test"); if(!r.ok) throw new Error("Guardian "+r.status); var d=await r.json(); if(d.response && d.response.results){ var h='<div class="nl2">'; d.response.results.forEach(function(a){ h+='<div class="nc guard"><div class="nt"><a href="'+a.webUrl+'" target="_blank">'+a.webTitle+'</a></div>'; if(a.fields && a.fields.trailText) h+='<div class="ns">'+a.fields.trailText.substring(0,200)+'</div>'; h+='<div class="nm">'+new Date(a.webPublicationDate).toLocaleDateString()+" · The Guardian · "+a.sectionName+"</div></div>"; }); h+="</div>"; box.innerHTML=h; } }catch(e){ box.innerHTML='<div class="err">⚠️ Guardian: '+e.message+"</div>"; } })();
 
-// ======================== 11. NEWSDATA.IO (version multilingue avec vos mots-clés) ========================
+// ======================== 11. NEWSDATA.IO (multilingue) ========================
 (async function() {
     const container = document.getElementById("newsDataContainer");
     if (!container) return;
     const apiKey = "pub_4344aca7b7664dc3a180f8e11026bbf1";
-    // Requête multilingue : "point de bascule" OR "geopolitical shift" OR "economic impact" OR "大国博弈" OR "転換点" OR "転機"
     const query = encodeURIComponent('"point de bascule" OR "geopolitical shift" OR "economic impact" OR "大国博弈" OR "転換点" OR "転機"');
     const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${query}&image=1&video=1&removeduplicate=1`;
     try {
@@ -323,7 +337,7 @@ const eduIndicators = inflIndicators.map(i => ({ code: i.code, country: i.countr
                 </div>
             `;
         }
-        html += '</div><div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">Source : NewsData.io – Requête multilingue (point de bascule / geopolitical shift / economic impact / 大国博弈 / 転換点 / 転機)</div>';
+        html += '</div><div style="padding:2px 8px;font-size:.38rem;color:rgba(255,255,255,.15)">Source : NewsData.io – Requête multilingue</div>';
         container.innerHTML = html;
     } catch (err) {
         console.error("NewsData.io error:", err);
