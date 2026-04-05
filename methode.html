@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Saju Srl — La Méthode · Par métier</title>
+    <meta name="description" content="La méthode Saju expliquée par métier : CEO, CFO, CPO, Bid Manager, Acheteur public, etc. Comprenez en 30 secondes comment la formule de révision des prix protège votre contrat sur 40 ans.">
+    <link rel="canonical" href="https://www.saju.be/methode.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== STYLES UNIFIÉS (identique aux autres pages) ===== */
+        :root {
+            --black:#0f1117; --card:#171b24; --card2:#1e2330; --border:rgba(255,255,255,0.13);
+            --rouge:#c0392b; --rouge-vif:#d94030; --bordeaux:#7a1f1a;
+            --blanc:#ffffff; --blanc-dim:rgba(255,255,255,0.88); --blanc-low:rgba(255,255,255,0.60);
+            --em:#059669; --em-pale:#10b981; --em-bright:#34d399;
+            --teal:#0d9488; --teal-pale:#14b8a6;
+            --or:#b45309; --or-p:#d97706; --or-pale:#fbbf24; --or-dim:rgba(180,83,9,0.12); --or-b:rgba(217,119,6,0.3);
+            --argent:#94a3b8; --argent-c:#e2e8f0;
+            --section-alt:#f8f7f4; --text-dark:#1a1a2e; --border-dark:rgba(0,0,0,0.10);
+            --light-card:#ffffff; --light-card2:#f5f5f0; --light-border:rgba(0,0,0,0.10);
+            --text-dark-dim:rgba(26,26,46,0.72); --text-dark-low:rgba(26,26,46,0.45);
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--blanc);background-image:linear-gradient(135deg,#0f1117 0%,#141824 100%);overflow-x:hidden;line-height:1.6;font-size:16px}
+        img{max-width:100%;height:auto;display:block}a{color:inherit;text-decoration:none}
+        .container{max-width:1160px;margin:0 auto;padding:0 clamp(20px,5vw,52px);position:relative;z-index:1}
+        .lang-bar{position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(0,0,0,0.97);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;justify-content:flex-end;padding:0 clamp(16px,5vw,52px);gap:3px}
+        .lang-btn{background:transparent;border:1px solid transparent;color:var(--blanc-low);font-size:0.72rem;font-weight:500;letter-spacing:0.04em;min-width:40px;min-height:44px;padding:0 7px;border-radius:3px;transition:all .2s;display:flex;align-items:center;justify-content:center;cursor:pointer}
+        .lang-btn:hover,.lang-btn:active{color:var(--or-p);border-color:var(--or-b)}
+        .lang-btn.active{color:var(--or-p);border-color:var(--or-b);background:var(--or-dim)}
+        nav{position:fixed;top:44px;left:0;right:0;z-index:1000;background:rgba(15,17,23,0.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+        .nav-inner{max-width:1160px;margin:0 auto;padding:0 clamp(20px,5vw,52px);height:110px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+        .nav-logo img{height:90px;width:auto;border-radius:8px;background:#fff;padding:10px 22px}
+        .nav-links{display:flex;gap:clamp(14px,2vw,28px);align-items:center;overflow-x:auto;scrollbar-width:thin}
+        .nav-links a{font-size:0.75rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;color:rgba(255,255,255,.38);transition:color .2s}
+        .nav-links a:hover,.nav-links a.active{color:var(--or-p)}
+        .nav-cta{flex-shrink:0;background:var(--rouge);color:var(--blanc)!important;padding:8px 18px;border-radius:2px;font-size:0.72rem!important;letter-spacing:0.1em!important;white-space:nowrap;transition:background .2s}
+        .nav-cta:hover{background:var(--rouge-vif)!important}
+        .nav-mobile-toggle{display:none;background:transparent;border:1px solid var(--border);color:var(--blanc-dim);padding:6px 10px;border-radius:2px;font-size:1rem;cursor:pointer}
+        .nav-mobile-menu{display:none;position:fixed;top:154px;left:0;right:0;background:rgba(0,0,0,.98);border-bottom:1px solid var(--border);padding:20px clamp(20px,5vw,52px);z-index:99;flex-direction:column;gap:16px}
+        .nav-mobile-menu a{font-size:1rem;font-weight:500;color:var(--blanc-dim);padding:10px 0;border-bottom:1px solid var(--border)}
+        .nav-mobile-menu.open{display:flex}
+        .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 28px;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;transition:all .22s;border:none;cursor:pointer}
+        .btn-rouge{background:var(--rouge);color:var(--blanc)}.btn-rouge:hover{background:var(--rouge-vif)}
+        .btn-ghost{background:transparent;color:var(--blanc-dim);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--or-b);color:var(--or-p)}
+        .hero{min-height:70svh;display:flex;flex-direction:column;justify-content:center;padding:clamp(120px,14vw,160px) 0 clamp(40px,5vw,60px);position:relative;overflow:hidden;background:linear-gradient(135deg,#0f1117 0%,#161824 40%,#1a1028 100%)}
+        .hero::before{content:'';position:absolute;top:-80px;right:-120px;width:min(650px,80vw);height:min(650px,80vw);background:radial-gradient(circle,rgba(122,31,26,.22) 0%,transparent 60%);pointer-events:none}
+        .hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,4.2vw,3.5rem);font-weight:700;line-height:1.08;max-width:840px;margin-bottom:20px}
+        .hero h1 em{font-style:italic;color:var(--or-p)}
+        .eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px;font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--or)}
+        .eyebrow::before{content:'';width:16px;height:1px;background:var(--or)}
+        .hero-sub{font-size:clamp(0.9rem,1.3vw,1.02rem);font-weight:300;color:var(--blanc-dim);max-width:600px;line-height:1.82;margin-bottom:30px}
+        .hero-sub strong{color:var(--or-p);font-weight:500}
+        .hero-ctas{display:flex;gap:10px;flex-wrap:wrap}
+        .proof-strip{margin-top:40px;padding-top:24px;border-top:1px solid var(--or-b);display:grid;grid-template-columns:repeat(4,1fr)}
+        .proof-item{padding:0 clamp(7px,1.6vw,20px);border-right:1px solid var(--border)}
+        .proof-item:first-child{padding-left:0}.proof-item:last-child{border-right:none}
+        .proof-num{font-family:'Cormorant Garamond',serif;font-size:clamp(1.4rem,2.6vw,2rem);font-weight:700;line-height:1;margin-bottom:4px}
+        .pn-or{color:var(--or-p)}.pn-em{color:var(--em)}.pn-argent{color:var(--argent-c)}.pn-rouge{color:var(--rouge)}
+        .proof-label{font-size:clamp(0.6rem,0.75vw,0.72rem);color:rgba(255,255,255,0.6);letter-spacing:0.06em;text-transform:uppercase}
+        .section{padding:clamp(45px,7vw,80px) 0;position:relative;z-index:1}
+        .rule{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+        .s-tag{font-size:0.7rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:9px}
+        .s-tag::before{content:'';width:18px;height:1px}
+        .s-tag.or{color:var(--or-p)}.s-tag.or::before{background:var(--or-p)}
+        .s-tag.emer{color:var(--em)}.s-tag.emer::before{background:var(--em)}
+        .s-tag.teal{color:var(--teal)}.s-tag.teal::before{background:var(--teal)}
+        .s-tag.rouge{color:var(--rouge)}.s-tag.rouge::before{background:var(--rouge)}
+        .s-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,2.8vw,2.4rem);font-weight:700;line-height:1.1;margin-bottom:12px}
+        .s-title em{font-style:italic;color:var(--or-p)}
+        .s-sub{font-size:clamp(0.9rem,1.2vw,1rem);font-weight:300;color:var(--blanc-dim);max-width:640px;line-height:1.85;margin-bottom:36px}
+        .s-sub strong{color:var(--or-p);font-weight:500}
+        .role-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+        .role-card{background:var(--card);padding:clamp(16px,2vw,24px) clamp(12px,1.6vw,18px);transition:background .3s;position:relative}
+        .role-card:hover{background:var(--card2)}
+        .role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--or)}
+        .role-emoji{font-size:1.4rem;margin-bottom:6px;display:block}
+        .role-title{font-family:'Cormorant Garamond',serif;font-size:clamp(0.9rem,1.2vw,1.05rem);font-weight:700;margin-bottom:6px}
+        .role-question{font-style:italic;font-size:clamp(0.76rem,0.96vw,0.84rem);color:var(--or-pale);margin-bottom:6px;line-height:1.5;border-left:2px solid var(--or-p);padding-left:9px}
+        .role-answer{font-size:clamp(0.76rem,0.96vw,0.83rem);color:var(--blanc-low);line-height:1.6}
+        .role-answer strong{color:var(--em-bright);font-weight:500}
+        .deliver-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:24px}
+        .deliver-card{background:var(--card);padding:clamp(20px,2.5vw,32px) clamp(14px,1.8vw,22px);position:relative;transition:background .3s}
+        .deliver-card:hover{background:var(--card2)}
+        .deliver-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+        .deliver-card:nth-child(1)::before{background:var(--or)}
+        .deliver-card:nth-child(2)::before{background:var(--teal)}
+        .deliver-card:nth-child(3)::before{background:var(--em)}
+        .deliver-number{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;margin-bottom:6px}
+        .deliver-card:nth-child(1) .deliver-number{color:var(--or-p)}
+        .deliver-card:nth-child(2) .deliver-number{color:var(--teal-pale)}
+        .deliver-card:nth-child(3) .deliver-number{color:var(--em-bright)}
+        .deliver-title{font-family:'Cormorant Garamond',serif;font-size:clamp(0.95rem,1.4vw,1.15rem);font-weight:700;margin-bottom:8px}
+        .deliver-sub{font-size:clamp(0.78rem,1vw,0.86rem);color:var(--or-pale);font-style:italic;margin-bottom:8px;line-height:1.5}
+        .deliver-desc{font-size:clamp(0.8rem,1.1vw,0.9rem);color:var(--blanc-dim);line-height:1.7;font-weight:300}
+        .deliver-desc strong{color:var(--or-pale)}
+        .info-box{background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.25);border-left:3px solid var(--em);border-radius:4px;padding:clamp(14px,2vw,20px) clamp(16px,2.5vw,24px);display:flex;gap:12px;align-items:flex-start;margin-top:24px}
+        .info-box p{font-size:clamp(0.84rem,1.1vw,0.92rem);color:var(--blanc-dim);line-height:1.75;font-weight:300}
+        .info-box p strong{color:var(--em-bright);font-weight:500}
+        .contact-block{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:clamp(18px,2.5vw,30px);display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:30px}
+        .contact-logo{background:#fff;border-radius:8px;padding:7px 14px}.contact-logo img{height:44px}
+        .contact-text h4{font-family:'Cormorant Garamond',serif;font-size:clamp(0.95rem,1.3vw,1.15rem);font-weight:700;margin-bottom:6px}
+        .contact-text p{font-size:clamp(0.8rem,1.05vw,0.88rem);color:var(--blanc-low);line-height:1.7}.contact-text a{color:var(--or-p)}
+        .cta-section{padding:clamp(50px,8vw,85px) 0;text-align:center;position:relative;overflow:hidden;background:linear-gradient(135deg,#1a0a0a 0%,#2a1210 40%,#1a0a14 100%)}
+        .cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(192,57,43,.16) 0%,transparent 62%);pointer-events:none}
+        footer{border-top:1px solid var(--border);padding:clamp(12px,1.8vw,20px) 0;background:#0d1018}
+        .footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+        .footer-brand{display:flex;align-items:center;gap:7px}
+        .footer-brand img{height:48px;border-radius:8px;background:#fff;padding:4px 9px}
+        .footer-wm{font-family:'Cormorant Garamond',serif;font-size:0.85rem;font-weight:600;color:rgba(255,255,255,.4)}.footer-wm span{color:var(--rouge)}
+        .footer-copy{font-size:0.72rem;color:rgba(255,255,255,.3)}
+        .footer-links{display:flex;gap:12px}.footer-links a{font-size:0.72rem;color:rgba(255,255,255,.35)}
+        .fi{opacity:0;transform:translateY(20px);transition:opacity .65s ease,transform .65s ease}.fi.v{opacity:1;transform:translateY(0)}
+        @media(max-width:900px){.proof-strip{grid-template-columns:1fr 1fr}.proof-item:nth-child(2){border-right:none}.role-grid{grid-template-columns:1fr 1fr}.deliver-grid{grid-template-columns:1fr}}
+        @media(max-width:680px){.nav-links{display:none}.nav-mobile-toggle{display:flex}.nav-inner{height:70px}.nav-logo img{height:50px;padding:6px 14px}.nav-mobile-menu{top:114px}.role-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+
+<div class="lang-bar">
+    <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
+    <button class="lang-btn" data-lang="nl" onclick="setLang('nl')">NL</button>
+    <button class="lang-btn" data-lang="uk" onclick="setLang('uk')">УКР</button>
+    <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" data-lang="jp" onclick="setLang('jp')">日本語</button>
+    <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">中文</button>
+</div>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index.html" class="nav-logo"><img src="Logo.png" alt="Saju srl"></a>
+        <div class="nav-links">
+            <a href="index.html#analyse" data-i="nav_sim">Simulation</a>
+            <a href="index.html#services" data-i="nav_serv">Services</a>
+            <a href="references.html" data-i="nav_ref">Références</a>
+            <a href="methode.html" class="active" data-i="nav_method">Méthode</a>
+            <a href="fondateur.html" data-i="nav_founder">Fondateur</a>
+            <a href="index.html#rdv" data-i="nav_rdv">Rendez-vous</a>
+            <a href="index.html#rdv" class="nav-cta" data-i="nav_cta">📅 Réserver</a>
+        </div>
+        <button class="nav-mobile-toggle" onclick="toggleMobileMenu()" aria-label="Menu"><i class="fas fa-bars"></i></button>
+    </div>
+</nav>
+<div class="nav-mobile-menu" id="mobileMenu">
+    <a href="index.html#analyse" onclick="toggleMobileMenu()" data-i="nav_sim">📊 Simulation</a>
+    <a href="index.html#services" onclick="toggleMobileMenu()" data-i="nav_serv">🏢 Services</a>
+    <a href="references.html" onclick="toggleMobileMenu()" data-i="nav_ref">📚 Références</a>
+    <a href="methode.html" onclick="toggleMobileMenu()" data-i="nav_method">⚙️ Méthode</a>
+    <a href="fondateur.html" onclick="toggleMobileMenu()" data-i="nav_founder">👤 Fondateur</a>
+    <a href="index.html#rdv" onclick="toggleMobileMenu()" data-i="nav_rdv">📅 Rendez-vous</a>
+    <a href="index.html#rdv" onclick="toggleMobileMenu()" class="btn btn-rouge" style="justify-content:center" data-i="nav_cta">Réserver</a>
+</div>
+
+<!-- HERO (le contenu sera chargé dynamiquement via data-i) -->
+<section class="hero">
+    <div class="container">
+        <div class="eyebrow" data-i="hero_eyebrow">Saju Srl · La méthode expliquée · Par métier</div>
+        <h1 data-i="hero_h1">Ce que Saju fait pour vous —<br>expliqué avec <em>vos mots.</em></h1>
+        <p class="hero-sub" data-i="hero_sub">Un même modèle, des réponses différentes selon que vous êtes celui qui <strong>signe, finance, achète, vend, régule ou utilise</strong> le contrat.</p>
+        <div class="hero-ctas">
+            <a href="#roles" class="btn btn-rouge" data-i="btn_roles">👤 Mon rôle</a>
+            <a href="#deliverables" class="btn btn-ghost" data-i="btn_deliverables">📦 Les 3 livrables</a>
+        </div>
+        <div class="proof-strip">
+            <div class="proof-item"><div class="proof-num pn-or">12</div><div class="proof-label" data-i="proof1">Rôles expliqués</div></div>
+            <div class="proof-item"><div class="proof-num pn-em">3</div><div class="proof-label" data-i="proof2">Livrables clés</div></div>
+            <div class="proof-item"><div class="proof-num pn-argent">125</div><div class="proof-label" data-i="proof3">Années de données</div></div>
+            <div class="proof-item"><div class="proof-num pn-rouge">PID</div><div class="proof-label" data-i="proof4">Formule dynamique</div></div>
+        </div>
+    </div>
+</section>
+<div class="rule"></div>
+
+<!-- SECTION RÔLES (les grilles seront remplies dynamiquement par JS) -->
+<section class="section fi" id="roles">
+    <div class="container">
+        <div class="s-tag teal" data-i="tag_roles">Par métier</div>
+        <h2 class="s-title" data-i="title_roles">Trouvez votre rôle.<br><em>Comprenez en 30 secondes.</em></h2>
+        <p class="s-sub" data-i="sub_roles">Pas de jargon. Votre question, notre réponse — avec <strong>vos mots</strong>.</p>
+        <div class="role-grid" id="roles-grid"></div>
+    </div>
+</section>
+<div class="rule"></div>
+
+
+<!-- SECTION LIVRABLES -->
+<section class="section fi" id="deliverables">
+    <div class="container">
+        <div class="s-tag or" data-i="tag_deliverables">Trois livrables, une logique</div>
+        <h2 class="s-title" data-i="title_deliverables">Du coefficient à la <em>formule dynamique.</em></h2>
+        <p class="s-sub" data-i="sub_deliverables">Trois niveaux de précision. Un seul objectif : que votre contrat <strong>tienne 40 ans</strong>.</p>
+        <div class="deliver-grid" id="deliverables-grid"></div>
+        <div class="info-box" id="info-box">
+            <span style="font-size:1.2rem;flex-shrink:0">🔧</span>
+            <p data-i="info_text"><strong>Pourquoi « dynamique » change tout :</strong> Une formule statique dit « +3%/an, pendant 40 ans ». Si une crise fait exploser les coûts en année 12, elle ne réagit pas. Si la productivité baisse les coûts en année 25, elle ne s'ajuste pas non plus. La formule Saju fonctionne comme un <strong>régulateur industriel</strong> : elle mesure l'écart entre prix prévu et coût réel, corrige la dérive cumulée, et anticipe les tendances — automatiquement, contractuellement, sans renégociation. Acheteur et vendeur sont protégés.</p>
+        </div>
+    </div>
+</section>
+<div class="rule"></div>
+
+<!-- SECTION PROCHAINE ÉTAPE -->
+<section class="section fi">
+    <div class="container" style="text-align:center">
+        <div class="s-tag emer" style="justify-content:center" data-i="tag_next">Prochaine étape</div>
+        <h2 class="s-title" style="text-align:center" data-i="title_next">Explorez <em>votre secteur.</em></h2>
+        <p class="s-sub" style="text-align:center;margin:0 auto 24px" data-i="sub_next">7 macro-secteurs. 29 industries. Trouvez la vôtre.</p>
+        <a href="secteurs.html" class="btn btn-rouge" data-i="btn_next">🏭 Explorer les 29 industries</a>
+    </div>
+</section>
+<div class="rule"></div>
+
+<!-- CONTACT BLOCK -->
+<section class="section fi">
+    <div class="container">
+        <div class="contact-block">
+            <div class="contact-logo"><a href="index.html"><img src="Logo.png" alt="Saju"></a></div>
+            <div class="contact-text">
+                <h4 data-i="contact_title">Votre rapport sur mesure vous attend.</h4>
+                <p><strong>François Hanneuse</strong> — Saju Srl<br>📧 <a href="mailto:fh@saju.be">fh@saju.be</a> · 📞 +32 483 37 98 18 · 🌐 <a href="https://www.saju.be">www.saju.be</a><br data-i="contact_vat">TVA : BE0785.280.227 · Chaussée d'Alsemberg 1108/6, 1180 Uccle, Belgique</p>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="rule"></div>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <div class="s-tag or" style="justify-content:center" data-i="cta_tag">Par où commencer</div>
+        <h2 class="s-title" style="text-align:center" data-i="cta_title">Votre coefficient. Votre formule.<br><em>Sur mesure.</em></h2>
+        <p class="s-sub" style="text-align:center;margin:0 auto 28px" data-i="cta_sub">30 minutes pour savoir si votre formule vous protège — ou vous expose.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <a href="index.html#rdv" class="btn btn-rouge" data-i="cta_btn">📅 Appel gratuit 30 min</a>
+            <a href="https://www.linkedin.com/in/hanneusefrancois/" target="_blank" rel="noopener" class="btn btn-ghost" data-i="cta_linkedin">🔗 LinkedIn</a>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-brand"><a href="index.html"><img src="Logo.png" alt="Saju"></a><div class="footer-wm">Saju<span> srl</span></div></div>
+            <div class="footer-copy" data-i="footer_copy">© 2026 Saju Srl · Bruxelles · fh@saju.be</div>
+            <div class="footer-links"><a href="mailto:fh@saju.be" data-i="footer_contact">Contact</a><a href="https://www.linkedin.com/in/hanneusefrancois/" target="_blank">LinkedIn</a></div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ========== FONCTIONS UTILITAIRES ==========
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        var m = document.getElementById('mobileMenu');
+        if (m && m.classList.contains('open') && !m.contains(e.target) && !e.target.closest('.nav-mobile-toggle')) {
+            m.classList.remove('open');
+        }
+    });
+
+    var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) entry.target.classList.add('v');
+        });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.fi').forEach(function(el) { obs.observe(el); });
+
+    // ========== DONNÉES DES RÔLES ET LIVRABLES (toutes langues) ==========
+    // Structure: data[langue].roles = tableau de 12 objets {emoji, title, question, answer}
+    //           data[langue].deliverables = tableau de 3 objets {number, title, sub, desc}
+
+    const contentData = {};
+
+    // --- FRANÇAIS ---
+    contentData.fr = {
+        roles: [
+            { emoji: "👔", title: "CEO", question: "Quel risque sur 40 ans ?", answer: "Un <strong>coefficient multiplicateur</strong> testé contre 125 ans de crises. Si vous signez à 100, vous saurez que le coût sera entre 380 et 520 en année 40." },
+            { emoji: "📊", title: "CFO", question: "Impact NPV ? Exposition ? Board ?", answer: "Coefficient <strong>documenté et auditable</strong> avec intervalles de confiance. Projection cash-flow 40 ans. Un chiffre pour votre modèle financier." },
+            { emoji: "🏭", title: "CPO / Dir. Achats", question: "Compétitif ET protecteur ?", answer: "Formule calibrée sur <strong>vos fournisseurs réels</strong>, votre mix make/buy, vos risques de concentration. Pas un CPI générique." },
+            { emoji: "🎯", title: "Bid Manager", question: "Prix pour GAGNER le bid ?", answer: "Le <strong>coefficient exact</strong> pour votre TCO. Positionnement concurrentiel. Le prix qui gagne sans vous ruiner." },
+            { emoji: "⚙️", title: "Dir. Technique", question: "Obsolescence ? Maintenance ?", answer: "Gains de productivité (IA, robotique) et <strong>cycles d'obsolescence</strong> modélisés. Pas une droite — une trajectoire réaliste." },
+            { emoji: "💼", title: "Commercial / Sales", question: "Convaincre le client ?", answer: "Un <strong>rapport documenté</strong> qui prouve que votre prix est justifié. Arguments factuels = votre meilleure arme." },
+            { emoji: "🏛️", title: "Acheteur Public", question: "Formule juste et légale ?", answer: "Formule qui <strong>protège l'argent public</strong> ET attire la qualité. Pas de surprise dans 15 ans." },
+            { emoji: "🏦", title: "Banquier / Prêteur", question: "La formule couvre la dette ?", answer: "Validation indépendante : <strong>stress tests sectoriels</strong>, cash-flow avec scénarios de crise. Le prêt est couvert sur 25 ans." },
+            { emoji: "📈", title: "Actionnaire / Investisseur", question: "Mon investissement protégé ?", answer: "Le contrat a été pricé avec une formule <strong>testée contre 125 ans de crises</strong>. La marge est protégée, documentée, auditable." },
+            { emoji: "🏢", title: "Fonds de pension", question: "Le rendement sur 40 ans ?", answer: "Vos investissements infrastructure couvrent des décennies. La formule de révision <strong>protège le rendement réel</strong> sur la durée." },
+            { emoji: "📋", title: "Analyste / Agence de notation", question: "Risque contractuel long terme ?", answer: "Données pour enrichir l'évaluation : qualité de la formule de révision = <strong>risque financier mieux évalué</strong> = notation plus juste." },
+            { emoji: "🏠", title: "Citoyen / Contribuable", question: "Pourquoi ça augmente toujours ?", answer: "Les prix sur 40 ans suivent des lois mathématiques. <strong>Une formule bien calibrée protège l'argent du contribuable</strong>." }
+        ],
+        deliverables: [
+            { number: "1", title: "Le Coefficient Multiplicateur", sub: "« Dans 40 ans, votre prix sera multiplié par combien ? »", desc: "Basé sur <strong>125 ans de données réelles</strong>, calibré pour votre entreprise. Le chiffre que le CEO met dans son business plan et que le CFO défend devant le Board. Exemple : si vous signez à 100, votre coût réel sera entre 380 et 520 en année 40." },
+            { number: "2", title: "La Formule de Budgétisation", sub: "« Quel prix je mets dans mon offre aujourd'hui ? »", desc: "Le coefficient traduit en <strong>prix d'offre défendable</strong>. Intègre la structure de coûts, les marges, et produit le prix que le Bid Manager injecte dans le TCO et que le Commercial présente au client." },
+            { number: "3", title: "La Formule de Révision Dynamique", sub: "« Comme un thermostat intelligent pour votre contrat. »", desc: "Les formules classiques sont <strong>statiques</strong> : +3%/an, quoi qu'il arrive. La formule Saju est <strong>dynamique</strong> — inspirée des régulateurs automatiques industriels (PID). Elle réagit, corrige les dérives, anticipe les tendances. Les deux parties sont protégées." }
+        ]
+    };
+
+    // --- ANGLAIS ---
+    contentData.en = {
+        roles: [
+            { emoji: "👔", title: "CEO", question: "What risk over 40 years?", answer: "A <strong>multiplier coefficient</strong> tested against 125 years of crises. If you sign at 100, you'll know the cost will be between 380 and 520 in year 40." },
+            { emoji: "📊", title: "CFO", question: "NPV impact? Exposure? Board?", answer: "Coefficient <strong>documented and auditable</strong> with confidence intervals. 40-year cash-flow projection. One number for your financial model." },
+            { emoji: "🏭", title: "CPO / Procurement Dir.", question: "Competitive AND protective?", answer: "Formula calibrated on <strong>your actual suppliers</strong>, your make/buy mix, your concentration risks. Not a generic CPI." },
+            { emoji: "🎯", title: "Bid Manager", question: "Price to WIN the bid?", answer: "The <strong>exact coefficient</strong> for your TCO. Competitive positioning. The price that wins without ruining you." },
+            { emoji: "⚙️", title: "Technical Director", question: "Obsolescence? Maintenance?", answer: "Productivity gains (AI, robotics) and <strong>obsolescence cycles</strong> modelled. Not a straight line — a realistic trajectory." },
+            { emoji: "💼", title: "Sales / Commercial", question: "Convince the client?", answer: "A <strong>documented report</strong> proving your price is justified. Factual arguments = your best weapon." },
+            { emoji: "🏛️", title: "Public Buyer", question: "Fair and legal formula?", answer: "Formula that <strong>protects public money</strong> AND attracts quality. No surprises in 15 years." },
+            { emoji: "🏦", title: "Banker / Lender", question: "Does the formula cover the debt?", answer: "Independent validation: <strong>sector-specific stress tests</strong>, cash-flow with crisis scenarios. The loan is covered over 25 years." },
+            { emoji: "📈", title: "Shareholder / Investor", question: "Is my investment protected?", answer: "The contract was priced with a formula <strong>tested against 125 years of crises</strong>. The margin is protected, documented, auditable." },
+            { emoji: "🏢", title: "Pension Fund", question: "Returns over 40 years?", answer: "Your infrastructure investments span decades. The revision formula <strong>protects real returns</strong> over time." },
+            { emoji: "📋", title: "Analyst / Rating Agency", question: "Long-term contractual risk?", answer: "Data to enrich assessment: revision formula quality = <strong>better evaluated financial risk</strong> = fairer rating." },
+            { emoji: "🏠", title: "Citizen / Taxpayer", question: "Why does it always go up?", answer: "Prices over 40 years follow mathematical laws. <strong>A well-calibrated formula protects taxpayer money</strong>." }
+        ],
+        deliverables: [
+            { number: "1", title: "The Multiplier Coefficient", sub: "In 40 years, your price will be multiplied by how much?", desc: "Based on <strong>125 years of real data</strong>, calibrated for your company. The number the CEO puts in the business plan and the CFO defends before the Board. Example: if you sign at 100, your real cost will be between 380 and 520 in year 40." },
+            { number: "2", title: "The Budgeting Formula", sub: "What price do I put in my offer today?", desc: "The coefficient translated into a <strong>defensible offer price</strong>. Integrates cost structure, margins, and produces the price the Bid Manager injects into the TCO and the Sales team presents to the client." },
+            { number: "3", title: "The Dynamic Revision Formula", sub: "Like a smart thermostat for your contract.", desc: "Classic formulas are <strong>static</strong>: +3%/year, no matter what. The Saju formula is <strong>dynamic</strong> — inspired by industrial automatic controllers (PID). It reacts, corrects drifts, anticipates trends. Both parties are protected." }
+        ]
+    };
+
+    // ========== FONCTION DE CHANGEMENT DE LANGUE ==========
+    var currentLang = 'fr';
+
+    function renderRoles(lang) {
+        const data = contentData[lang];
+        if (!data) return;
+        const container = document.getElementById('roles-grid');
+        if (!container) return;
+        container.innerHTML = data.roles.map(role => `
+            <div class="role-card">
+                <span class="role-emoji">${role.emoji}</span>
+                <div class="role-title">${role.title}</div>
+                <div class="role-question">${role.question}</div>
+                <div class="role-answer">${role.answer}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderDeliverables(lang) {
+        const data = contentData[lang];
+        if (!data) return;
+        const container = document.getElementById('deliverables-grid');
+        if (!container) return;
+        container.innerHTML = data.deliverables.map(del => `
+            <div class="deliver-card">
+                <div class="deliver-number">${del.number}</div>
+                <div class="deliver-title">${del.title}</div>
+                <div class="deliver-sub">${del.sub}</div>
+                <div class="deliver-desc">${del.desc}</div>
+            </div>
+        `).join('');
+    }
+
+    function setLang(l) {
+        currentLang = l;
+        localStorage.setItem('saju_lang', l);
+        document.documentElement.lang = l;
+        // Mettre à jour les boutons de langue
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
+        });
+        // Mettre à jour les textes statiques
+        const t = translations[l];
+        if (t) {
+            document.querySelectorAll('[data-i]').forEach(el => {
+                const key = el.getAttribute('data-i');
+                if (t[key]) {
+                    if (key === 'hero_h1' || key === 'title_roles' || key === 'title_deliverables' || key === 'cta_title') {
+                        el.innerHTML = t[key];
+                    } else {
+                        el.textContent = t[key];
+                    }
+                }
+            });
+            // Mettre à jour la boîte info (HTML)
+            const infoBox = document.getElementById('info-box');
+            if (infoBox && t.info_text) {
+                infoBox.innerHTML = `<span style="font-size:1.2rem;flex-shrink:0">🔧</span><p>${t.info_text}</p>`;
+            }
+        }
+        // Charger les rôles et livrables dans la langue choisie
+        renderRoles(l);
+        renderDeliverables(l);
+        // Fermer le menu mobile si ouvert
+        const mobileMenu = document.getElementById('mobileMenu');
+        if (mobileMenu) mobileMenu.classList.remove('open');
+    }
+
+    // Initialisation au chargement
+    window.addEventListener('load', function() {
+        const savedLang = localStorage.getItem('saju_lang');
+        const supportedLangs = ['fr', 'en', 'de', 'nl', 'uk', 'ru', 'jp', 'zh'];
+        let initialLang = 'fr';
+        if (savedLang && supportedLangs.includes(savedLang)) {
+            initialLang = savedLang;
+        }
+        setLang(initialLang);
+        // Animation des sections
+        document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+    });
+</script>
+</body>
+</html>
+
