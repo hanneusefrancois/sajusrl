@@ -119,6 +119,8 @@
         section[id], div[id] { scroll-margin-top: 160px; }
         @media(max-width:900px){.proof-strip{grid-template-columns:1fr 1fr}.proof-item:nth-child(2){border-right:none}.industry-double{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}}
         @media(max-width:680px){.nav-links{display:none}.nav-mobile-toggle{display:flex}.nav-inner{height:70px}.nav-logo img{height:50px;padding:6px 14px}.nav-mobile-menu{top:114px}.stats-grid{grid-template-columns:1fr}}
+        /* Si aucun bloc n'a la classe 'on', on affiche le français par défaut */
+        .lb0[data-l="fr"] {display: block;}
         .lb0 {display: none;}
         .lb0.on {display: block;}
     </style>
