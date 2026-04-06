@@ -1337,21 +1337,47 @@
     }, { threshold: 0.07 });
     document.querySelectorAll('.fi').forEach(function(el) { obs.observe(el); });
 
-    // Persistance de la langue et affichage du bon bloc
-    function setLang(l) {
-        localStorage.setItem('saju_lang', l);
-        document.documentElement.lang = l;
-        document.querySelectorAll('.lang-btn').forEach(function(btn) {
-            btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
-        });
-        document.querySelectorAll('.lb0').forEach(function(div) {
-            div.classList.toggle('on', div.getAttribute('data-lang') === l);
-        });
-        // Fermer le menu mobile si ouvert
-        var mobileMenu = document.getElementById('mobileMenu');
-        if (mobileMenu) mobileMenu.classList.remove('open');
-    }
 
+function setLang(l) {
+    localStorage.setItem('saju_lang', l);
+    document.documentElement.lang = l;
+    
+    // Afficher/masquer les blocs de langue directement
+    document.querySelectorAll('.lb0').forEach(function(div) {
+        if (div.getAttribute('data-l') === l) {
+            div.style.display = 'block';
+        } else {
+            div.style.display = 'none';
+        }
+    });
+    
+    // Mettre à jour l'état actif des boutons
+    document.querySelectorAll('.lang-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-lang') === l) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Fermer le menu mobile si ouvert
+    var mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu) mobileMenu.classList.remove('open');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     window.addEventListener('load', function() {
         var savedLang = localStorage.getItem('saju_lang');
         var supportedLangs = ['fr', 'en', 'de', 'nl', 'uk', 'ru', 'jp', 'zh'];
