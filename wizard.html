@@ -154,7 +154,6 @@
         .step-item.done .step-num{background:var(--em);color:#fff;}
         .step-info{flex:1;}
         .step-name{font-weight:600;font-size:0.85rem;}
-        .step-desc{font-size:0.7rem;color:var(--blanc-low);}
         .wizard-stats{
             margin-top:2rem;
             padding-top:1rem;
@@ -384,7 +383,6 @@
             .step-item{flex:1;min-width:80px;padding:0.5rem;flex-direction:column;text-align:center;gap:0.3rem;}
             .step-info{text-align:center;}
             .step-name{font-size:0.7rem;}
-            .step-desc{display:none;}
             .wizard-form{padding:1.5rem;}
             .field-row{grid-template-columns:1fr;}
         }
@@ -438,19 +436,14 @@
 
 <main style="margin-top:154px;">
     <div class="container">
-        <div class="fi v" style="text-align:center; margin-bottom:2rem;">
-            <div class="s-tag or" style="justify-content:center;">Configurateur</div>
-            <h1 class="s-title" style="text-align:center;">Affinez votre contrat <em>long terme</em></h1>
-            <p class="s-sub" style="text-align:center; margin:0 auto;">Ce simulateur vous donne un ordre de grandeur. Pour un coefficient exact, Saju analyse 125 ans de données.</p>
-        </div>
-
+        <!-- Pas de bannière fixe, le contenu dynamique suffit -->
         <div class="wizard-wrapper fi" id="wizardApp">
             <div class="wizard-steps">
-                <div class="wizard-steps-title">Paramètres</div>
+                <div class="wizard-steps-title">📋 Paramètres</div>
                 <div class="wizard-steps-sub">Votre contrat, vos risques</div>
                 <ul class="steps-list" id="stepList"></ul>
                 <div class="wizard-stats">
-                    <p><strong>🔬 Simulation réaliste.</strong> Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact, votre formule de révision optimale.</p>
+                    <p><strong>🔬 Simulation réaliste.</strong> Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact.</p>
                 </div>
             </div>
             <div class="wizard-form">
@@ -495,7 +488,7 @@
         }
     });
 
-    // ===== DONNÉES SECTEURS ET PRODUITS =====
+    // ===== DONNÉES SECTEURS ET PRODUITS (avec mapping bidirectionnel) =====
     const sectorProducts = {
         "Ferroviaire & mobilité": ["Locomotive", "EMU (Rame automoteur)", "Metro", "Tram/LRV", "Signalisation"],
         "Pharmacie & santé": ["IRM", "Scanner", "Protonthérapie", "Équipement de laboratoire"],
@@ -509,6 +502,11 @@
         "Import-export": ["Conteneur", "Système logistique", "Camion"],
         "Autre": ["Produit personnalisé"]
     };
+    // Mapping produit -> secteur (inverse)
+    const productToSector = {};
+    Object.entries(sectorProducts).forEach(([sector, products]) => {
+        products.forEach(product => { productToSector[product] = sector; });
+    });
 
     // ===== TRADUCTIONS (FR/EN) =====
     const translations = {
@@ -526,7 +524,7 @@
             role: "Votre rôle", role_autre: "Autre (précisez)",
             secteur: "Secteur", produit: "Produit", pays: "Pays", devise: "Devise",
             duree: "Durée totale (ans)", nb_unites: "Nombre d'unités", cout_unitaire: "Coût unitaire (M€)",
-            concurrent_note: "Si vous préférez ne pas indiquer vos prix, utilisez ceux d'un concurrent – les crises majeures seront les mêmes.",
+            concurrent_note: "💡 Si vous préférez ne pas indiquer vos prix, utilisez ceux d'un concurrent – les crises majeures seront les mêmes.",
             proto: "Année de prototypage", prod_start: "Début production série", prod_dur: "Durée de production (ans)", self_prod: "Part interne (%)", maint_dur: "Durée de maintenance (ans)",
             confiance: "Confiance dans votre chiffrage (0=incertain, 10=confiant)", retards: "Retards estimés",
             crise_impact: "Impact probable d'une crise majeure (approvisionnement, douanes, guerre, matières premières)",
@@ -537,7 +535,7 @@
             nom: "Nom", organisation: "Organisation", email: "Email", telephone: "Téléphone",
             contact_title: "🔐 Sauvegarder cette configuration",
             contact_sub: "En renseignant vos coordonnées, vous pourrez retrouver cette simulation plus tard et recevoir un récapitulatif par email.",
-            contact_note: "Votre email ne sera utilisé qu'à cette fin.",
+            contact_note: "",
             btn_next: "Continuer", btn_prev: "Retour", btn_launch: "Lancer la simulation",
             expertise_msg: "Cette simulation est indicative. Pour un coefficient précis, calibré sur 125 ans de crises réelles (guerres, pandémies, chocs pétroliers) et adapté à votre entreprise, <strong>contactez Saju</strong>."
         },
@@ -555,7 +553,7 @@
             role: "Your role", role_autre: "Other (specify)",
             secteur: "Sector", produit: "Product", pays: "Country", devise: "Currency",
             duree: "Total duration (years)", nb_unites: "Number of units", cout_unitaire: "Unit cost (M€)",
-            concurrent_note: "If you prefer not to disclose your prices, use a competitor's – major crises will be the same.",
+            concurrent_note: "💡 If you prefer not to disclose your prices, use a competitor's – major crises will be the same.",
             proto: "Prototyping year", prod_start: "Series production start", prod_dur: "Production duration (years)", self_prod: "In-house share (%)", maint_dur: "Maintenance duration (years)",
             confiance: "Confidence in your costing (0=uncertain, 10=confident)", retards: "Estimated delays",
             crise_impact: "Likely impact of a major crisis (supply, tariffs, war, raw materials)",
@@ -566,7 +564,7 @@
             nom: "Name", organisation: "Organization", email: "Email", telephone: "Phone",
             contact_title: "🔐 Save this configuration",
             contact_sub: "By providing your contact details, you can retrieve this simulation later and receive a summary by email.",
-            contact_note: "Your email will only be used for this purpose.",
+            contact_note: "",
             btn_next: "Next", btn_prev: "Back", btn_launch: "Run simulation",
             expertise_msg: "This simulation is indicative. For an exact coefficient, calibrated on 125 years of real crises (wars, pandemics, oil shocks) and tailored to your business, <strong>contact Saju</strong>."
         }
@@ -593,13 +591,24 @@
         "Contrôleur financier / CPM", "Offre Controller", "Autre"
     ];
 
+    // Messages marketing personnalisés selon le rôle et l'étape
+    const roleMessages = {
+        CEO: { step0: "🎯 En tant que CEO, la formule de révision impacte directement la valeur du contrat sur 40 ans.", step1: "🏭 La structure de production détermine votre exposition aux variations de coûts.", step2: "📈 Votre perception des risques est essentielle pour calibrer le coefficient.", step3: "✅ Vérifiez que tous les paramètres reflètent votre stratégie.", step4: "🔍 Découvrez l'impact sur votre marge à long terme." },
+        CFO: { step0: "💰 La formule de révision est un levier de performance financière sur 40 ans.", step1: "⚙️ Les phases de production influencent le besoin en fonds de roulement.", step2: "📊 La modélisation des risques protège votre résultat net.", step3: "📑 Validez les hypothèses financières.", step4: "💶 Visualisez l'effet sur votre cash-flow." },
+        CPO: { step0: "🏗️ Le choix du secteur et du produit conditionne la stratégie d'achat.", step1: "🔧 La part d'externalisation impacte directement votre levier de négociation.", step2: "⚠️ Anticipez les ruptures fournisseurs et les tensions sur les matières premières.", step3: "📦 Revoyez vos hypothèses d'approvisionnement.", step4: "🚀 Obtenez une formule qui sécurise vos approvisionnements." },
+        "Bid Manager": { step0: "🎯 Un coefficient bien calibré est votre meilleur argument pour remporter le marché.", step1: "⏱️ Les délais de production sont critiques pour votre offre.", step2: "⚡ Intégrez les risques dans votre pricing pour être compétitif et rentable.", step3: "✅ Vérifiez la cohérence de votre offre.", step4: "🏆 Lancez la simulation et préparez votre BAFO." },
+        "Dir. Technique": { step0: "🔬 Les spécificités techniques du produit dictent les indices de coût pertinents.", step1: "🛠️ La maintenance et l'obsolescence sont des facteurs clés.", step2: "🤖 Les gains technologiques modèrent la hausse des prix.", step3: "📐 Ajustez vos hypothèses techniques.", step4: "⚙️ Découvrez la trajectoire de coût la plus réaliste." },
+        "Commercial / Sales": { step0: "💼 Un prix compétitif mais défendable vous permet de vendre sans risque.", step1: "📅 La courbe de production impacte votre argumentaire client.", step2: "🛡️ Rassurez le client sur la maîtrise des coûts futurs.", step3: "📊 Présentez une offre solide.", step4: "📈 Visualisez l'avantage concurrentiel de votre formule." },
+        default: { step0: "📋 Configurez votre contrat.", step1: "🏭 Planifiez la production.", step2: "⚠️ Évaluez les risques.", step3: "✅ Récapitulez.", step4: "🚀 Lancez la simulation." }
+    };
+
     const steps = [
         { name: "Contexte", titleKey: "step0_title", subKey: "step0_sub", ctxKey: "step0_ctx",
           fields: [
             { id:"role", labelKey:"role", type:"select", options:rolesList, full:false },
             { id:"role_autre", labelKey:"role_autre", type:"text", full:false, depends:{field:"role",value:"Autre"} },
             { id:"secteur", labelKey:"secteur", type:"select", options:Object.keys(sectorProducts), full:true, onchange:"updateProducts" },
-            { id:"produit", labelKey:"produit", type:"select", options:sectorProducts["Ferroviaire & mobilité"], full:true },
+            { id:"produit", labelKey:"produit", type:"select", options:sectorProducts["Ferroviaire & mobilité"], full:true, onchange:"updateSectorFromProduct" },
             { id:"pays", labelKey:"pays", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false },
             { id:"devise", labelKey:"devise", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false },
             { id:"duree", labelKey:"duree", type:"range", min:3, max:60, value:15, unit:" ans", full:true },
@@ -629,6 +638,7 @@
     let currentStep = 0;
     let wizardData = {};
 
+    // Mise à jour des produits en fonction du secteur
     function updateProducts() {
         const secteur = wizardData.secteur;
         const productSelect = document.querySelector('#fieldsArea select[id$="produit"]');
@@ -646,6 +656,18 @@
                 wizardData.produit = sectorProducts[secteur][0];
                 productSelect.value = wizardData.produit;
             }
+        }
+    }
+
+    // Mise à jour du secteur en fonction du produit (bidirectionnel)
+    function updateSectorFromProduct() {
+        const produit = wizardData.produit;
+        const sector = productToSector[produit];
+        if (sector && wizardData.secteur !== sector) {
+            wizardData.secteur = sector;
+            const sectorSelect = document.querySelector('#fieldsArea select[id$="secteur"]');
+            if (sectorSelect) sectorSelect.value = sector;
+            updateProducts(); // pour rafraîchir la liste des produits (au cas où)
         }
     }
 
@@ -672,45 +694,38 @@
     }
 
     function buildParamsForSim() {
-        // Mapper les données du wizard vers les paramètres attendus par sim.html
         const params = {};
-        // Secteur et produit
-        if (wizardData.secteur) {
-            const sectorMap = {
-                "Ferroviaire & mobilité": "rail",
-                "Pharmacie & santé": "med",
-                "Nucléaire & énergie": "nuke",
-                "Automobile & aérospatial": "aero",
-                "Défense": "def",
-                "Robotique & automatisation": "telco",
-                "Naval & maritime": "navcom",
-                "Banque & assurance": "med",
-                "Travaux & maintenance": "infra",
-                "Import-export": "navcom",
-                "Autre": "def"
-            };
-            params.sector = sectorMap[wizardData.secteur] || "rail";
-        }
-        if (wizardData.produit) {
-            const productMap = {
-                "Locomotive": "loco", "EMU (Rame automoteur)": "emu", "Metro": "metro", "Tram/LRV": "tram", "Signalisation": "signal",
-                "IRM": "mri", "Scanner": "mri", "Protonthérapie": "proton",
-                "Réacteur": "reactor", "SMR": "smr", "Turbine à gaz": "gasturb", "CCGT": "ccgt",
-                "Aircraft": "aircraft", "Moteur d'avion": "engine",
-                "Chasseur": "fighter", "Hélicoptère": "heli", "Drone": "uav", "Satellite": "sat", "Radar": "radar",
-                "Data Center": "dc", "Robot industriel": "robot",
-                "Pétrolier": "tanker", "LNG Carrier": "lng", "Porte-conteneurs": "container", "FPSO": "fpso", "Plateforme": "platform",
-                "Pont": "bridge", "Tunnel": "tunnel", "Barrage": "dam", "Terminal": "terminal", "Grue/Écluse": "crane"
-            };
-            params.product = productMap[wizardData.produit] || "loco";
-        }
+        const sectorMap = {
+            "Ferroviaire & mobilité": "rail",
+            "Pharmacie & santé": "med",
+            "Nucléaire & énergie": "nuke",
+            "Automobile & aérospatial": "aero",
+            "Défense": "def",
+            "Robotique & automatisation": "telco",
+            "Naval & maritime": "navcom",
+            "Banque & assurance": "med",
+            "Travaux & maintenance": "infra",
+            "Import-export": "navcom",
+            "Autre": "def"
+        };
+        if (wizardData.secteur) params.sector = sectorMap[wizardData.secteur] || "rail";
+        const productMap = {
+            "Locomotive": "loco", "EMU (Rame automoteur)": "emu", "Metro": "metro", "Tram/LRV": "tram", "Signalisation": "signal",
+            "IRM": "mri", "Scanner": "mri", "Protonthérapie": "proton",
+            "Réacteur": "reactor", "SMR": "smr", "Turbine à gaz": "gasturb", "CCGT": "ccgt",
+            "Aircraft": "aircraft", "Moteur d'avion": "engine",
+            "Chasseur": "fighter", "Hélicoptère": "heli", "Drone": "uav", "Satellite": "sat", "Radar": "radar",
+            "Data Center": "dc", "Robot industriel": "robot",
+            "Pétrolier": "tanker", "LNG Carrier": "lng", "Porte-conteneurs": "container", "FPSO": "fpso", "Plateforme": "platform",
+            "Pont": "bridge", "Tunnel": "tunnel", "Barrage": "dam", "Terminal": "terminal", "Grue/Écluse": "crane"
+        };
+        if (wizardData.produit) params.product = productMap[wizardData.produit] || "loco";
         if (wizardData.duree) params.prodDur = wizardData.duree;
         if (wizardData.maint_dur) params.maintDur = wizardData.maint_dur;
         if (wizardData.self_prod) params.selfProd = wizardData.self_prod;
         if (wizardData.nb_unites) params.totalUnits = wizardData.nb_unites;
         if (wizardData.cout_unitaire) params.unitPrice = wizardData.cout_unitaire;
         if (wizardData.devise && wizardData.devise !== 'EUR') params.cur = wizardData.devise;
-        // Production start approximative
         if (wizardData.prod_start) params.prodStart = (wizardData.prod_start - 2027) * 52;
         if (wizardData.proto) params.protoDur = wizardData.proto - 2024;
         return params;
@@ -718,15 +733,19 @@
 
     function launchSimulation() {
         const params = buildParamsForSim();
-        // Sauvegarder dans localStorage pour sim.html
         localStorage.setItem('wizard_params', JSON.stringify(params));
-        // Rediriger vers sim.html
         window.location.href = 'sim.html';
     }
 
     function renderRight() {
         const s = steps[currentStep];
-        document.getElementById('ctxText').innerHTML = `<strong>${t(s.ctxKey)}</strong>`;
+        // Message contextuel personnalisé selon le rôle et l'étape
+        const role = wizardData.role || "default";
+        const msgSet = roleMessages[role] || roleMessages.default;
+        const stepKey = `step${currentStep}`;
+        const customMsg = msgSet[stepKey] || "";
+        const contextText = customMsg ? `<strong>${customMsg}</strong>` : t(s.ctxKey);
+        document.getElementById('ctxText').innerHTML = contextText;
         document.getElementById('stepTitle').textContent = t(s.titleKey);
         document.getElementById('stepSub').textContent = t(s.subKey);
         document.getElementById('btnPrev').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
@@ -761,7 +780,6 @@
                 }
             });
             area.appendChild(grid);
-            // Bloc coordonnées optionnel
             const contactDiv = document.createElement('div');
             contactDiv.className = 'contact-section';
             contactDiv.innerHTML = `
@@ -796,7 +814,6 @@
             return;
         }
         if (currentStep === steps.length-1) {
-            // Étape simulation (déjà gérée par le bouton, mais afficher un message d'expertise)
             const expertDiv = document.createElement('div');
             expertDiv.className = 'expertise-message';
             expertDiv.innerHTML = t('expertise_msg');
@@ -860,8 +877,13 @@
                     select.onchange = () => {
                         wizardData[f.id] = select.value;
                         if (f.id === 'secteur') {
-                            if (!wizardData.produit) wizardData.produit = sectorProducts[wizardData.secteur][0];
+                            if (!wizardData.produit || !sectorProducts[wizardData.secteur].includes(wizardData.produit)) {
+                                wizardData.produit = sectorProducts[wizardData.secteur][0];
+                            }
                             updateProducts();
+                            render();
+                        } else if (f.id === 'produit') {
+                            updateSectorFromProduct();
                             render();
                         }
                     };
@@ -916,6 +938,7 @@
                 wizardData.role = roleSelect.value;
                 const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
                 if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
+                render(); // pour rafraîchir le message contextuel
             });
             const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
             if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
