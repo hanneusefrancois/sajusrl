@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Saju — Configurateur de simulation</title>
+    <meta name="description" content="Affinez votre simulation de contrat long terme avec Saju. Évaluez risques, opportunités et obtenez une formule de révision sur mesure.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== VARIABLES SITE SAJU ===== */
+        :root {
+            --black:#0f1117; --card:#171b24; --card2:#1e2330; --border:rgba(255,255,255,0.13);
+            --rouge:#c0392b; --rouge-vif:#d94030; --bordeaux:#7a1f1a;
+            --blanc:#ffffff; --blanc-dim:rgba(255,255,255,0.88); --blanc-low:rgba(255,255,255,0.60);
+            --em:#059669; --em-pale:#10b981; --em-bright:#34d399;
+            --teal:#0d9488; --teal-pale:#14b8a6;
+            --or:#b45309; --or-p:#d97706; --or-pale:#fbbf24; --or-dim:rgba(180,83,9,0.12); --or-b:rgba(217,119,6,0.3);
+            --argent:#94a3b8; --argent-c:#e2e8f0;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{
+            font-family:'DM Sans',sans-serif;
+            background:var(--black);
+            color:var(--blanc);
+            background-image:linear-gradient(135deg,#0f1117 0%,#141824 100%);
+            overflow-x:hidden;
+            line-height:1.6;
+            font-size:16px;
+        }
+        img{max-width:100%;height:auto;display:block}
+        a{color:inherit;text-decoration:none}
+        .container{max-width:1160px;margin:0 auto;padding:0 clamp(20px,5vw,52px);position:relative;z-index:1}
+
+        /* ===== HEADER ===== */
+        .lang-bar{
+            position:fixed;top:0;left:0;right:0;z-index:9999;
+            background:rgba(0,0,0,0.97);border-bottom:1px solid var(--border);
+            height:44px;display:flex;align-items:center;justify-content:flex-end;
+            padding:0 clamp(16px,5vw,52px);gap:3px;
+        }
+        .lang-btn{
+            background:transparent;border:1px solid transparent;
+            color:var(--blanc-low);font-size:0.72rem;font-weight:500;
+            min-width:40px;min-height:44px;padding:0 7px;border-radius:3px;
+            transition:all .2s;cursor:pointer;
+        }
+        .lang-btn:hover,.lang-btn:active{color:var(--or-p);border-color:var(--or-b)}
+        .lang-btn.active{color:var(--or-p);border-color:var(--or-b);background:var(--or-dim)}
+        nav{
+            position:fixed;top:44px;left:0;right:0;z-index:1000;
+            background:rgba(15,17,23,0.97);backdrop-filter:blur(18px);
+            border-bottom:1px solid var(--border);
+        }
+        .nav-inner{
+            max-width:1160px;margin:0 auto;padding:0 clamp(20px,5vw,52px);
+            height:110px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+        }
+        .nav-logo img{height:90px;width:auto;border-radius:8px;background:#fff;padding:10px 22px;}
+        .nav-links{display:flex;gap:clamp(14px,2vw,28px);align-items:center;flex-wrap:wrap;}
+        .nav-links a{
+            font-size:0.75rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+            white-space:nowrap;color:rgba(255,255,255,.38);transition:color .2s;
+        }
+        .nav-links a:hover,.nav-links a.active{color:var(--or-p);}
+        .nav-cta{
+            background:var(--rouge);color:var(--blanc)!important;padding:8px 18px;border-radius:2px;
+            font-size:0.72rem!important;letter-spacing:0.1em!important;
+            transition:background .2s;
+        }
+        .nav-cta:hover{background:var(--rouge-vif)!important;}
+        .nav-mobile-toggle{
+            display:none;background:transparent;border:1px solid var(--border);
+            color:var(--blanc-dim);padding:6px 10px;border-radius:2px;font-size:1rem;cursor:pointer;
+        }
+        .nav-mobile-menu{
+            display:none;position:fixed;top:154px;left:0;right:0;
+            background:rgba(0,0,0,.98);border-bottom:1px solid var(--border);
+            padding:20px clamp(20px,5vw,52px);z-index:99;
+            flex-direction:column;gap:16px;
+        }
+        .nav-mobile-menu a{font-size:1rem;font-weight:500;color:var(--blanc-dim);padding:10px 0;border-bottom:1px solid var(--border);}
+        .nav-mobile-menu.open{display:flex;}
+        .btn{
+            display:inline-flex;align-items:center;gap:9px;padding:14px 28px;border-radius:2px;
+            font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;transition:all .22s;
+            border:none;cursor:pointer;
+        }
+        .btn-rouge{background:var(--rouge);color:var(--blanc);}
+        .btn-rouge:hover{background:var(--rouge-vif);}
+        .btn-ghost{background:transparent;color:var(--blanc-dim);border:1px solid var(--border);}
+        .btn-ghost:hover{border-color:var(--or-b);color:var(--or-p);}
+        .btn-or{background:var(--or);color:#000;}.btn-or:hover{background:var(--or-p);}
+
+        /* ===== WIZARD ===== */
+        .wizard-wrapper{
+            display:grid;
+            grid-template-columns:300px 1fr;
+            gap:0;
+            background:var(--card);
+            border-radius:12px;
+            border:1px solid var(--border);
+            overflow:hidden;
+            margin:2rem 0 3rem;
+        }
+        .wizard-steps{
+            background:var(--black);
+            padding:2rem 1.5rem;
+            border-right:1px solid var(--border);
+        }
+        .wizard-steps-title{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.3rem;font-weight:700;
+            margin-bottom:0.25rem;color:var(--or-p);
+        }
+        .wizard-steps-sub{
+            font-size:0.7rem;color:var(--blanc-low);
+            margin-bottom:2rem;letter-spacing:0.02em;
+        }
+        .steps-list{
+            list-style:none;
+            display:flex;
+            flex-direction:column;
+            gap:0.5rem;
+        }
+        .step-item{
+            display:flex;
+            align-items:center;
+            gap:1rem;
+            padding:0.75rem 1rem;
+            border-radius:8px;
+            cursor:pointer;
+            transition:all 0.2s;
+            opacity:0.5;
+            background:transparent;
+        }
+        .step-item.active{
+            opacity:1;
+            background:var(--card2);
+            border-left:3px solid var(--or-p);
+        }
+        .step-item.done{opacity:0.8;}
+        .step-num{
+            width:32px;height:32px;
+            border-radius:50%;
+            background:rgba(255,255,255,0.08);
+            display:flex;align-items:center;justify-content:center;
+            font-weight:600;font-size:0.8rem;color:var(--blanc-dim);
+        }
+        .step-item.active .step-num{background:var(--or-p);color:#000;}
+        .step-item.done .step-num{background:var(--em);color:#fff;}
+        .step-info{flex:1;}
+        .step-name{font-weight:600;font-size:0.85rem;}
+        .wizard-stats{
+            margin-top:2rem;
+            padding-top:1rem;
+            border-top:1px solid var(--border);
+            font-size:0.75rem;
+            line-height:1.5;
+            color:var(--blanc-dim);
+        }
+        .wizard-stats strong{color:var(--or-p);}
+
+        /* Panneau droit */
+        .wizard-form{
+            padding:2rem 2rem;
+            background:var(--card);
+        }
+        .context-msg{
+            display:flex;
+            gap:1rem;
+            background:var(--or-dim);
+            border-left:3px solid var(--or-p);
+            border-radius:8px;
+            padding:1rem 1.2rem;
+            margin-bottom:2rem;
+        }
+        .context-icon{font-size:1.2rem;color:var(--or-p);}
+        .context-text strong{display:block;color:var(--or-pale);font-weight:600;margin-bottom:0.2rem;}
+        .context-text{font-size:0.85rem;line-height:1.5;color:var(--blanc-dim);}
+        .step-title{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.8rem;font-weight:700;
+            margin-bottom:0.3rem;color:var(--blanc);
+        }
+        .step-subtitle{
+            font-size:0.9rem;color:var(--blanc-low);
+            margin-bottom:1.8rem;
+        }
+        .fields{display:flex;flex-direction:column;gap:1.2rem;}
+        .field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+        .field{display:flex;flex-direction:column;gap:0.3rem;position:relative;}
+        .field label{
+            font-size:0.7rem;font-weight:600;text-transform:uppercase;
+            letter-spacing:0.08em;color:var(--argent-c);
+            display:flex;align-items:center;gap:0.5rem;
+        }
+        .help-icon{
+            color:var(--argent);
+            font-size:0.65rem;
+            cursor:pointer;
+            border-radius:50%;
+            width:16px;height:16px;
+            display:inline-flex;align-items:center;justify-content:center;
+            background:rgba(255,255,255,0.1);
+            transition:0.2s;
+        }
+        .help-icon:hover{background:var(--or-p);color:#000;}
+        .tooltip{
+            position:absolute;
+            bottom:100%;
+            left:0;
+            background:var(--card2);
+            border:1px solid var(--or-b);
+            border-radius:6px;
+            padding:0.5rem 0.8rem;
+            font-size:0.7rem;
+            color:var(--blanc-dim);
+            z-index:10;
+            width:220px;
+            display:none;
+            margin-bottom:5px;
+        }
+        .field:hover .tooltip{display:block;}
+        .field input,.field select{
+            background:var(--black);
+            border:1px solid var(--border);
+            border-radius:6px;
+            padding:0.7rem 1rem;
+            color:var(--blanc);
+            font-family:'DM Sans',sans-serif;
+            font-size:0.85rem;
+            outline:none;
+            transition:0.2s;
+        }
+        .field input:focus,.field select:focus{border-color:var(--or-p);}
+        .range-row{
+            display:flex;
+            align-items:center;
+            gap:1rem;
+        }
+        .range-row input[type="range"]{
+            flex:1;
+            height:3px;
+            background:var(--border);
+            border-radius:3px;
+            -webkit-appearance:none;
+        }
+        .range-row input[type="range"]::-webkit-slider-thumb{
+            -webkit-appearance:none;
+            width:16px;height:16px;
+            background:var(--or-p);
+            border-radius:50%;
+            cursor:pointer;
+            border:none;
+        }
+        .range-val{
+            font-family:'Cormorant Garamond',serif;
+            font-size:0.9rem;color:var(--or-pale);
+            min-width:55px;text-align:right;
+        }
+        .qualitative-select{
+            background:var(--black);
+            border:1px solid var(--border);
+            border-radius:6px;
+            padding:0.7rem 1rem;
+            color:var(--blanc);
+            font-size:0.85rem;
+        }
+        .nav-buttons{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:2rem;
+            padding-top:1rem;
+            border-top:1px solid var(--border);
+        }
+        .progress-dots{display:flex;gap:8px;}
+        .dot{
+            width:8px;height:8px;border-radius:50%;
+            background:var(--border);
+            transition:0.2s;
+        }
+        .dot.active{background:var(--or-p);width:20px;border-radius:4px;}
+        .dot.done{background:var(--em);}
+        .summary-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:0.75rem;
+            margin-bottom:1.5rem;
+        }
+        .sum-item{
+            background:var(--black);
+            border:1px solid var(--border);
+            border-radius:8px;
+            padding:0.8rem;
+        }
+        .sum-lbl{
+            font-size:0.6rem;text-transform:uppercase;
+            color:var(--argent-c);letter-spacing:0.06em;
+        }
+        .sum-val{
+            font-size:0.9rem;font-weight:500;
+            margin-top:4px;
+        }
+        .contact-section{
+            margin-top:1.5rem;
+            padding-top:1rem;
+            border-top:1px solid var(--border);
+        }
+        .contact-section h4{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1rem;
+            margin-bottom:0.5rem;
+            color:var(--or-p);
+        }
+        .contact-note{
+            font-size:0.7rem;
+            color:var(--argent-c);
+            margin-top:0.5rem;
+        }
+        .launch-btn{
+            width:100%;
+            background:var(--or);
+            border:none;
+            border-radius:8px;
+            padding:1rem;
+            font-size:1rem;
+            font-weight:700;
+            color:#000;
+            cursor:pointer;
+            transition:0.2s;
+            margin-top:1rem;
+        }
+        .launch-btn:hover{
+            background:var(--or-p);
+            transform:translateY(-2px);
+        }
+        .expertise-message{
+            background:rgba(5,150,105,0.08);
+            border-left:3px solid var(--em);
+            border-radius:8px;
+            padding:1rem;
+            margin-top:1.5rem;
+            font-size:0.85rem;
+            line-height:1.5;
+            color:var(--blanc-dim);
+        }
+        .expertise-message strong{color:var(--em-bright);}
+        .concurrent-note{
+            font-size:0.7rem;
+            color:var(--argent-c);
+            margin-top:0.5rem;
+            font-style:italic;
+        }
+        footer{
+            border-top:1px solid var(--border);
+            padding:clamp(18px,3vw,26px) 0;
+            background:#0d1018;
+        }
+        .footer-inner{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:14px;
+        }
+        .footer-brand{display:flex;align-items:center;gap:10px;}
+        .footer-brand img{height:48px;border-radius:8px;background:#fff;padding:4px 9px;}
+        .footer-wm{font-family:'Cormorant Garamond',serif;font-size:0.85rem;font-weight:600;color:rgba(255,255,255,.4);}
+        .footer-wm span{color:var(--rouge);}
+        .footer-copy{font-size:0.72rem;color:rgba(255,255,255,.3);}
+        .footer-links{display:flex;gap:12px;}
+        .footer-links a{font-size:0.72rem;color:rgba(255,255,255,.35);}
+
+        @media (max-width:800px){
+            .wizard-wrapper{grid-template-columns:1fr;}
+            .wizard-steps{border-right:none;border-bottom:1px solid var(--border);padding:1rem;}
+            .steps-list{flex-direction:row;flex-wrap:wrap;gap:0.3rem;}
+            .step-item{flex:1;min-width:80px;padding:0.5rem;flex-direction:column;text-align:center;gap:0.3rem;}
+            .step-info{text-align:center;}
+            .step-name{font-size:0.7rem;}
+            .wizard-form{padding:1.5rem;}
+            .field-row{grid-template-columns:1fr;}
+        }
+        @media (max-width:680px){
+            .nav-links{display:none;}
+            .nav-mobile-toggle{display:flex;}
+            .nav-inner{height:70px;}
+            .nav-logo img{height:50px;padding:6px 14px;}
+            .nav-mobile-menu{top:114px;}
+        }
+        .fi{opacity:0;transform:translateY(20px);transition:opacity .65s ease,transform .65s ease;}
+        .fi.v{opacity:1;transform:translateY(0);}
+        section[id],div[id]{scroll-margin-top:120px;}
+    </style>
+</head>
+<body>
+
+<div class="lang-bar">
+    <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
+    <button class="lang-btn" data-lang="nl" onclick="setLang('nl')">NL</button>
+    <button class="lang-btn" data-lang="uk" onclick="setLang('uk')">УКР</button>
+    <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" data-lang="jp" onclick="setLang('jp')">日本語</button>
+    <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">中文</button>
+</div>
+
+<nav>
+    <div class="nav-inner">
+        <a href="#" class="nav-logo"><img src="Logo.png" alt="Saju srl" onerror="this.parentElement.innerHTML='Saju'"></a>
+        <div class="nav-links">
+            <a href="#">Simulation</a>
+            <a href="#">Services</a>
+            <a href="#">Méthode</a>
+            <a href="#">Secteurs</a>
+            <a href="#">Fondateur</a>
+            <a href="#" class="nav-cta">📅 Réserver</a>
+        </div>
+        <button class="nav-mobile-toggle" onclick="toggleMobileMenu()" aria-label="Menu"><i class="fas fa-bars"></i></button>
+    </div>
+</nav>
+<div class="nav-mobile-menu" id="mobileMenu">
+    <a href="#">Simulation</a>
+    <a href="#">Services</a>
+    <a href="#">Méthode</a>
+    <a href="#">Secteurs</a>
+    <a href="#">Fondateur</a>
+    <a href="#" class="btn btn-rouge" style="justify-content:center">Réserver</a>
+</div>
+
+<main style="margin-top:154px;">
+    <div class="container">
+        <div class="fi v" style="text-align:center; margin-bottom:2rem;">
+            <div class="s-tag or" style="justify-content:center;">Configurateur</div>
+            <h1 class="s-title" style="text-align:center;" id="mainTitle">Affinez votre contrat <em>long terme</em></h1>
+            <p class="s-sub" style="text-align:center; margin:0 auto;" id="mainSub">Ce simulateur vous donne un ordre de grandeur. Pour un coefficient exact, Saju analyse 125 ans de données.</p>
+        </div>
+
+        <div class="wizard-wrapper fi" id="wizardApp">
+            <div class="wizard-steps">
+                <div class="wizard-steps-title">📋 Paramètres</div>
+                <div class="wizard-steps-sub">Votre contrat, vos risques</div>
+                <ul class="steps-list" id="stepList"></ul>
+                <div class="wizard-stats">
+                    <p><strong>🔬 Simulation réaliste.</strong> Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact.</p>
+                </div>
+            </div>
+            <div class="wizard-form">
+                <div class="context-msg" id="ctxMsg">
+                    <div class="context-icon">◆</div>
+                    <div class="context-text" id="ctxText"></div>
+                </div>
+                <div class="step-title" id="stepTitle"></div>
+                <div class="step-subtitle" id="stepSub"></div>
+                <div class="fields" id="fieldsArea"></div>
+                <div class="nav-buttons">
+                    <button class="btn-ghost" id="btnPrev" style="padding:0.5rem 1rem;">← Retour</button>
+                    <div class="progress-dots" id="dots"></div>
+                    <button class="btn-or" id="btnNext" style="padding:0.5rem 1.5rem;">
+                        <span id="btnLabel">Continuer</span> →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-brand"><a href="#"><img src="Logo.png" alt="Saju" onerror="this.parentElement.innerHTML='Saju'"></a><div class="footer-wm">Saju<span> srl</span></div></div>
+            <div class="footer-copy">© 2026 Saju Srl · Bruxelles · fh@saju.be</div>
+            <div class="footer-links"><a href="#">Contact</a><a href="#">LinkedIn</a></div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ===== MENU MOBILE =====
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        var m = document.getElementById('mobileMenu');
+        if (m && m.classList.contains('open') && !m.contains(e.target) && !e.target.closest('.nav-mobile-toggle')) {
+            m.classList.remove('open');
+        }
+    });
+
+    // ===== DONNÉES SECTEURS ET PRODUITS (mapping bidirectionnel) =====
+    const sectorProducts = {
+        "Ferroviaire & mobilité": ["Locomotive", "EMU (Rame automoteur)", "Metro", "Tram/LRV", "Signalisation"],
+        "Pharmacie & santé": ["IRM", "Scanner", "Protonthérapie", "Équipement de laboratoire"],
+        "Nucléaire & énergie": ["Réacteur", "SMR", "Démantèlement", "Turbine à gaz", "CCGT"],
+        "Automobile & aérospatial": ["Aircraft", "Moteur d'avion", "Voiture", "Systèmes embarqués"],
+        "Défense": ["Chasseur", "Hélicoptère", "Drone", "Satellite", "Radar", "Fregate", "Sous-marin"],
+        "Robotique & automatisation": ["Data Center", "5G/6G Core", "Tour/Mât", "Robot industriel"],
+        "Naval & maritime": ["Pétrolier", "LNG Carrier", "Porte-conteneurs", "Navire de croisière", "FPSO", "Plateforme"],
+        "Banque & assurance": ["Infrastructure IT", "Plateforme de trading", "Système de gestion"],
+        "Travaux & maintenance": ["Pont", "Tunnel", "Barrage", "Terminal", "Grue/Écluse"],
+        "Import-export": ["Conteneur", "Système logistique", "Camion"],
+        "Autre": ["Produit personnalisé"]
+    };
+    // Mapping produit -> secteur (inverse)
+    const productToSector = {};
+    Object.entries(sectorProducts).forEach(([sector, products]) => {
+        products.forEach(product => { productToSector[product] = sector; });
+    });
+
+    // ===== TRADUCTIONS (FR/EN) =====
+    const translations = {
+        fr: {
+            step0_title: "Contexte du contrat", step0_sub: "Secteur, produit, géographie, volume",
+            step0_ctx: "Énergie, main-d'œuvre et matières premières n'ont pas le même poids selon le secteur et le produit.",
+            step1_title: "Production & support", step1_sub: "Planning, internalisation, maintenance",
+            step1_ctx: "Les phases de production et de support définissent la structure de la formule de révision.",
+            step2_title: "Risques & opportunités", step2_sub: "Votre perception face à l'incertain",
+            step2_ctx: "Ces questions aident à calibrer votre coefficient multiplicateur.",
+            step3_title: "Récapitulatif & sauvegarde", step3_sub: "Vérifiez vos réponses",
+            step3_ctx: "Vous pouvez revenir en arrière pour modifier.",
+            step4_title: "Simulation", step4_sub: "Votre configuration est prête",
+            step4_ctx: "Ce simulateur vous donne un ordre de grandeur. Pour un coefficient exact, Saju analyse 125 ans de données.",
+            role: "Votre rôle", role_autre: "Autre (précisez)",
+            secteur: "Secteur", produit: "Produit", pays: "Pays", devise: "Devise",
+            duree: "Durée totale (ans)", nb_unites: "Nombre d'unités", cout_unitaire: "Coût unitaire (M€)",
+            concurrent_note: "💡 Si vous préférez ne pas indiquer vos prix, utilisez ceux d'un concurrent – les crises majeures seront les mêmes.",
+            proto: "Année de prototypage", prod_start: "Début production série", prod_dur: "Durée de production (ans)", self_prod: "Part interne (%)", maint_dur: "Durée de maintenance (ans)",
+            confiance: "Confiance dans votre chiffrage (0=incertain, 10=confiant)", retards: "Retards estimés",
+            crise_impact: "Impact probable d'une crise majeure (approvisionnement, douanes, guerre, matières premières)",
+            tech_gain: "Potentiel de gains technologiques",
+            eco_echelle: "Potentiel d'économies d'échelle",
+            qualitatif: ["Très faible", "Faible", "Modéré", "Élevé", "Très élevé"],
+            retards_opt: ["Aucun", "Quelques mois", "Plus d'un an"],
+            nom: "Nom", organisation: "Organisation", email: "Email", telephone: "Téléphone",
+            contact_title: "🔐 Sauvegarder cette configuration",
+            contact_sub: "En renseignant vos coordonnées, vous pourrez retrouver cette simulation plus tard et recevoir un récapitulatif par email.",
+            contact_note: "",
+            btn_next: "Continuer", btn_prev: "Retour", btn_launch: "Lancer la simulation",
+            expertise_msg: "Cette simulation est indicative. Pour un coefficient précis, calibré sur 125 ans de crises réelles (guerres, pandémies, chocs pétroliers) et adapté à votre entreprise, <strong>contactez Saju</strong>."
+        },
+        en: {
+            step0_title: "Contract context", step0_sub: "Sector, product, geography, volume",
+            step0_ctx: "Energy, labor and raw materials weight differently by sector and product.",
+            step1_title: "Production & support", step1_sub: "Schedule, internalization, maintenance",
+            step1_ctx: "Production and support phases define the revision formula structure.",
+            step2_title: "Risks & opportunities", step2_sub: "Your perception of uncertainty",
+            step2_ctx: "These questions help calibrate your multiplier coefficient.",
+            step3_title: "Summary & save", step3_sub: "Review your answers",
+            step3_ctx: "You can go back to modify.",
+            step4_title: "Simulation", step4_sub: "Your configuration is ready",
+            step4_ctx: "This simulator gives you an order of magnitude. For an exact coefficient, Saju analyzes 125 years of data.",
+            role: "Your role", role_autre: "Other (specify)",
+            secteur: "Sector", produit: "Product", pays: "Country", devise: "Currency",
+            duree: "Total duration (years)", nb_unites: "Number of units", cout_unitaire: "Unit cost (M€)",
+            concurrent_note: "💡 If you prefer not to disclose your prices, use a competitor's – major crises will be the same.",
+            proto: "Prototyping year", prod_start: "Series production start", prod_dur: "Production duration (years)", self_prod: "In-house share (%)", maint_dur: "Maintenance duration (years)",
+            confiance: "Confidence in your costing (0=uncertain, 10=confident)", retards: "Estimated delays",
+            crise_impact: "Likely impact of a major crisis (supply, tariffs, war, raw materials)",
+            tech_gain: "Potential technology gains",
+            eco_echelle: "Potential economies of scale",
+            qualitatif: ["Very low", "Low", "Moderate", "High", "Very high"],
+            retards_opt: ["None", "A few months", "More than a year"],
+            nom: "Name", organisation: "Organization", email: "Email", telephone: "Phone",
+            contact_title: "🔐 Save this configuration",
+            contact_sub: "By providing your contact details, you can retrieve this simulation later and receive a summary by email.",
+            contact_note: "",
+            btn_next: "Next", btn_prev: "Back", btn_launch: "Run simulation",
+            expertise_msg: "This simulation is indicative. For an exact coefficient, calibrated on 125 years of real crises (wars, pandemics, oil shocks) and tailored to your business, <strong>contact Saju</strong>."
+        }
+    };
+
+    let currentLang = 'fr';
+    function t(key) { return translations[currentLang][key] || key; }
+
+    function setLang(l) {
+        currentLang = l;
+        localStorage.setItem('saju_lang', l);
+        document.documentElement.lang = l;
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
+        });
+        render();
+    }
+
+    // ===== WIZARD LOGIC =====
+    const rolesList = [
+        "CEO", "CFO", "CPO", "Bid Manager", "Dir. Technique", "Commercial / Sales",
+        "Acheteur Public", "Banquier / Prêteur", "Actionnaire / Investisseur",
+        "Fonds de pension", "Analyste / Agence de notation", "Citoyen / Contribuable",
+        "Contrôleur financier / CPM", "Offre Controller", "Autre"
+    ];
+
+    // Messages marketing personnalisés selon le rôle (démarrent à l'étape 2)
+    const roleMessages = {
+        CEO: { step2: "🎯 En tant que CEO, la formule de révision impacte directement la valeur du contrat sur 40 ans.", step3: "📊 Vérifiez que tous les paramètres reflètent votre stratégie.", step4: "🔍 Découvrez l'impact sur votre marge à long terme." },
+        CFO: { step2: "💰 La formule de révision est un levier de performance financière sur 40 ans.", step3: "📑 Validez les hypothèses financières.", step4: "💶 Visualisez l'effet sur votre cash-flow." },
+        CPO: { step2: "🏗️ Anticipez les ruptures fournisseurs et les tensions sur les matières premières.", step3: "📦 Revoyez vos hypothèses d'approvisionnement.", step4: "🚀 Obtenez une formule qui sécurise vos approvisionnements." },
+        "Bid Manager": { step2: "⚡ Intégrez les risques dans votre pricing pour être compétitif et rentable.", step3: "✅ Vérifiez la cohérence de votre offre.", step4: "🏆 Lancez la simulation et préparez votre BAFO." },
+        "Dir. Technique": { step2: "🤖 Les gains technologiques modèrent la hausse des prix.", step3: "📐 Ajustez vos hypothèses techniques.", step4: "⚙️ Découvrez la trajectoire de coût la plus réaliste." },
+        "Commercial / Sales": { step2: "🛡️ Rassurez le client sur la maîtrise des coûts futurs.", step3: "📊 Présentez une offre solide.", step4: "📈 Visualisez l'avantage concurrentiel de votre formule." },
+        default: { step2: "⚠️ Évaluez les risques.", step3: "✅ Récapitulez.", step4: "🚀 Lancez la simulation." }
+    };
+
+    const steps = [
+        { name: "Contexte", titleKey: "step0_title", subKey: "step0_sub", ctxKey: "step0_ctx",
+          fields: [
+            { id:"role", labelKey:"role", type:"select", options:rolesList, full:false },
+            { id:"role_autre", labelKey:"role_autre", type:"text", full:false, depends:{field:"role",value:"Autre"} },
+            { id:"secteur", labelKey:"secteur", type:"select", options:Object.keys(sectorProducts), full:true, onchange:"updateProducts" },
+            { id:"produit", labelKey:"produit", type:"select", options:sectorProducts["Ferroviaire & mobilité"], full:true, onchange:"updateSectorFromProduct" },
+            { id:"pays", labelKey:"pays", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false },
+            { id:"devise", labelKey:"devise", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false },
+            { id:"duree", labelKey:"duree", type:"range", min:3, max:60, value:15, unit:" ans", full:true },
+            { id:"nb_unites", labelKey:"nb_unites", type:"number", min:1, max:100000, value:100, full:false },
+            { id:"cout_unitaire", labelKey:"cout_unitaire", type:"number", min:0.1, max:1000, step:0.1, value:5, full:false, unit:" M€" }
+          ] },
+        { name: "Production", titleKey: "step1_title", subKey: "step1_sub", ctxKey: "step1_ctx",
+          fields: [
+            { id:"proto", labelKey:"proto", type:"range", min:2024, max:2032, value:2025, unit:"", full:false },
+            { id:"prod_start", labelKey:"prod_start", type:"range", min:2025, max:2035, value:2027, unit:"", full:false },
+            { id:"prod_dur", labelKey:"prod_dur", type:"range", min:1, max:40, value:8, unit:" ans", full:false },
+            { id:"self_prod", labelKey:"self_prod", type:"range", min:0, max:100, value:40, unit:"%", full:false },
+            { id:"maint_dur", labelKey:"maint_dur", type:"range", min:0, max:60, value:15, unit:" ans", full:true }
+          ] },
+        { name: "Risques", titleKey: "step2_title", subKey: "step2_sub", ctxKey: "step2_ctx",
+          fields: [
+            { id:"confiance", labelKey:"confiance", type:"range", min:0, max:10, value:5, unit:"/10", full:true },
+            { id:"retards", labelKey:"retards", type:"select", options:t('retards_opt'), full:false },
+            { id:"crise_impact", labelKey:"crise_impact", type:"qualitative", options:t('qualitatif'), full:true },
+            { id:"tech_gain", labelKey:"tech_gain", type:"qualitative", options:t('qualitatif'), full:true },
+            { id:"eco_echelle", labelKey:"eco_echelle", type:"qualitative", options:t('qualitatif'), full:true }
+          ] },
+        { name: "Récap", titleKey: "step3_title", subKey: "step3_sub", ctxKey: "step3_ctx", fields: [] },
+        { name: "Simulation", titleKey: "step4_title", subKey: "step4_sub", ctxKey: "step4_ctx", fields: [] }
+    ];
+
+    let currentStep = 0;
+    let wizardData = {};
+
+    // Mise à jour des produits en fonction du secteur
+    function updateProducts() {
+        const secteur = wizardData.secteur;
+        const productSelect = document.querySelector('#fieldsArea select[id$="produit"]');
+        if (productSelect && secteur && sectorProducts[secteur]) {
+            const currentVal = wizardData.produit;
+            productSelect.innerHTML = '';
+            sectorProducts[secteur].forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                if (currentVal === p) opt.selected = true;
+                productSelect.appendChild(opt);
+            });
+            if (!currentVal && sectorProducts[secteur].length) {
+                wizardData.produit = sectorProducts[secteur][0];
+                productSelect.value = wizardData.produit;
+            }
+        }
+    }
+
+    // Mise à jour du secteur en fonction du produit
+    function updateSectorFromProduct() {
+        const produit = wizardData.produit;
+        const sector = productToSector[produit];
+        if (sector && wizardData.secteur !== sector) {
+            wizardData.secteur = sector;
+            const sectorSelect = document.querySelector('#fieldsArea select[id$="secteur"]');
+            if (sectorSelect) sectorSelect.value = sector;
+            updateProducts(); // pour rafraîchir la liste des produits (au cas où)
+        }
+    }
+
+    function renderLeft() {
+        const list = document.getElementById('stepList');
+        list.innerHTML = '';
+        steps.forEach((s, i) => {
+            const li = document.createElement('li');
+            li.className = `step-item ${i === currentStep ? 'active' : (i < currentStep ? 'done' : '')}`;
+            li.onclick = () => { if (i <= currentStep) { currentStep = i; render(); } };
+            li.innerHTML = `<div class="step-num">${i < currentStep ? '✓' : i+1}</div><div class="step-info"><div class="step-name">${s.name}</div></div>`;
+            list.appendChild(li);
+        });
+    }
+
+    function renderDots() {
+        const dots = document.getElementById('dots');
+        dots.innerHTML = '';
+        steps.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = `dot ${i === currentStep ? 'active' : (i < currentStep ? 'done' : '')}`;
+            dots.appendChild(dot);
+        });
+    }
+
+    // Mise à jour du titre principal en fonction de l'étape et du rôle
+    function updateMainTitle() {
+        const titleEl = document.getElementById('mainTitle');
+        const subEl = document.getElementById('mainSub');
+        if (currentStep === 0) {
+            titleEl.innerHTML = 'Affinez votre contrat <em>long terme</em>';
+            subEl.textContent = 'Ce simulateur vous donne un ordre de grandeur. Pour un coefficient exact, Saju analyse 125 ans de données.';
+        } else if (currentStep === 1) {
+            titleEl.innerHTML = 'Planifiez votre <em>production</em>';
+            subEl.textContent = 'Les phases de production et de support définissent la structure de la formule de révision.';
+        } else if (currentStep === 2) {
+            titleEl.innerHTML = 'Évaluez les <em>risques et opportunités</em>';
+            subEl.textContent = 'Votre perception face à l’incertain nous aide à calibrer votre coefficient.';
+        } else if (currentStep === 3) {
+            titleEl.innerHTML = 'Récapitulatif & <em>sauvegarde</em>';
+            subEl.textContent = 'Vérifiez vos réponses et sauvegardez votre profil pour le retrouver plus tard.';
+        } else if (currentStep === 4) {
+            titleEl.innerHTML = 'Votre <em>simulation</em> est prête';
+            subEl.textContent = 'Ce simulateur vous donne un ordre de grandeur. Pour un coefficient exact, Saju analyse 125 ans de données.';
+        }
+    }
+
+    function buildParamsForSim() {
+        const params = {};
+        const sectorMap = {
+            "Ferroviaire & mobilité": "rail",
+            "Pharmacie & santé": "med",
+            "Nucléaire & énergie": "nuke",
+            "Automobile & aérospatial": "aero",
+            "Défense": "def",
+            "Robotique & automatisation": "telco",
+            "Naval & maritime": "navcom",
+            "Banque & assurance": "med",
+            "Travaux & maintenance": "infra",
+            "Import-export": "navcom",
+            "Autre": "def"
+        };
+        if (wizardData.secteur) params.sector = sectorMap[wizardData.secteur] || "rail";
+        const productMap = {
+            "Locomotive": "loco", "EMU (Rame automoteur)": "emu", "Metro": "metro", "Tram/LRV": "tram", "Signalisation": "signal",
+            "IRM": "mri", "Scanner": "mri", "Protonthérapie": "proton",
+            "Réacteur": "reactor", "SMR": "smr", "Turbine à gaz": "gasturb", "CCGT": "ccgt",
+            "Aircraft": "aircraft", "Moteur d'avion": "engine",
+            "Chasseur": "fighter", "Hélicoptère": "heli", "Drone": "uav", "Satellite": "sat", "Radar": "radar",
+            "Data Center": "dc", "Robot industriel": "robot",
+            "Pétrolier": "tanker", "LNG Carrier": "lng", "Porte-conteneurs": "container", "FPSO": "fpso", "Plateforme": "platform",
+            "Pont": "bridge", "Tunnel": "tunnel", "Barrage": "dam", "Terminal": "terminal", "Grue/Écluse": "crane"
+        };
+        if (wizardData.produit) params.product = productMap[wizardData.produit] || "loco";
+        if (wizardData.duree) params.prodDur = wizardData.duree;
+        if (wizardData.maint_dur) params.maintDur = wizardData.maint_dur;
+        if (wizardData.self_prod) params.selfProd = wizardData.self_prod;
+        if (wizardData.nb_unites) params.totalUnits = wizardData.nb_unites;
+        if (wizardData.cout_unitaire) params.unitPrice = wizardData.cout_unitaire;
+        if (wizardData.devise && wizardData.devise !== 'EUR') params.cur = wizardData.devise;
+        if (wizardData.prod_start) params.prodStart = (wizardData.prod_start - 2027) * 52;
+        if (wizardData.proto) params.protoDur = wizardData.proto - 2024;
+        return params;
+    }
+
+    function launchSimulation() {
+        const params = buildParamsForSim();
+        localStorage.setItem('wizard_params', JSON.stringify(params));
+        window.location.href = 'sim.html';
+    }
+
+    function renderRight() {
+        const s = steps[currentStep];
+        // Message contextuel personnalisé selon le rôle (uniquement à partir de l'étape 2)
+        let contextText = t(s.ctxKey);
+        if (currentStep >= 2 && wizardData.role && wizardData.role !== 'default') {
+            const roleKey = wizardData.role;
+            const msgSet = roleMessages[roleKey] || roleMessages.default;
+            const stepKey = `step${currentStep}`;
+            if (msgSet[stepKey]) {
+                contextText = `<strong>${msgSet[stepKey]}</strong>`;
+            }
+        }
+        document.getElementById('ctxText').innerHTML = contextText;
+        document.getElementById('stepTitle').textContent = t(s.titleKey);
+        document.getElementById('stepSub').textContent = t(s.subKey);
+        document.getElementById('btnPrev').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+        document.getElementById('btnLabel').textContent = currentStep === steps.length-1 ? t('btn_launch') : t('btn_next');
+
+        const area = document.getElementById('fieldsArea');
+        area.innerHTML = '';
+
+        if (currentStep === steps.length-2) {
+            // Récapitulatif + coordonnées
+            const grid = document.createElement('div');
+            grid.className = 'summary-grid';
+            const labelsMap = {
+                role: "Rôle", role_autre: "Autre rôle", secteur: "Secteur", produit: "Produit", pays: "Pays", devise: "Devise",
+                duree: "Durée (ans)", nb_unites: "Nb unités", cout_unitaire: "Coût unitaire (M€)",
+                proto: "Prototypage", prod_start: "Début prod", prod_dur: "Durée prod (ans)",
+                self_prod: "Part interne (%)", maint_dur: "Durée maintenance (ans)",
+                confiance: "Confiance (/10)", retards: "Retards", crise_impact: "Impact crise",
+                tech_gain: "Gains techno", eco_echelle: "Économies d'échelle"
+            };
+            Object.entries(labelsMap).forEach(([k, lbl]) => {
+                let val = wizardData[k];
+                if (val !== undefined && val !== '') {
+                    if (k === 'duree' || k === 'prod_dur' || k === 'maint_dur') val += ' ans';
+                    if (k === 'self_prod') val += '%';
+                    if (k === 'cout_unitaire') val = val + ' M€';
+                    if (k === 'confiance') val = val + '/10';
+                    const item = document.createElement('div');
+                    item.className = 'sum-item';
+                    item.innerHTML = `<div class="sum-lbl">${lbl}</div><div class="sum-val">${val}</div>`;
+                    grid.appendChild(item);
+                }
+            });
+            area.appendChild(grid);
+            const contactDiv = document.createElement('div');
+            contactDiv.className = 'contact-section';
+            contactDiv.innerHTML = `
+                <h4>${t('contact_title')}</h4>
+                <p style="font-size:0.75rem; margin-bottom:0.8rem;">${t('contact_sub')}</p>
+                <div class="field-row">
+                    <div class="field"><label>${t('nom')}</label><input type="text" id="contact_nom" value="${wizardData.contact_nom || ''}"></div>
+                    <div class="field"><label>${t('organisation')}</label><input type="text" id="contact_org" value="${wizardData.contact_org || ''}"></div>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>${t('email')}</label><input type="email" id="contact_email" value="${wizardData.contact_email || ''}"></div>
+                    <div class="field"><label>${t('telephone')}</label><input type="tel" id="contact_phone" value="${wizardData.contact_phone || ''}"></div>
+                </div>
+                <div class="contact-note">${t('contact_note')}</div>
+            `;
+            area.appendChild(contactDiv);
+            const btn = document.createElement('button');
+            btn.className = 'launch-btn';
+            btn.textContent = t('btn_launch');
+            btn.onclick = () => {
+                wizardData.contact_nom = document.getElementById('contact_nom').value;
+                wizardData.contact_org = document.getElementById('contact_org').value;
+                wizardData.contact_email = document.getElementById('contact_email').value;
+                wizardData.contact_phone = document.getElementById('contact_phone').value;
+                if (wizardData.contact_email) {
+                    localStorage.setItem('saju_saved_profile_' + wizardData.contact_email, JSON.stringify(wizardData));
+                }
+                launchSimulation();
+            };
+            area.appendChild(btn);
+            document.getElementById('btnNext').style.display = 'none';
+            return;
+        }
+        if (currentStep === steps.length-1) {
+            const expertDiv = document.createElement('div');
+            expertDiv.className = 'expertise-message';
+            expertDiv.innerHTML = t('expertise_msg');
+            area.appendChild(expertDiv);
+            const relaunchBtn = document.createElement('button');
+            relaunchBtn.className = 'launch-btn';
+            relaunchBtn.textContent = t('btn_launch');
+            relaunchBtn.onclick = () => launchSimulation();
+            area.appendChild(relaunchBtn);
+            document.getElementById('btnNext').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('btnNext').style.display = 'flex';
+        const fields = s.fields;
+        const rows = [];
+        let i = 0;
+        while (i < fields.length) {
+            const f = fields[i];
+            if (f.full) { rows.push([f]); i++; }
+            else if (fields[i+1] && !fields[i+1].full) { rows.push([f, fields[i+1]]); i+=2; }
+            else { rows.push([f]); i++; }
+        }
+        rows.forEach(row => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = row.length === 2 ? 'field-row' : '';
+            row.forEach(f => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'field';
+                const labelSpan = document.createElement('label');
+                labelSpan.innerHTML = `${t(f.labelKey)} ${f.helpKey ? `<span class="help-icon" data-help="${t(f.helpKey)}">?</span>` : ''}`;
+                fieldDiv.appendChild(labelSpan);
+                if (f.type === 'range') {
+                    const rangeRow = document.createElement('div');
+                    rangeRow.className = 'range-row';
+                    const input = document.createElement('input');
+                    input.type = 'range';
+                    input.min = f.min;
+                    input.max = f.max;
+                    input.value = wizardData[f.id] !== undefined ? wizardData[f.id] : f.value;
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'range-val';
+                    valueSpan.textContent = input.value + (f.unit || '');
+                    input.oninput = () => {
+                        wizardData[f.id] = parseFloat(input.value);
+                        valueSpan.textContent = wizardData[f.id] + (f.unit || '');
+                    };
+                    rangeRow.appendChild(input);
+                    rangeRow.appendChild(valueSpan);
+                    fieldDiv.appendChild(rangeRow);
+                    if (wizardData[f.id] === undefined) wizardData[f.id] = f.value;
+                } else if (f.type === 'select') {
+                    const select = document.createElement('select');
+                    f.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        if (wizardData[f.id] === opt) option.selected = true;
+                        select.appendChild(option);
+                    });
+                    select.onchange = () => {
+                        wizardData[f.id] = select.value;
+                        if (f.id === 'secteur') {
+                            if (!wizardData.produit || !sectorProducts[wizardData.secteur].includes(wizardData.produit)) {
+                                wizardData.produit = sectorProducts[wizardData.secteur][0];
+                            }
+                            updateProducts();
+                            render();
+                        } else if (f.id === 'produit') {
+                            updateSectorFromProduct();
+                            render();
+                        }
+                    };
+                    if (!wizardData[f.id]) wizardData[f.id] = f.options[0];
+                    select.value = wizardData[f.id];
+                    fieldDiv.appendChild(select);
+                } else if (f.type === 'qualitative') {
+                    const select = document.createElement('select');
+                    select.className = 'qualitative-select';
+                    f.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        if (wizardData[f.id] === opt) option.selected = true;
+                        select.appendChild(option);
+                    });
+                    select.onchange = () => { wizardData[f.id] = select.value; };
+                    if (!wizardData[f.id]) wizardData[f.id] = f.options[2];
+                    select.value = wizardData[f.id];
+                    fieldDiv.appendChild(select);
+                } else if (f.type === 'number') {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = f.step || 1;
+                    input.min = f.min;
+                    input.max = f.max;
+                    input.value = wizardData[f.id] !== undefined ? wizardData[f.id] : f.value;
+                    input.oninput = () => { wizardData[f.id] = parseFloat(input.value); };
+                    fieldDiv.appendChild(input);
+                    if (wizardData[f.id] === undefined) wizardData[f.id] = f.value;
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = wizardData[f.id] || '';
+                    input.oninput = () => { wizardData[f.id] = input.value; };
+                    fieldDiv.appendChild(input);
+                }
+                if (f.depends && wizardData[f.depends.field] !== f.depends.value) fieldDiv.style.display = 'none';
+                rowDiv.appendChild(fieldDiv);
+            });
+            area.appendChild(rowDiv);
+        });
+        if (currentStep === 0) {
+            const note = document.createElement('div');
+            note.className = 'concurrent-note';
+            note.textContent = t('concurrent_note');
+            area.appendChild(note);
+        }
+        const roleSelect = area.querySelector('select[id$="role"]');
+        if (roleSelect) {
+            roleSelect.addEventListener('change', () => {
+                wizardData.role = roleSelect.value;
+                const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
+                if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
+                render(); // pour rafraîchir le message contextuel
+            });
+            const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
+            if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
+        }
+    }
+
+    function render() {
+        renderLeft();
+        renderDots();
+        renderRight();
+        updateMainTitle();
+    }
+
+    function go(dir) {
+        if (dir === 1 && currentStep === steps.length-1) {
+            launchSimulation();
+            return;
+        }
+        currentStep = Math.max(0, Math.min(steps.length-1, currentStep + dir));
+        render();
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => go(-1));
+    document.getElementById('btnNext').addEventListener('click', () => go(1));
+
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('v'); });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+
+    window.addEventListener('load', () => {
+        const savedLang = localStorage.getItem('saju_lang');
+        if (savedLang && (savedLang === 'fr' || savedLang === 'en')) currentLang = savedLang;
+        else currentLang = 'fr';
+        setLang(currentLang);
+        // Valeurs par défaut
+        wizardData.role = rolesList[0];
+        wizardData.secteur = Object.keys(sectorProducts)[0];
+        wizardData.produit = sectorProducts[wizardData.secteur][0];
+        wizardData.duree = 15;
+        wizardData.prod_dur = 8;
+        wizardData.maint_dur = 15;
+        wizardData.self_prod = 40;
+        wizardData.confiance = 5;
+        wizardData.retards = t('retards_opt')[0];
+        wizardData.crise_impact = t('qualitatif')[2];
+        wizardData.tech_gain = t('qualitatif')[2];
+        wizardData.eco_echelle = t('qualitatif')[2];
+        render();
+    });
+</script>
+</body>
+</html>
