@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== VARIABLES SITE SAJU ===== */
+        /* (styles identiques à la version précédente, inchangés) */
         :root {
             --black:#0f1117; --card:#171b24; --card2:#1e2330; --border:rgba(255,255,255,0.13);
             --rouge:#c0392b; --rouge-vif:#d94030; --bordeaux:#7a1f1a;
@@ -34,8 +34,6 @@
         img{max-width:100%;height:auto;display:block}
         a{color:inherit;text-decoration:none}
         .container{max-width:1160px;margin:0 auto;padding:0 clamp(20px,5vw,52px);position:relative;z-index:1}
-
-        /* ===== HEADER ===== */
         .lang-bar{
             position:fixed;top:0;left:0;right:0;z-index:9999;
             background:rgba(0,0,0,0.97);border-bottom:1px solid var(--border);
@@ -94,8 +92,6 @@
         .btn-ghost{background:transparent;color:var(--blanc-dim);border:1px solid var(--border);}
         .btn-ghost:hover{border-color:var(--or-b);color:var(--or-p);}
         .btn-or{background:var(--or);color:#000;}.btn-or:hover{background:var(--or-p);}
-
-        /* ===== WIZARD ===== */
         .wizard-wrapper{
             display:grid;
             grid-template-columns:300px 1fr;
@@ -163,8 +159,6 @@
             color:var(--blanc-dim);
         }
         .wizard-stats strong{color:var(--or-p);}
-
-        /* Panneau droit */
         .wizard-form{
             padding:2rem 2rem;
             background:var(--card);
@@ -375,7 +369,6 @@
         .footer-copy{font-size:0.72rem;color:rgba(255,255,255,.3);}
         .footer-links{display:flex;gap:12px;}
         .footer-links a{font-size:0.72rem;color:rgba(255,255,255,.35);}
-
         @media (max-width:800px){
             .wizard-wrapper{grid-template-columns:1fr;}
             .wizard-steps{border-right:none;border-bottom:1px solid var(--border);padding:1rem;}
@@ -482,7 +475,6 @@
 </footer>
 
 <script>
-    // ===== MENU MOBILE =====
     function toggleMobileMenu() {
         document.getElementById('mobileMenu').classList.toggle('open');
     }
@@ -493,7 +485,7 @@
         }
     });
 
-    // ===== DONNÉES SECTEURS ET PRODUITS (mapping bidirectionnel) =====
+    // ========== DONNÉES SECTEURS ET PRODUITS (identiques à sim.html) ==========
     const sectorProducts = {
         "Ferroviaire & mobilité": ["Locomotive", "EMU (Rame automoteur)", "Metro", "Tram/LRV", "Signalisation"],
         "Pharmacie & santé": ["IRM", "Scanner", "Protonthérapie", "Équipement de laboratoire"],
@@ -507,12 +499,13 @@
         "Import-export": ["Conteneur", "Système logistique", "Camion"],
         "Autre": ["Produit personnalisé"]
     };
+    // Mapping produit -> secteur (inverse)
     const productToSector = {};
     Object.entries(sectorProducts).forEach(([sector, products]) => {
         products.forEach(product => { productToSector[product] = sector; });
     });
 
-    // ===== TRADUCTIONS (FR/EN) =====
+    // ========== TRADUCTIONS (FR/EN) ==========
     const translations = {
         fr: {
             step0_title: "Contexte du contrat", step0_sub: "Secteur, produit, géographie, volume",
@@ -616,8 +609,8 @@
           fields: [
             { id:"role", labelKey:"role", type:"select", options:rolesList, full:false },
             { id:"role_autre", labelKey:"role_autre", type:"text", full:false, depends:{field:"role",value:"Autre"} },
-            { id:"secteur", labelKey:"secteur", type:"select", options:Object.keys(sectorProducts), full:true, onchange:"updateProducts" },
-            { id:"produit", labelKey:"produit", type:"select", options:sectorProducts["Ferroviaire & mobilité"], full:true, onchange:"updateSectorFromProduct" },
+            { id:"secteur", labelKey:"secteur", type:"select", options:Object.keys(sectorProducts), full:true },
+            { id:"produit", labelKey:"produit", type:"select", options:sectorProducts["Ferroviaire & mobilité"], full:true },
             { id:"pays", labelKey:"pays", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false },
             { id:"devise", labelKey:"devise", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false },
             { id:"duree", labelKey:"duree", type:"range", min:3, max:60, value:15, unit:" ans", full:true },
@@ -648,34 +641,85 @@
     let currentStep = 0;
     let wizardData = {};
 
-    function updateProducts() {
-        const secteur = wizardData.secteur;
+    // Fonction pour mettre à jour la liste des produits en fonction du secteur sélectionné
+    function updateProductList(sector) {
         const productSelect = document.querySelector('#fieldsArea select[id$="produit"]');
-        if (productSelect && secteur && sectorProducts[secteur]) {
-            const currentVal = wizardData.produit;
-            productSelect.innerHTML = '';
-            sectorProducts[secteur].forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p;
-                opt.textContent = p;
-                if (currentVal === p) opt.selected = true;
-                productSelect.appendChild(opt);
-            });
-            if (!currentVal && sectorProducts[secteur].length) {
-                wizardData.produit = sectorProducts[secteur][0];
-                productSelect.value = wizardData.produit;
-            }
+        if (!productSelect) return;
+        const products = sectorProducts[sector] || [];
+        const currentProduct = wizardData.produit;
+        productSelect.innerHTML = '';
+        products.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            opt.textContent = p;
+            if (currentProduct === p) opt.selected = true;
+            productSelect.appendChild(opt);
+        });
+        if (products.length > 0 && !currentProduct) {
+            wizardData.produit = products[0];
+            productSelect.value = wizardData.produit;
         }
     }
 
-    function updateSectorFromProduct() {
-        const produit = wizardData.produit;
-        const sector = productToSector[produit];
+    // Fonction pour mettre à jour le secteur en fonction du produit sélectionné
+    function updateSectorFromProduct(product) {
+        const sector = productToSector[product];
         if (sector && wizardData.secteur !== sector) {
             wizardData.secteur = sector;
             const sectorSelect = document.querySelector('#fieldsArea select[id$="secteur"]');
             if (sectorSelect) sectorSelect.value = sector;
-            updateProducts();
+            updateProductList(sector);
+        }
+    }
+
+    // Gestionnaires d'événements pour les selects (à attacher après rendu)
+    function attachSelectHandlers() {
+        const sectorSelect = document.querySelector('#fieldsArea select[id$="secteur"]');
+        const productSelect = document.querySelector('#fieldsArea select[id$="produit"]');
+        if (sectorSelect) {
+            sectorSelect.removeEventListener('change', sectorChangeHandler);
+            sectorSelect.addEventListener('change', sectorChangeHandler);
+        }
+        if (productSelect) {
+            productSelect.removeEventListener('change', productChangeHandler);
+            productSelect.addEventListener('change', productChangeHandler);
+        }
+    }
+
+    function sectorChangeHandler(e) {
+        const newSector = e.target.value;
+        wizardData.secteur = newSector;
+        // Mettre à jour la liste des produits avec le premier produit du secteur
+        const products = sectorProducts[newSector] || [];
+        if (products.length) {
+            wizardData.produit = products[0];
+            const productSelect = document.querySelector('#fieldsArea select[id$="produit"]');
+            if (productSelect) {
+                productSelect.innerHTML = '';
+                products.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.textContent = p;
+                    if (wizardData.produit === p) opt.selected = true;
+                    productSelect.appendChild(opt);
+                });
+            }
+        }
+        // Ne pas re-render complètement pour éviter de perdre les focus, mais mettre à jour l'affichage
+        // On met à jour les champs visuellement
+        const productSelect = document.querySelector('#fieldsArea select[id$="produit"]');
+        if (productSelect) productSelect.value = wizardData.produit;
+    }
+
+    function productChangeHandler(e) {
+        const newProduct = e.target.value;
+        wizardData.produit = newProduct;
+        const sector = productToSector[newProduct];
+        if (sector && wizardData.secteur !== sector) {
+            wizardData.secteur = sector;
+            const sectorSelect = document.querySelector('#fieldsArea select[id$="secteur"]');
+            if (sectorSelect) sectorSelect.value = sector;
+            updateProductList(sector);
         }
     }
 
@@ -787,7 +831,7 @@
         area.innerHTML = '';
 
         if (currentStep === steps.length-2) {
-            // Récapitulatif + coordonnées
+            // Récapitulatif + coordonnées (inchangé)
             const grid = document.createElement('div');
             grid.className = 'summary-grid';
             const labelsMap = {
@@ -912,22 +956,12 @@
                         if (wizardData[f.id] === opt) option.selected = true;
                         select.appendChild(option);
                     });
-                    select.onchange = () => {
-                        wizardData[f.id] = select.value;
-                        if (f.id === 'secteur') {
-                            if (!wizardData.produit || !sectorProducts[wizardData.secteur].includes(wizardData.produit)) {
-                                wizardData.produit = sectorProducts[wizardData.secteur][0];
-                            }
-                            updateProducts();
-                            render();
-                        } else if (f.id === 'produit') {
-                            updateSectorFromProduct();
-                            render();
-                        }
-                    };
-                    if (!wizardData[f.id]) wizardData[f.id] = f.options[0];
-                    select.value = wizardData[f.id];
+                    // On stocke l'id pour le traitement après
+                    const fieldId = f.id;
+                    select.setAttribute('data-field-id', fieldId);
+                    select.value = wizardData[f.id] || f.options[0];
                     fieldDiv.appendChild(select);
+                    // On ne met pas les événements ici, ils seront attachés globalement après le rendu
                 } else if (f.type === 'qualitative') {
                     const select = document.createElement('select');
                     select.className = 'qualitative-select';
@@ -970,13 +1004,47 @@
             note.textContent = t('concurrent_note');
             area.appendChild(note);
         }
-        const roleSelect = area.querySelector('select[id$="role"]');
+
+        // Attacher les événements pour les selects secteur et produit
+        const sectorSelect = area.querySelector('select[data-field-id="secteur"]');
+        const productSelect = area.querySelector('select[data-field-id="produit"]');
+        if (sectorSelect) {
+            sectorSelect.addEventListener('change', (e) => {
+                wizardData.secteur = e.target.value;
+                updateProductList(wizardData.secteur);
+                // Mettre à jour la valeur du produit dans wizardData
+                const newProductSelect = area.querySelector('select[data-field-id="produit"]');
+                if (newProductSelect) {
+                    wizardData.produit = newProductSelect.value;
+                }
+            });
+        }
+        if (productSelect) {
+            productSelect.addEventListener('change', (e) => {
+                const newProduct = e.target.value;
+                wizardData.produit = newProduct;
+                const newSector = productToSector[newProduct];
+                if (newSector && wizardData.secteur !== newSector) {
+                    wizardData.secteur = newSector;
+                    const newSectorSelect = area.querySelector('select[data-field-id="secteur"]');
+                    if (newSectorSelect) newSectorSelect.value = newSector;
+                    updateProductList(newSector);
+                }
+            });
+        }
+        // Initialiser la liste des produits si secteur déjà défini
+        if (wizardData.secteur) {
+            updateProductList(wizardData.secteur);
+        }
+
+        // Gestion du rôle "Autre"
+        const roleSelect = area.querySelector('select[data-field-id="role"]');
         if (roleSelect) {
             roleSelect.addEventListener('change', () => {
                 wizardData.role = roleSelect.value;
                 const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
                 if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
-                render();
+                render(); // pour rafraîchir le message contextuel
             });
             const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
             if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
@@ -1012,6 +1080,7 @@
         if (savedLang && (savedLang === 'fr' || savedLang === 'en')) currentLang = savedLang;
         else currentLang = 'fr';
         setLang(currentLang);
+        // Valeurs par défaut
         wizardData.role = rolesList[0];
         wizardData.secteur = Object.keys(sectorProducts)[0];
         wizardData.produit = sectorProducts[wizardData.secteur][0];
@@ -1022,7 +1091,7 @@
         wizardData.confiance = 5;
         wizardData.retards = t('retards_opt')[0];
         wizardData.crise_impact = t('qualitatif')[2];
-        wizardData.seuil_crise = t('seuil_opts')[1]; // Moyen par défaut
+        wizardData.seuil_crise = t('seuil_opts')[1];
         wizardData.tech_gain = t('qualitatif')[2];
         wizardData.eco_echelle = t('qualitatif')[2];
         render();
