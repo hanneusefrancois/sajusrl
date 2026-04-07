@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saju — Configurateur de simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a18;
+    --ink-muted: #6b6b65;
+    --ink-faint: #a8a89f;
+    --surface: #f7f5f0;
+    --surface-2: #eeeae0;
+    --accent: #1a5c3a;
+    --accent-light: #e8f2ec;
+    --accent-mid: #2d8a58;
+    --gold: #b8962e;
+    --border: rgba(26,26,24,0.10);
+    --radius: 12px;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: ‘DM Sans’, sans-serif;
+background: var(–surface);
+color: var(–ink);
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 1.25rem 2.5rem;
+border-bottom: 0.5px solid var(–border);
+background: var(–surface);
+}
+
+.logo {
+font-family: ‘DM Serif Display’, serif;
+font-size: 1.35rem;
+color: var(–ink);
+letter-spacing: -0.01em;
+}
+
+.logo span {
+color: var(–accent);
+}
+
+.header-tag {
+font-size: 11px;
+font-weight: 500;
+letter-spacing: .08em;
+text-transform: uppercase;
+color: var(–ink-faint);
+}
+
+/* ── Main layout ── */
+main {
+flex: 1;
+display: grid;
+grid-template-columns: 340px 1fr;
+min-height: calc(100vh - 65px);
+}
+
+/* ── Left panel ── */
+.left {
+background: var(–ink);
+color: #fff;
+padding: 3rem 2.5rem;
+display: flex;
+flex-direction: column;
+position: relative;
+overflow: hidden;
+}
+
+.left::before {
+content: ‘茶寿’;
+position: absolute;
+bottom: -20px;
+right: -30px;
+font-family: ‘DM Serif Display’, serif;
+font-size: 9rem;
+color: rgba(255,255,255,0.04);
+line-height: 1;
+pointer-events: none;
+}
+
+.left-title {
+font-family: ‘DM Serif Display’, serif;
+font-size: 1.75rem;
+line-height: 1.25;
+margin-bottom: .75rem;
+color: #fff;
+}
+
+.left-title em {
+color: #6fcf97;
+font-style: italic;
+}
+
+.left-sub {
+font-size: 13px;
+color: rgba(255,255,255,0.5);
+line-height: 1.6;
+margin-bottom: 2.5rem;
+}
+
+/* Steps list */
+.steps {
+list-style: none;
+flex: 1;
+display: flex;
+flex-direction: column;
+gap: 0;
+}
+
+.step-item {
+display: flex;
+align-items: flex-start;
+gap: 1rem;
+padding: 1rem 0;
+border-bottom: 0.5px solid rgba(255,255,255,0.08);
+cursor: pointer;
+transition: opacity .2s;
+opacity: 0.45;
+}
+
+.step-item:last-child { border-bottom: none; }
+.step-item.active { opacity: 1; }
+.step-item.done { opacity: 0.7; }
+
+.step-num {
+width: 28px;
+height: 28px;
+border-radius: 50%;
+border: 0.5px solid rgba(255,255,255,0.2);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 11px;
+font-weight: 500;
+flex-shrink: 0;
+color: rgba(255,255,255,0.5);
+transition: all .2s;
+}
+
+.step-item.active .step-num {
+background: #6fcf97;
+border-color: #6fcf97;
+color: var(–ink);
+font-weight: 600;
+}
+
+.step-item.done .step-num {
+background: rgba(111,207,151,0.2);
+border-color: rgba(111,207,151,0.4);
+color: #6fcf97;
+}
+
+.step-info { flex: 1; }
+
+.step-name {
+font-size: 13px;
+font-weight: 500;
+color: #fff;
+margin-bottom: 2px;
+}
+
+.step-desc {
+font-size: 11px;
+color: rgba(255,255,255,0.4);
+line-height: 1.4;
+}
+
+.step-item.active .step-desc { color: rgba(255,255,255,0.6); }
+
+/* Stats bottom */
+.left-stats {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: .75rem;
+margin-top: 2rem;
+}
+
+.stat {
+background: rgba(255,255,255,0.05);
+border-radius: 8px;
+padding: .75rem;
+border: 0.5px solid rgba(255,255,255,0.08);
+}
+
+.stat-val {
+font-family: ‘DM Serif Display’, serif;
+font-size: 1.4rem;
+color: #6fcf97;
+line-height: 1;
+margin-bottom: 2px;
+}
+
+.stat-lbl {
+font-size: 10px;
+color: rgba(255,255,255,0.35);
+text-transform: uppercase;
+letter-spacing: .06em;
+}
+
+/* ── Right panel ── */
+.right {
+padding: 3rem 3.5rem;
+display: flex;
+flex-direction: column;
+max-width: 620px;
+}
+
+/* Context message */
+.context-msg {
+display: flex;
+gap: 1rem;
+align-items: flex-start;
+background: var(–accent-light);
+border: 0.5px solid rgba(26,92,58,0.15);
+border-radius: var(–radius);
+padding: 1rem 1.25rem;
+margin-bottom: 2rem;
+animation: fadeSlide .35s ease;
+}
+
+@keyframes fadeSlide {
+from { opacity: 0; transform: translateY(-8px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+.context-icon {
+width: 32px;
+height: 32px;
+background: var(–accent);
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+color: #fff;
+font-size: 14px;
+}
+
+.context-text {
+font-size: 13px;
+color: var(–accent);
+line-height: 1.6;
+}
+
+.context-text strong {
+font-weight: 500;
+display: block;
+margin-bottom: 2px;
+color: var(–ink);
+}
+
+/* Step title */
+.step-title {
+font-family: ‘DM Serif Display’, serif;
+font-size: 2rem;
+color: var(–ink);
+margin-bottom: .4rem;
+line-height: 1.15;
+animation: fadeSlide .3s ease;
+}
+
+.step-subtitle {
+font-size: 13px;
+color: var(–ink-muted);
+margin-bottom: 2rem;
+animation: fadeSlide .35s ease;
+}
+
+/* Fields */
+.fields {
+display: flex;
+flex-direction: column;
+gap: 1.25rem;
+flex: 1;
+animation: fadeSlide .4s ease;
+}
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.field label {
+font-size: 12px;
+font-weight: 500;
+color: var(–ink-muted);
+text-transform: uppercase;
+letter-spacing: .06em;
+}
+
+.field input,
+.field select {
+font-family: ‘DM Sans’, sans-serif;
+font-size: 14px;
+color: var(–ink);
+background: #fff;
+border: 0.5px solid var(–border);
+border-radius: 8px;
+padding: .7rem 1rem;
+outline: none;
+transition: border-color .15s, box-shadow .15s;
+appearance: none;
+-webkit-appearance: none;
+}
+
+.field input:focus,
+.field select:focus {
+border-color: var(–accent-mid);
+box-shadow: 0 0 0 3px rgba(45,138,88,0.1);
+}
+
+.field-hint {
+font-size: 11px;
+color: var(–ink-faint);
+line-height: 1.4;
+}
+
+/* Range slider */
+.range-row {
+display: flex;
+align-items: center;
+gap: 1rem;
+}
+
+.range-row input[type=range] {
+flex: 1;
+-webkit-appearance: none;
+appearance: none;
+height: 3px;
+background: var(–surface-2);
+border-radius: 2px;
+border: none;
+padding: 0;
+box-shadow: none;
+outline: none;
+}
+
+.range-row input[type=range]::-webkit-slider-thumb {
+-webkit-appearance: none;
+width: 18px;
+height: 18px;
+background: var(–accent);
+border-radius: 50%;
+cursor: pointer;
+border: 2px solid #fff;
+box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.range-val {
+font-family: ‘DM Serif Display’, serif;
+font-size: 1.1rem;
+color: var(–accent);
+min-width: 56px;
+text-align: right;
+}
+
+/* Navigation */
+.nav {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-top: 2rem;
+padding-top: 1.5rem;
+border-top: 0.5px solid var(–border);
+}
+
+.btn-ghost {
+font-family: ‘DM Sans’, sans-serif;
+font-size: 13px;
+font-weight: 500;
+color: var(–ink-muted);
+background: none;
+border: 0.5px solid var(–border);
+border-radius: 8px;
+padding: .6rem 1.25rem;
+cursor: pointer;
+transition: all .15s;
+}
+
+.btn-ghost:hover {
+background: var(–surface-2);
+color: var(–ink);
+}
+
+.btn-primary {
+font-family: ‘DM Sans’, sans-serif;
+font-size: 13px;
+font-weight: 500;
+color: #fff;
+background: var(–accent);
+border: none;
+border-radius: 8px;
+padding: .7rem 1.75rem;
+cursor: pointer;
+transition: all .15s;
+display: flex;
+align-items: center;
+gap: .5rem;
+}
+
+.btn-primary:hover { background: var(–accent-mid); }
+
+.progress-dots {
+display: flex;
+gap: 6px;
+align-items: center;
+}
+
+.dot {
+width: 6px;
+height: 6px;
+border-radius: 50%;
+background: var(–surface-2);
+transition: all .2s;
+}
+
+.dot.active {
+background: var(–accent);
+width: 20px;
+border-radius: 3px;
+}
+
+.dot.done { background: var(–accent-mid); opacity: .4; }
+
+/* Summary */
+.summary-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: .75rem;
+margin-bottom: 1.5rem;
+}
+
+.sum-item {
+background: #fff;
+border: 0.5px solid var(–border);
+border-radius: 10px;
+padding: .9rem 1rem;
+}
+
+.sum-lbl {
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: .07em;
+color: var(–ink-faint);
+margin-bottom: 4px;
+}
+
+.sum-val {
+font-size: 14px;
+font-weight: 500;
+color: var(–ink);
+}
+
+.launch-btn {
+width: 100%;
+font-family: ‘DM Serif Display’, serif;
+font-size: 1.1rem;
+color: #fff;
+background: var(–accent);
+border: none;
+border-radius: var(–radius);
+padding: 1rem 2rem;
+cursor: pointer;
+transition: all .2s;
+letter-spacing: .01em;
+}
+
+.launch-btn:hover { background: var(–accent-mid); transform: translateY(-1px); }
+
+.launch-note {
+text-align: center;
+font-size: 11px;
+color: var(–ink-faint);
+margin-top: .75rem;
+line-height: 1.5;
+}
+
+.launch-note a { color: var(–accent); text-decoration: none; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="logo">Sa<span>ju</span> <span style="font-size:.75rem;color:var(--ink-faint);font-family:'DM Sans',sans-serif;font-weight:300;">srl</span></div>
+  <div class="header-tag">Configurateur de simulation</div>
+  <div style="font-size:11px;color:var(--ink-faint)">sim.saju.be</div>
+</header>
+
+<main>
+  <!-- Left panel -->
+  <div class="left">
+    <div class="left-title">Votre contrat dans <em>40 ans</em> — simulé maintenant.</div>
+    <div class="left-sub">3 minutes pour configurer votre simulation. Chaque paramètre compte.</div>
+
+```
+<ul class="steps" id="stepList"></ul>
+
+<div class="left-stats">
+  <div class="stat">
+    <div class="stat-val">125</div>
+    <div class="stat-lbl">Ans de données</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">3×–7×</div>
+    <div class="stat-lbl">Fourchette 40 ans</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">18+</div>
+    <div class="stat-lbl">Ans d'expérience</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">8</div>
+    <div class="stat-lbl">Langues</div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- Right panel -->
+
+  <div class="right">
+    <div class="context-msg" id="ctxMsg">
+      <div class="context-icon">◆</div>
+      <div class="context-text" id="ctxText"></div>
+    </div>
+
+```
+<div class="step-title" id="stepTitle"></div>
+<div class="step-subtitle" id="stepSub"></div>
+
+<div class="fields" id="fieldsArea"></div>
+
+<div class="nav">
+  <button class="btn-ghost" id="btnPrev" onclick="go(-1)">← Retour</button>
+  <div class="progress-dots" id="dots"></div>
+  <button class="btn-primary" id="btnNext" onclick="go(1)">
+    <span id="btnLabel">Continuer</span> →
+  </button>
+</div>
+```
+
+  </div>
+</main>
+
+<script>
+const steps = [
+  {
+    name: "Vous",
+    desc: "Identification",
+    title: "Bienvenue.",
+    sub: "Commençons par vous — cela prend 30 secondes.",
+    ctx: { icon: "◆", strong: "Votre simulation commence ici.", body: "Le configurateur adapte chaque paramètre à votre réalité. Secteur, durée, machine — rien de générique." },
+    fields: [
+      { id:"nom", label:"Nom & prénom", type:"text", placeholder:"François Dupont", full:true },
+      { id:"org", label:"Organisation", type:"text", placeholder:"Siemens Mobility, SNCB, Bayer…", full:true },
+      { id:"role", label:"Votre rôle", type:"select", options:["Directeur achats","Responsable contrats","CFO / Directeur financier","Directeur général","Juriste / Conseil","Autre"], full:false },
+      { id:"email", label:"Email (optionnel)", type:"text", placeholder:"contact@organisation.com", full:false }
+    ]
+  },
+  {
+    name: "Secteur",
+    desc: "Industrie & pays",
+    title: "Votre secteur.",
+    sub: "Les indices de prix varient fortement selon l'industrie.",
+    ctx: { icon: "◆", strong: "Pourquoi c'est critique.", body: "Énergie, main-d'œuvre et matières premières n'ont pas le même poids en pharmacie et en ferroviaire. Le secteur détermine les indices de référence." },
+    fields: [
+      { id:"secteur", label:"Secteur d'activité", type:"select", options:["Ferroviaire & mobilité","Pharmacie & santé","Nucléaire & énergie","Automobile & aérospatial","Défense","Robotique & automatisation","Naval & maritime","Banque & assurance","Travaux & maintenance","Import-export","Autre"], full:true },
+      { id:"pays", label:"Pays du contrat", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false },
+      { id:"devise", label:"Devise", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false }
+    ]
+  },
+  {
+    name: "Contrat",
+    desc: "Type & durée",
+    title: "Votre contrat.",
+    sub: "La durée est le paramètre le plus déterminant.",
+    ctx: { icon: "◆", strong: "3 ans ou 40 ans — l'écart est abyssal.", body: "Sur 3 ans, une mauvaise formule coûte quelques % de marge. Sur 40 ans, l'écart peut atteindre plusieurs centaines de millions d'euros." },
+    fields: [
+      { id:"type_contrat", label:"Type de contrat", type:"select", options:["Fourniture de matériel","Maintenance long terme","Concession / PPP","Marché public","Contrat cadre","Autre"], full:true },
+      { id:"duree", label:"Durée totale", type:"range", min:3, max:40, value:15, unit:" ans", full:true },
+      { id:"valeur", label:"Valeur estimée", type:"select", options:["< 1M €","1M – 10M €","10M – 50M €","50M – 200M €","200M – 1Md €","> 1Md €"], full:true }
+    ]
+  },
+  {
+    name: "Production",
+    desc: "Planning & structure",
+    title: "Votre planning.",
+    sub: "Prototypage, production série, maintenance.",
+    ctx: { icon: "◆", strong: "Les phases définissent la structure de la formule.", body: "Les indices ne jouent pas de la même façon en R&D et en production série. Le démarrage de production est souvent le point d'inflexion." },
+    fields: [
+      { id:"proto", label:"Année prototypage", type:"range", min:2024, max:2032, value:2025, unit:"", full:false },
+      { id:"prod_start", label:"Début production série", type:"range", min:2025, max:2035, value:2027, unit:"", full:false },
+      { id:"prod_dur", label:"Durée de production", type:"range", min:1, max:20, value:8, unit:" ans", full:false },
+      { id:"self_prod", label:"Taux d'auto-production", type:"range", min:0, max:100, value:40, unit:"%", full:false }
+    ]
+  },
+  {
+    name: "Lancer",
+    desc: "Récapitulatif",
+    title: "Votre simulation.",
+    sub: "Vérifiez vos paramètres et lancez.",
+    ctx: { icon: "◆", strong: "Simulation indicative.", body: "Ce modèle de démonstration illustre la complexité réelle. La vraie formule calibrée sur 125 ans de données s'établit lors d'un accompagnement avec François Hanneuse." },
+    fields: []
+  }
+];
+
+let cur = 0;
+const data = {};
+
+function renderLeft() {
+  const list = document.getElementById('stepList');
+  list.innerHTML = '';
+  steps.forEach((s, i) => {
+    const li = document.createElement('li');
+    li.className = 'step-item' + (i === cur ? ' active' : i < cur ? ' done' : '');
+    li.onclick = () => { if (i <= cur) { cur = i; render(); } };
+    li.innerHTML = `
+      <div class="step-num">${i < cur ? '✓' : i + 1}</div>
+      <div class="step-info">
+        <div class="step-name">${s.name}</div>
+        <div class="step-desc">${s.desc}</div>
+      </div>`;
+    list.appendChild(li);
+  });
+}
+
+function renderDots() {
+  const d = document.getElementById('dots');
+  d.innerHTML = '';
+  steps.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === cur ? ' active' : i < cur ? ' done' : '');
+    d.appendChild(dot);
+  });
+}
+
+function renderRight() {
+  const s = steps[cur];
+  document.getElementById('ctxText').innerHTML = `<strong>${s.ctx.strong}</strong>${s.ctx.body}`;
+  document.getElementById('stepTitle').textContent = s.title;
+  document.getElementById('stepSub').textContent = s.sub;
+  document.getElementById('btnPrev').style.visibility = cur === 0 ? 'hidden' : 'visible';
+  document.getElementById('btnLabel').textContent = cur === steps.length - 1 ? 'Lancer' : 'Continuer';
+
+  const area = document.getElementById('fieldsArea');
+  area.innerHTML = '';
+
+  if (cur === steps.length - 1) {
+    const grid = document.createElement('div');
+    grid.className = 'summary-grid';
+    const labels = { nom:'Nom', org:'Organisation', role:'Rôle', secteur:'Secteur', pays:'Pays', devise:'Devise', type_contrat:'Type contrat', duree:'Durée', valeur:'Valeur', proto:'Prototypage', prod_start:'Prod. début', prod_dur:'Durée prod.', self_prod:'Auto-prod.' };
+    Object.entries(labels).forEach(([k, l]) => {
+      if (!data[k]) return;
+      const item = document.createElement('div');
+      item.className = 'sum-item';
+      const unit = k === 'duree' || k === 'prod_dur' ? ' ans' : k === 'self_prod' ? '%' : '';
+      item.innerHTML = `<div class="sum-lbl">${l}</div><div class="sum-val">${data[k]}${unit}</div>`;
+      grid.appendChild(item);
+    });
+    area.appendChild(grid);
+
+    const btn = document.createElement('button');
+    btn.className = 'launch-btn';
+    btn.textContent = 'Lancer ma simulation →';
+    btn.onclick = () => window.open('https://www.saju.be/sim.html', '_blank');
+    area.appendChild(btn);
+
+    const note = document.createElement('p');
+    note.className = 'launch-note';
+    note.innerHTML = 'Simulation indicative — <a href="mailto:fh@saju.be">contactez François</a> pour la vraie formule calibrée sur 125 ans de données.';
+    area.appendChild(note);
+    document.getElementById('btnNext').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('btnNext').style.display = 'flex';
+
+  const s2 = steps[cur];
+  const pairs = [];
+  let i = 0;
+  while (i < s2.fields.length) {
+    const f = s2.fields[i];
+    if (f.full) { pairs.push([f]); i++; }
+    else if (s2.fields[i+1] && !s2.fields[i+1].full) { pairs.push([f, s2.fields[i+1]]); i += 2; }
+    else { pairs.push([f]); i++; }
+  }
+
+  pairs.forEach(pair => {
+    const row = document.createElement('div');
+    row.style.cssText = pair.length === 2 ? 'display:grid;grid-template-columns:1fr 1fr;gap:1rem' : '';
+    pair.forEach(f => {
+      const wrap = document.createElement('div');
+      wrap.className = 'field';
+      const lbl = document.createElement('label');
+      lbl.textContent = f.label;
+      wrap.appendChild(lbl);
+
+      if (f.type === 'range') {
+        const rrow = document.createElement('div');
+        rrow.className = 'range-row';
+        const inp = document.createElement('input');
+        inp.type = 'range';
+        inp.min = f.min; inp.max = f.max;
+        inp.value = data[f.id] !== undefined ? data[f.id] : f.value;
+        inp.step = 1;
+        const val = document.createElement('div');
+        val.className = 'range-val';
+        val.textContent = inp.value + f.unit;
+        inp.oninput = () => { data[f.id] = inp.value; val.textContent = inp.value + f.unit; };
+        data[f.id] = data[f.id] !== undefined ? data[f.id] : f.value;
+        rrow.appendChild(inp); rrow.appendChild(val);
+        wrap.appendChild(rrow);
+      } else if (f.type === 'select') {
+        const sel = document.createElement('select');
+        f.options.forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o; opt.textContent = o;
+          if (data[f.id] === o) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        sel.onchange = () => { data[f.id] = sel.value; };
+        data[f.id] = data[f.id] || f.options[0];
+        wrap.appendChild(sel);
+      } else {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.placeholder = f.placeholder || '';
+        inp.value = data[f.id] || '';
+        inp.oninput = () => { data[f.id] = inp.value; };
+        wrap.appendChild(inp);
+      }
+      row.appendChild(wrap);
+    });
+    area.appendChild(row);
+  });
+}
+
+function render() {
+  renderLeft();
+  renderDots();
+  renderRight();
+}
+
+function go(dir) {
+  if (dir === 1 && cur === steps.length - 1) {
+    window.open('https://www.saju.be/sim.html', '_blank');
+    return;
+  }
+  cur = Math.max(0, Math.min(steps.length - 1, cur + dir));
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
