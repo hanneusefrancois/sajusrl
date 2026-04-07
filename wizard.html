@@ -1,772 +1,805 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Saju — Configurateur de simulation</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --ink: #1a1a18;
-    --ink-muted: #6b6b65;
-    --ink-faint: #a8a89f;
-    --surface: #f7f5f0;
-    --surface-2: #eeeae0;
-    --accent: #1a5c3a;
-    --accent-light: #e8f2ec;
-    --accent-mid: #2d8a58;
-    --gold: #b8962e;
-    --border: rgba(26,26,24,0.10);
-    --radius: 12px;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Saju Srl — Configurateur de simulation</title>
+    <meta name="description" content="Affinez votre simulation de contrat long terme avec Saju. Évaluez risques, opportunités et obtenez une formule de révision sur mesure.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== VARIABLES SITE SAJU ===== */
+        :root {
+            --black:#0f1117; --card:#171b24; --card2:#1e2330; --border:rgba(255,255,255,0.13);
+            --rouge:#c0392b; --rouge-vif:#d94030; --bordeaux:#7a1f1a;
+            --blanc:#ffffff; --blanc-dim:rgba(255,255,255,0.88); --blanc-low:rgba(255,255,255,0.60);
+            --em:#059669; --em-pale:#10b981; --em-bright:#34d399;
+            --teal:#0d9488; --teal-pale:#14b8a6;
+            --or:#b45309; --or-p:#d97706; --or-pale:#fbbf24; --or-dim:rgba(180,83,9,0.12); --or-b:rgba(217,119,6,0.3);
+            --argent:#94a3b8; --argent-c:#e2e8f0;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{
+            font-family:'DM Sans',sans-serif;
+            background:var(--black);
+            color:var(--blanc);
+            background-image:linear-gradient(135deg,#0f1117 0%,#141824 100%);
+            overflow-x:hidden;
+            line-height:1.6;
+            font-size:16px;
+        }
+        img{max-width:100%;height:auto;display:block}
+        a{color:inherit;text-decoration:none}
+        .container{max-width:1160px;margin:0 auto;padding:0 clamp(20px,5vw,52px);position:relative;z-index:1}
 
-- { box-sizing: border-box; margin: 0; padding: 0; }
+        /* ===== HEADER ===== */
+        .lang-bar{
+            position:fixed;top:0;left:0;right:0;z-index:9999;
+            background:rgba(0,0,0,0.97);border-bottom:1px solid var(--border);
+            height:44px;display:flex;align-items:center;justify-content:flex-end;
+            padding:0 clamp(16px,5vw,52px);gap:3px;
+        }
+        .lang-btn{
+            background:transparent;border:1px solid transparent;
+            color:var(--blanc-low);font-size:0.72rem;font-weight:500;
+            min-width:40px;min-height:44px;padding:0 7px;border-radius:3px;
+            transition:all .2s;cursor:pointer;
+        }
+        .lang-btn:hover,.lang-btn:active{color:var(--or-p);border-color:var(--or-b)}
+        .lang-btn.active{color:var(--or-p);border-color:var(--or-b);background:var(--or-dim)}
+        nav{
+            position:fixed;top:44px;left:0;right:0;z-index:1000;
+            background:rgba(15,17,23,0.97);backdrop-filter:blur(18px);
+            border-bottom:1px solid var(--border);
+        }
+        .nav-inner{
+            max-width:1160px;margin:0 auto;padding:0 clamp(20px,5vw,52px);
+            height:110px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+        }
+        .nav-logo img{height:90px;width:auto;border-radius:8px;background:#fff;padding:10px 22px;}
+        .nav-links{display:flex;gap:clamp(14px,2vw,28px);align-items:center;flex-wrap:wrap;}
+        .nav-links a{
+            font-size:0.75rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+            white-space:nowrap;color:rgba(255,255,255,.38);transition:color .2s;
+        }
+        .nav-links a:hover,.nav-links a.active{color:var(--or-p);}
+        .nav-cta{
+            background:var(--rouge);color:var(--blanc)!important;padding:8px 18px;border-radius:2px;
+            font-size:0.72rem!important;letter-spacing:0.1em!important;
+            transition:background .2s;
+        }
+        .nav-cta:hover{background:var(--rouge-vif)!important;}
+        .nav-mobile-toggle{
+            display:none;background:transparent;border:1px solid var(--border);
+            color:var(--blanc-dim);padding:6px 10px;border-radius:2px;font-size:1rem;cursor:pointer;
+        }
+        .nav-mobile-menu{
+            display:none;position:fixed;top:154px;left:0;right:0;
+            background:rgba(0,0,0,.98);border-bottom:1px solid var(--border);
+            padding:20px clamp(20px,5vw,52px);z-index:99;
+            flex-direction:column;gap:16px;
+        }
+        .nav-mobile-menu a{font-size:1rem;font-weight:500;color:var(--blanc-dim);padding:10px 0;border-bottom:1px solid var(--border);}
+        .nav-mobile-menu.open{display:flex;}
+        .btn{
+            display:inline-flex;align-items:center;gap:9px;padding:14px 28px;border-radius:2px;
+            font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;transition:all .22s;
+            border:none;cursor:pointer;
+        }
+        .btn-rouge{background:var(--rouge);color:var(--blanc);}
+        .btn-rouge:hover{background:var(--rouge-vif);}
+        .btn-ghost{background:transparent;color:var(--blanc-dim);border:1px solid var(--border);}
+        .btn-ghost:hover{border-color:var(--or-b);color:var(--or-p);}
+        .btn-or{background:var(--or);color:#000;}.btn-or:hover{background:var(--or-p);}
 
-body {
-font-family: ‘DM Sans’, sans-serif;
-background: var(–surface);
-color: var(–ink);
-min-height: 100vh;
-display: flex;
-flex-direction: column;
-}
+        /* ===== WIZARD ===== */
+        .wizard-wrapper{
+            display:grid;
+            grid-template-columns:300px 1fr;
+            gap:0;
+            background:var(--card);
+            border-radius:12px;
+            border:1px solid var(--border);
+            overflow:hidden;
+            margin:2rem 0 3rem;
+        }
+        .wizard-steps{
+            background:var(--black);
+            padding:2rem 1.5rem;
+            border-right:1px solid var(--border);
+        }
+        .wizard-steps-title{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.3rem;font-weight:700;
+            margin-bottom:0.25rem;color:var(--or-p);
+        }
+        .wizard-steps-sub{
+            font-size:0.7rem;color:var(--blanc-low);
+            margin-bottom:2rem;letter-spacing:0.02em;
+        }
+        .steps-list{
+            list-style:none;
+            display:flex;
+            flex-direction:column;
+            gap:0.5rem;
+        }
+        .step-item{
+            display:flex;
+            align-items:center;
+            gap:1rem;
+            padding:0.75rem 1rem;
+            border-radius:8px;
+            cursor:pointer;
+            transition:all 0.2s;
+            opacity:0.5;
+            background:transparent;
+        }
+        .step-item.active{
+            opacity:1;
+            background:var(--card2);
+            border-left:3px solid var(--or-p);
+        }
+        .step-item.done{opacity:0.8;}
+        .step-num{
+            width:32px;height:32px;
+            border-radius:50%;
+            background:rgba(255,255,255,0.08);
+            display:flex;align-items:center;justify-content:center;
+            font-weight:600;font-size:0.8rem;color:var(--blanc-dim);
+        }
+        .step-item.active .step-num{background:var(--or-p);color:#000;}
+        .step-item.done .step-num{background:var(--em);color:#fff;}
+        .step-info{flex:1;}
+        .step-name{font-weight:600;font-size:0.85rem;}
+        .step-desc{font-size:0.7rem;color:var(--blanc-low);}
+        .wizard-stats{
+            margin-top:2rem;
+            padding-top:1rem;
+            border-top:1px solid var(--border);
+            font-size:0.7rem;
+            color:var(--blanc-low);
+            line-height:1.5;
+        }
+        .wizard-stats p{margin-bottom:0.3rem;}
+        .wizard-stats strong{color:var(--or-p);}
 
-/* ── Header ── */
-header {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 1.25rem 2.5rem;
-border-bottom: 0.5px solid var(–border);
-background: var(–surface);
-}
+        /* Panneau droit */
+        .wizard-form{
+            padding:2rem 2rem;
+            background:var(--card);
+        }
+        .context-msg{
+            display:flex;
+            gap:1rem;
+            background:var(--or-dim);
+            border-left:3px solid var(--or-p);
+            border-radius:8px;
+            padding:1rem 1.2rem;
+            margin-bottom:2rem;
+        }
+        .context-icon{font-size:1.2rem;color:var(--or-p);}
+        .context-text strong{display:block;color:var(--or-pale);font-weight:600;margin-bottom:0.2rem;}
+        .context-text{font-size:0.85rem;line-height:1.5;color:var(--blanc-dim);}
+        .step-title{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1.8rem;font-weight:700;
+            margin-bottom:0.3rem;color:var(--blanc);
+        }
+        .step-subtitle{
+            font-size:0.9rem;color:var(--blanc-low);
+            margin-bottom:1.8rem;
+        }
+        .fields{display:flex;flex-direction:column;gap:1.2rem;}
+        .field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+        .field{display:flex;flex-direction:column;gap:0.3rem;position:relative;}
+        .field label{
+            font-size:0.7rem;font-weight:600;text-transform:uppercase;
+            letter-spacing:0.08em;color:var(--argent-c);
+            display:flex;align-items:center;gap:0.5rem;
+        }
+        .help-icon{
+            color:var(--argent);
+            font-size:0.65rem;
+            cursor:pointer;
+            border-radius:50%;
+            width:16px;height:16px;
+            display:inline-flex;align-items:center;justify-content:center;
+            background:rgba(255,255,255,0.1);
+            transition:0.2s;
+        }
+        .help-icon:hover{background:var(--or-p);color:#000;}
+        .tooltip{
+            position:absolute;
+            bottom:100%;
+            left:0;
+            background:var(--card2);
+            border:1px solid var(--or-b);
+            border-radius:6px;
+            padding:0.5rem 0.8rem;
+            font-size:0.7rem;
+            color:var(--blanc-dim);
+            z-index:10;
+            width:220px;
+            display:none;
+            margin-bottom:5px;
+        }
+        .field:hover .tooltip{display:block;}
+        .field input,.field select{
+            background:var(--black);
+            border:1px solid var(--border);
+            border-radius:6px;
+            padding:0.7rem 1rem;
+            color:var(--blanc);
+            font-family:'DM Sans',sans-serif;
+            font-size:0.85rem;
+            outline:none;
+            transition:0.2s;
+        }
+        .field input:focus,.field select:focus{border-color:var(--or-p);}
+        .range-row{
+            display:flex;
+            align-items:center;
+            gap:1rem;
+        }
+        .range-row input[type="range"]{
+            flex:1;
+            height:3px;
+            background:var(--border);
+            border-radius:3px;
+            -webkit-appearance:none;
+        }
+        .range-row input[type="range"]::-webkit-slider-thumb{
+            -webkit-appearance:none;
+            width:16px;height:16px;
+            background:var(--or-p);
+            border-radius:50%;
+            cursor:pointer;
+            border:none;
+        }
+        .range-val{
+            font-family:'Cormorant Garamond',serif;
+            font-size:0.9rem;color:var(--or-pale);
+            min-width:55px;text-align:right;
+        }
+        .nav-buttons{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:2rem;
+            padding-top:1rem;
+            border-top:1px solid var(--border);
+        }
+        .progress-dots{display:flex;gap:8px;}
+        .dot{
+            width:8px;height:8px;border-radius:50%;
+            background:var(--border);
+            transition:0.2s;
+        }
+        .dot.active{background:var(--or-p);width:20px;border-radius:4px;}
+        .dot.done{background:var(--em);}
+        .summary-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:0.75rem;
+            margin-bottom:1.5rem;
+        }
+        .sum-item{
+            background:var(--black);
+            border:1px solid var(--border);
+            border-radius:8px;
+            padding:0.8rem;
+        }
+        .sum-lbl{
+            font-size:0.6rem;text-transform:uppercase;
+            color:var(--argent-c);letter-spacing:0.06em;
+        }
+        .sum-val{
+            font-size:0.9rem;font-weight:500;
+            margin-top:4px;
+        }
+        .launch-btn{
+            width:100%;
+            background:var(--or);
+            border:none;
+            border-radius:8px;
+            padding:1rem;
+            font-size:1rem;
+            font-weight:700;
+            color:#000;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .launch-btn:hover{
+            background:var(--or-p);
+            transform:translateY(-2px);
+        }
+        .expertise-message{
+            background:var(--em-dim);
+            border-left:3px solid var(--em);
+            border-radius:8px;
+            padding:1rem;
+            margin-top:1.5rem;
+            font-size:0.8rem;
+            line-height:1.5;
+            color:var(--blanc-dim);
+        }
+        .expertise-message strong{color:var(--em-bright);}
+        footer{
+            border-top:1px solid var(--border);
+            padding:clamp(18px,3vw,26px) 0;
+            background:#0d1018;
+        }
+        .footer-inner{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:14px;
+        }
+        .footer-brand{display:flex;align-items:center;gap:10px;}
+        .footer-brand img{height:48px;border-radius:8px;background:#fff;padding:4px 9px;}
+        .footer-wm{font-family:'Cormorant Garamond',serif;font-size:0.85rem;font-weight:600;color:rgba(255,255,255,.4);}
+        .footer-wm span{color:var(--rouge);}
+        .footer-copy{font-size:0.72rem;color:rgba(255,255,255,.3);}
+        .footer-links{display:flex;gap:12px;}
+        .footer-links a{font-size:0.72rem;color:rgba(255,255,255,.35);}
 
-.logo {
-font-family: ‘DM Serif Display’, serif;
-font-size: 1.35rem;
-color: var(–ink);
-letter-spacing: -0.01em;
-}
-
-.logo span {
-color: var(–accent);
-}
-
-.header-tag {
-font-size: 11px;
-font-weight: 500;
-letter-spacing: .08em;
-text-transform: uppercase;
-color: var(–ink-faint);
-}
-
-/* ── Main layout ── */
-main {
-flex: 1;
-display: grid;
-grid-template-columns: 340px 1fr;
-min-height: calc(100vh - 65px);
-}
-
-/* ── Left panel ── */
-.left {
-background: var(–ink);
-color: #fff;
-padding: 3rem 2.5rem;
-display: flex;
-flex-direction: column;
-position: relative;
-overflow: hidden;
-}
-
-.left::before {
-content: ‘茶寿’;
-position: absolute;
-bottom: -20px;
-right: -30px;
-font-family: ‘DM Serif Display’, serif;
-font-size: 9rem;
-color: rgba(255,255,255,0.04);
-line-height: 1;
-pointer-events: none;
-}
-
-.left-title {
-font-family: ‘DM Serif Display’, serif;
-font-size: 1.75rem;
-line-height: 1.25;
-margin-bottom: .75rem;
-color: #fff;
-}
-
-.left-title em {
-color: #6fcf97;
-font-style: italic;
-}
-
-.left-sub {
-font-size: 13px;
-color: rgba(255,255,255,0.5);
-line-height: 1.6;
-margin-bottom: 2.5rem;
-}
-
-/* Steps list */
-.steps {
-list-style: none;
-flex: 1;
-display: flex;
-flex-direction: column;
-gap: 0;
-}
-
-.step-item {
-display: flex;
-align-items: flex-start;
-gap: 1rem;
-padding: 1rem 0;
-border-bottom: 0.5px solid rgba(255,255,255,0.08);
-cursor: pointer;
-transition: opacity .2s;
-opacity: 0.45;
-}
-
-.step-item:last-child { border-bottom: none; }
-.step-item.active { opacity: 1; }
-.step-item.done { opacity: 0.7; }
-
-.step-num {
-width: 28px;
-height: 28px;
-border-radius: 50%;
-border: 0.5px solid rgba(255,255,255,0.2);
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 11px;
-font-weight: 500;
-flex-shrink: 0;
-color: rgba(255,255,255,0.5);
-transition: all .2s;
-}
-
-.step-item.active .step-num {
-background: #6fcf97;
-border-color: #6fcf97;
-color: var(–ink);
-font-weight: 600;
-}
-
-.step-item.done .step-num {
-background: rgba(111,207,151,0.2);
-border-color: rgba(111,207,151,0.4);
-color: #6fcf97;
-}
-
-.step-info { flex: 1; }
-
-.step-name {
-font-size: 13px;
-font-weight: 500;
-color: #fff;
-margin-bottom: 2px;
-}
-
-.step-desc {
-font-size: 11px;
-color: rgba(255,255,255,0.4);
-line-height: 1.4;
-}
-
-.step-item.active .step-desc { color: rgba(255,255,255,0.6); }
-
-/* Stats bottom */
-.left-stats {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: .75rem;
-margin-top: 2rem;
-}
-
-.stat {
-background: rgba(255,255,255,0.05);
-border-radius: 8px;
-padding: .75rem;
-border: 0.5px solid rgba(255,255,255,0.08);
-}
-
-.stat-val {
-font-family: ‘DM Serif Display’, serif;
-font-size: 1.4rem;
-color: #6fcf97;
-line-height: 1;
-margin-bottom: 2px;
-}
-
-.stat-lbl {
-font-size: 10px;
-color: rgba(255,255,255,0.35);
-text-transform: uppercase;
-letter-spacing: .06em;
-}
-
-/* ── Right panel ── */
-.right {
-padding: 3rem 3.5rem;
-display: flex;
-flex-direction: column;
-max-width: 620px;
-}
-
-/* Context message */
-.context-msg {
-display: flex;
-gap: 1rem;
-align-items: flex-start;
-background: var(–accent-light);
-border: 0.5px solid rgba(26,92,58,0.15);
-border-radius: var(–radius);
-padding: 1rem 1.25rem;
-margin-bottom: 2rem;
-animation: fadeSlide .35s ease;
-}
-
-@keyframes fadeSlide {
-from { opacity: 0; transform: translateY(-8px); }
-to   { opacity: 1; transform: translateY(0); }
-}
-
-.context-icon {
-width: 32px;
-height: 32px;
-background: var(–accent);
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-flex-shrink: 0;
-color: #fff;
-font-size: 14px;
-}
-
-.context-text {
-font-size: 13px;
-color: var(–accent);
-line-height: 1.6;
-}
-
-.context-text strong {
-font-weight: 500;
-display: block;
-margin-bottom: 2px;
-color: var(–ink);
-}
-
-/* Step title */
-.step-title {
-font-family: ‘DM Serif Display’, serif;
-font-size: 2rem;
-color: var(–ink);
-margin-bottom: .4rem;
-line-height: 1.15;
-animation: fadeSlide .3s ease;
-}
-
-.step-subtitle {
-font-size: 13px;
-color: var(–ink-muted);
-margin-bottom: 2rem;
-animation: fadeSlide .35s ease;
-}
-
-/* Fields */
-.fields {
-display: flex;
-flex-direction: column;
-gap: 1.25rem;
-flex: 1;
-animation: fadeSlide .4s ease;
-}
-
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-.field { display: flex; flex-direction: column; gap: 6px; }
-
-.field label {
-font-size: 12px;
-font-weight: 500;
-color: var(–ink-muted);
-text-transform: uppercase;
-letter-spacing: .06em;
-}
-
-.field input,
-.field select {
-font-family: ‘DM Sans’, sans-serif;
-font-size: 14px;
-color: var(–ink);
-background: #fff;
-border: 0.5px solid var(–border);
-border-radius: 8px;
-padding: .7rem 1rem;
-outline: none;
-transition: border-color .15s, box-shadow .15s;
-appearance: none;
--webkit-appearance: none;
-}
-
-.field input:focus,
-.field select:focus {
-border-color: var(–accent-mid);
-box-shadow: 0 0 0 3px rgba(45,138,88,0.1);
-}
-
-.field-hint {
-font-size: 11px;
-color: var(–ink-faint);
-line-height: 1.4;
-}
-
-/* Range slider */
-.range-row {
-display: flex;
-align-items: center;
-gap: 1rem;
-}
-
-.range-row input[type=range] {
-flex: 1;
--webkit-appearance: none;
-appearance: none;
-height: 3px;
-background: var(–surface-2);
-border-radius: 2px;
-border: none;
-padding: 0;
-box-shadow: none;
-outline: none;
-}
-
-.range-row input[type=range]::-webkit-slider-thumb {
--webkit-appearance: none;
-width: 18px;
-height: 18px;
-background: var(–accent);
-border-radius: 50%;
-cursor: pointer;
-border: 2px solid #fff;
-box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-}
-
-.range-val {
-font-family: ‘DM Serif Display’, serif;
-font-size: 1.1rem;
-color: var(–accent);
-min-width: 56px;
-text-align: right;
-}
-
-/* Navigation */
-.nav {
-display: flex;
-align-items: center;
-justify-content: space-between;
-margin-top: 2rem;
-padding-top: 1.5rem;
-border-top: 0.5px solid var(–border);
-}
-
-.btn-ghost {
-font-family: ‘DM Sans’, sans-serif;
-font-size: 13px;
-font-weight: 500;
-color: var(–ink-muted);
-background: none;
-border: 0.5px solid var(–border);
-border-radius: 8px;
-padding: .6rem 1.25rem;
-cursor: pointer;
-transition: all .15s;
-}
-
-.btn-ghost:hover {
-background: var(–surface-2);
-color: var(–ink);
-}
-
-.btn-primary {
-font-family: ‘DM Sans’, sans-serif;
-font-size: 13px;
-font-weight: 500;
-color: #fff;
-background: var(–accent);
-border: none;
-border-radius: 8px;
-padding: .7rem 1.75rem;
-cursor: pointer;
-transition: all .15s;
-display: flex;
-align-items: center;
-gap: .5rem;
-}
-
-.btn-primary:hover { background: var(–accent-mid); }
-
-.progress-dots {
-display: flex;
-gap: 6px;
-align-items: center;
-}
-
-.dot {
-width: 6px;
-height: 6px;
-border-radius: 50%;
-background: var(–surface-2);
-transition: all .2s;
-}
-
-.dot.active {
-background: var(–accent);
-width: 20px;
-border-radius: 3px;
-}
-
-.dot.done { background: var(–accent-mid); opacity: .4; }
-
-/* Summary */
-.summary-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: .75rem;
-margin-bottom: 1.5rem;
-}
-
-.sum-item {
-background: #fff;
-border: 0.5px solid var(–border);
-border-radius: 10px;
-padding: .9rem 1rem;
-}
-
-.sum-lbl {
-font-size: 10px;
-text-transform: uppercase;
-letter-spacing: .07em;
-color: var(–ink-faint);
-margin-bottom: 4px;
-}
-
-.sum-val {
-font-size: 14px;
-font-weight: 500;
-color: var(–ink);
-}
-
-.launch-btn {
-width: 100%;
-font-family: ‘DM Serif Display’, serif;
-font-size: 1.1rem;
-color: #fff;
-background: var(–accent);
-border: none;
-border-radius: var(–radius);
-padding: 1rem 2rem;
-cursor: pointer;
-transition: all .2s;
-letter-spacing: .01em;
-}
-
-.launch-btn:hover { background: var(–accent-mid); transform: translateY(-1px); }
-
-.launch-note {
-text-align: center;
-font-size: 11px;
-color: var(–ink-faint);
-margin-top: .75rem;
-line-height: 1.5;
-}
-
-.launch-note a { color: var(–accent); text-decoration: none; }
-</style>
-
+        @media (max-width:800px){
+            .wizard-wrapper{grid-template-columns:1fr;}
+            .wizard-steps{border-right:none;border-bottom:1px solid var(--border);padding:1rem;}
+            .steps-list{flex-direction:row;flex-wrap:wrap;gap:0.3rem;}
+            .step-item{flex:1;min-width:80px;padding:0.5rem;flex-direction:column;text-align:center;gap:0.3rem;}
+            .step-info{text-align:center;}
+            .step-name{font-size:0.7rem;}
+            .step-desc{display:none;}
+            .wizard-form{padding:1.5rem;}
+            .field-row{grid-template-columns:1fr;}
+        }
+        @media (max-width:680px){
+            .nav-links{display:none;}
+            .nav-mobile-toggle{display:flex;}
+            .nav-inner{height:70px;}
+            .nav-logo img{height:50px;padding:6px 14px;}
+            .nav-mobile-menu{top:114px;}
+        }
+        .fi{opacity:0;transform:translateY(20px);transition:opacity .65s ease,transform .65s ease;}
+        .fi.v{opacity:1;transform:translateY(0);}
+        section[id],div[id]{scroll-margin-top:120px;}
+    </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">Sa<span>ju</span> <span style="font-size:.75rem;color:var(--ink-faint);font-family:'DM Sans',sans-serif;font-weight:300;">srl</span></div>
-  <div class="header-tag">Configurateur de simulation</div>
-  <div style="font-size:11px;color:var(--ink-faint)">sim.saju.be</div>
-</header>
-
-<main>
-  <!-- Left panel -->
-  <div class="left">
-    <div class="left-title">Votre contrat dans <em>40 ans</em> — simulé maintenant.</div>
-    <div class="left-sub">3 minutes pour configurer votre simulation. Chaque paramètre compte.</div>
-
-```
-<ul class="steps" id="stepList"></ul>
-
-<div class="left-stats">
-  <div class="stat">
-    <div class="stat-val">125</div>
-    <div class="stat-lbl">Ans de données</div>
-  </div>
-  <div class="stat">
-    <div class="stat-val">3×–7×</div>
-    <div class="stat-lbl">Fourchette 40 ans</div>
-  </div>
-  <div class="stat">
-    <div class="stat-val">18+</div>
-    <div class="stat-lbl">Ans d'expérience</div>
-  </div>
-  <div class="stat">
-    <div class="stat-val">8</div>
-    <div class="stat-lbl">Langues</div>
-  </div>
+<div class="lang-bar">
+    <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
+    <button class="lang-btn" data-lang="nl" onclick="setLang('nl')">NL</button>
+    <button class="lang-btn" data-lang="uk" onclick="setLang('uk')">УКР</button>
+    <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" data-lang="jp" onclick="setLang('jp')">日本語</button>
+    <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">中文</button>
 </div>
-```
 
-  </div>
-
-  <!-- Right panel -->
-
-  <div class="right">
-    <div class="context-msg" id="ctxMsg">
-      <div class="context-icon">◆</div>
-      <div class="context-text" id="ctxText"></div>
+<nav>
+    <div class="nav-inner">
+        <a href="#" class="nav-logo"><img src="Logo.png" alt="Saju srl" onerror="this.parentElement.innerHTML='Saju'"></a>
+        <div class="nav-links">
+            <a href="#">Simulation</a>
+            <a href="#">Services</a>
+            <a href="#">Méthode</a>
+            <a href="#">Secteurs</a>
+            <a href="#">Fondateur</a>
+            <a href="#" class="nav-cta">📅 Réserver</a>
+        </div>
+        <button class="nav-mobile-toggle" onclick="toggleMobileMenu()" aria-label="Menu"><i class="fas fa-bars"></i></button>
     </div>
-
-```
-<div class="step-title" id="stepTitle"></div>
-<div class="step-subtitle" id="stepSub"></div>
-
-<div class="fields" id="fieldsArea"></div>
-
-<div class="nav">
-  <button class="btn-ghost" id="btnPrev" onclick="go(-1)">← Retour</button>
-  <div class="progress-dots" id="dots"></div>
-  <button class="btn-primary" id="btnNext" onclick="go(1)">
-    <span id="btnLabel">Continuer</span> →
-  </button>
+</nav>
+<div class="nav-mobile-menu" id="mobileMenu">
+    <a href="#">Simulation</a>
+    <a href="#">Services</a>
+    <a href="#">Méthode</a>
+    <a href="#">Secteurs</a>
+    <a href="#">Fondateur</a>
+    <a href="#" class="btn btn-rouge" style="justify-content:center">Réserver</a>
 </div>
-```
 
-  </div>
+<main style="margin-top:154px;">
+    <div class="container">
+        <div class="fi v" style="text-align:center; margin-bottom:2rem;">
+            <div class="s-tag or" style="justify-content:center;">Configurateur</div>
+            <h1 class="s-title" style="text-align:center;">Affinez votre contrat <em>long terme</em></h1>
+            <p class="s-sub" style="text-align:center; margin:0 auto;">Ce simulateur vous donne une première vision. Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact.</p>
+        </div>
+
+        <div class="wizard-wrapper fi" id="wizardApp">
+            <div class="wizard-steps">
+                <div class="wizard-steps-title">Paramètres</div>
+                <div class="wizard-steps-sub">Votre profil, votre contrat</div>
+                <ul class="steps-list" id="stepList"></ul>
+                <div class="wizard-stats">
+                    <p><strong>🔬 Une simulation réaliste.</strong> Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact à partir de <strong>125 ans de données historiques</strong> et <strong>18 ans d’expérience terrain</strong>.</p>
+                    <p style="font-size:0.65rem; margin-top:0.5rem;">Ce configurateur vous aide à prendre conscience des impacts. L’expertise Saju crée une véritable valeur ajoutée sur les contrats long terme.</p>
+                </div>
+            </div>
+            <div class="wizard-form">
+                <div class="context-msg" id="ctxMsg">
+                    <div class="context-icon">◆</div>
+                    <div class="context-text" id="ctxText"></div>
+                </div>
+                <div class="step-title" id="stepTitle"></div>
+                <div class="step-subtitle" id="stepSub"></div>
+                <div class="fields" id="fieldsArea"></div>
+                <div class="nav-buttons">
+                    <button class="btn-ghost" id="btnPrev" style="padding:0.5rem 1rem;">← Retour</button>
+                    <div class="progress-dots" id="dots"></div>
+                    <button class="btn-or" id="btnNext" style="padding:0.5rem 1.5rem;">
+                        <span id="btnLabel">Continuer</span> →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-brand"><a href="#"><img src="Logo.png" alt="Saju" onerror="this.parentElement.innerHTML='Saju'"></a><div class="footer-wm">Saju<span> srl</span></div></div>
+            <div class="footer-copy">© 2026 Saju Srl · Bruxelles · fh@saju.be</div>
+            <div class="footer-links"><a href="#">Contact</a><a href="#">LinkedIn</a></div>
+        </div>
+    </div>
+</footer>
+
 <script>
-const steps = [
-  {
-    name: "Vous",
-    desc: "Identification",
-    title: "Bienvenue.",
-    sub: "Commençons par vous — cela prend 30 secondes.",
-    ctx: { icon: "◆", strong: "Votre simulation commence ici.", body: "Le configurateur adapte chaque paramètre à votre réalité. Secteur, durée, machine — rien de générique." },
-    fields: [
-      { id:"nom", label:"Nom & prénom", type:"text", placeholder:"François Dupont", full:true },
-      { id:"org", label:"Organisation", type:"text", placeholder:"Siemens Mobility, SNCB, Bayer…", full:true },
-      { id:"role", label:"Votre rôle", type:"select", options:["Directeur achats","Responsable contrats","CFO / Directeur financier","Directeur général","Juriste / Conseil","Autre"], full:false },
-      { id:"email", label:"Email (optionnel)", type:"text", placeholder:"contact@organisation.com", full:false }
-    ]
-  },
-  {
-    name: "Secteur",
-    desc: "Industrie & pays",
-    title: "Votre secteur.",
-    sub: "Les indices de prix varient fortement selon l'industrie.",
-    ctx: { icon: "◆", strong: "Pourquoi c'est critique.", body: "Énergie, main-d'œuvre et matières premières n'ont pas le même poids en pharmacie et en ferroviaire. Le secteur détermine les indices de référence." },
-    fields: [
-      { id:"secteur", label:"Secteur d'activité", type:"select", options:["Ferroviaire & mobilité","Pharmacie & santé","Nucléaire & énergie","Automobile & aérospatial","Défense","Robotique & automatisation","Naval & maritime","Banque & assurance","Travaux & maintenance","Import-export","Autre"], full:true },
-      { id:"pays", label:"Pays du contrat", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false },
-      { id:"devise", label:"Devise", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false }
-    ]
-  },
-  {
-    name: "Contrat",
-    desc: "Type & durée",
-    title: "Votre contrat.",
-    sub: "La durée est le paramètre le plus déterminant.",
-    ctx: { icon: "◆", strong: "3 ans ou 40 ans — l'écart est abyssal.", body: "Sur 3 ans, une mauvaise formule coûte quelques % de marge. Sur 40 ans, l'écart peut atteindre plusieurs centaines de millions d'euros." },
-    fields: [
-      { id:"type_contrat", label:"Type de contrat", type:"select", options:["Fourniture de matériel","Maintenance long terme","Concession / PPP","Marché public","Contrat cadre","Autre"], full:true },
-      { id:"duree", label:"Durée totale", type:"range", min:3, max:40, value:15, unit:" ans", full:true },
-      { id:"valeur", label:"Valeur estimée", type:"select", options:["< 1M €","1M – 10M €","10M – 50M €","50M – 200M €","200M – 1Md €","> 1Md €"], full:true }
-    ]
-  },
-  {
-    name: "Production",
-    desc: "Planning & structure",
-    title: "Votre planning.",
-    sub: "Prototypage, production série, maintenance.",
-    ctx: { icon: "◆", strong: "Les phases définissent la structure de la formule.", body: "Les indices ne jouent pas de la même façon en R&D et en production série. Le démarrage de production est souvent le point d'inflexion." },
-    fields: [
-      { id:"proto", label:"Année prototypage", type:"range", min:2024, max:2032, value:2025, unit:"", full:false },
-      { id:"prod_start", label:"Début production série", type:"range", min:2025, max:2035, value:2027, unit:"", full:false },
-      { id:"prod_dur", label:"Durée de production", type:"range", min:1, max:20, value:8, unit:" ans", full:false },
-      { id:"self_prod", label:"Taux d'auto-production", type:"range", min:0, max:100, value:40, unit:"%", full:false }
-    ]
-  },
-  {
-    name: "Lancer",
-    desc: "Récapitulatif",
-    title: "Votre simulation.",
-    sub: "Vérifiez vos paramètres et lancez.",
-    ctx: { icon: "◆", strong: "Simulation indicative.", body: "Ce modèle de démonstration illustre la complexité réelle. La vraie formule calibrée sur 125 ans de données s'établit lors d'un accompagnement avec François Hanneuse." },
-    fields: []
-  }
-];
-
-let cur = 0;
-const data = {};
-
-function renderLeft() {
-  const list = document.getElementById('stepList');
-  list.innerHTML = '';
-  steps.forEach((s, i) => {
-    const li = document.createElement('li');
-    li.className = 'step-item' + (i === cur ? ' active' : i < cur ? ' done' : '');
-    li.onclick = () => { if (i <= cur) { cur = i; render(); } };
-    li.innerHTML = `
-      <div class="step-num">${i < cur ? '✓' : i + 1}</div>
-      <div class="step-info">
-        <div class="step-name">${s.name}</div>
-        <div class="step-desc">${s.desc}</div>
-      </div>`;
-    list.appendChild(li);
-  });
-}
-
-function renderDots() {
-  const d = document.getElementById('dots');
-  d.innerHTML = '';
-  steps.forEach((_, i) => {
-    const dot = document.createElement('div');
-    dot.className = 'dot' + (i === cur ? ' active' : i < cur ? ' done' : '');
-    d.appendChild(dot);
-  });
-}
-
-function renderRight() {
-  const s = steps[cur];
-  document.getElementById('ctxText').innerHTML = `<strong>${s.ctx.strong}</strong>${s.ctx.body}`;
-  document.getElementById('stepTitle').textContent = s.title;
-  document.getElementById('stepSub').textContent = s.sub;
-  document.getElementById('btnPrev').style.visibility = cur === 0 ? 'hidden' : 'visible';
-  document.getElementById('btnLabel').textContent = cur === steps.length - 1 ? 'Lancer' : 'Continuer';
-
-  const area = document.getElementById('fieldsArea');
-  area.innerHTML = '';
-
-  if (cur === steps.length - 1) {
-    const grid = document.createElement('div');
-    grid.className = 'summary-grid';
-    const labels = { nom:'Nom', org:'Organisation', role:'Rôle', secteur:'Secteur', pays:'Pays', devise:'Devise', type_contrat:'Type contrat', duree:'Durée', valeur:'Valeur', proto:'Prototypage', prod_start:'Prod. début', prod_dur:'Durée prod.', self_prod:'Auto-prod.' };
-    Object.entries(labels).forEach(([k, l]) => {
-      if (!data[k]) return;
-      const item = document.createElement('div');
-      item.className = 'sum-item';
-      const unit = k === 'duree' || k === 'prod_dur' ? ' ans' : k === 'self_prod' ? '%' : '';
-      item.innerHTML = `<div class="sum-lbl">${l}</div><div class="sum-val">${data[k]}${unit}</div>`;
-      grid.appendChild(item);
+    // ===== MENU MOBILE =====
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        var m = document.getElementById('mobileMenu');
+        if (m && m.classList.contains('open') && !m.contains(e.target) && !e.target.closest('.nav-mobile-toggle')) {
+            m.classList.remove('open');
+        }
     });
-    area.appendChild(grid);
 
-    const btn = document.createElement('button');
-    btn.className = 'launch-btn';
-    btn.textContent = 'Lancer ma simulation →';
-    btn.onclick = () => window.open('https://www.saju.be/sim.html', '_blank');
-    area.appendChild(btn);
+    // ===== TRADUCTIONS (extrait, toutes langues pour démo, ici on simplifie avec fr/en) =====
+    const translations = {
+        fr: {
+            step1_title: "Bienvenue", step1_sub: "Commençons par vous — 30 secondes.",
+            step1_ctx: "Votre simulation commence ici. Le configurateur adapte chaque paramètre à votre réalité.",
+            role_label: "Votre rôle", role_help: "Votre fonction dans l'organisation. Cela nous aide à adapter le discours.",
+            nom_label: "Nom & prénom", org_label: "Organisation", email_label: "Email (optionnel)",
+            step2_title: "Votre secteur", step2_sub: "Les indices de prix varient fortement selon l'industrie.",
+            step2_ctx: "Pourquoi c'est critique. Énergie, main-d'œuvre et matières premières n'ont pas le même poids selon le secteur.",
+            secteur_label: "Secteur d'activité", pays_label: "Pays", devise_label: "Devise",
+            type_contrat_label: "Type de contrat", duree_label: "Durée totale", valeur_label: "Valeur estimée",
+            step3_title: "Production & risques", step3_sub: "Votre planning, votre perception des risques et opportunités.",
+            step3_ctx: "Les phases définissent la structure de la formule. Vos réponses nous aident à calibrer le coefficient.",
+            proto_label: "Année prototypage", prod_start_label: "Début production série", prod_dur_label: "Durée production",
+            self_prod_label: "Auto-production %",
+            confiance_label: "Confiance dans votre chiffrage", confiance_help: "0 = très incertain, 10 = très confiant",
+            retards_label: "Retards estimés sur projet", retards_help: "Impact possible sur les coûts",
+            crise_approx_label: "Probabilité d'une crise majeure (approvisionnement, douanes, matières premières)", crise_approx_help: "Sur 40 ans, une crise est statistiquement très probable",
+            tech_gain_label: "Potentiel de gains technologiques", tech_gain_help: "Automatisation, IA, robotique",
+            eco_echelle_label: "Potentiel d'économies d'échelle", eco_echelle_help: "Mutualisation, volumes",
+            step4_title: "Récapitulatif", step4_sub: "Vérifiez vos paramètres avant de lancer la simulation.",
+            step5_title: "Simulation & expertise", step5_sub: "Ce que ce simulateur vous apporte — et ce que Saju peut faire de plus.",
+            btn_next: "Continuer", btn_prev: "Retour", btn_launch: "Lancer ma simulation",
+            expertise_msg: "Cette simulation est indicative. Pour un coefficient précis, calibré sur 125 ans de crises réelles (guerres, pandémies, chocs pétroliers) et adapté à votre entreprise, <strong>contactez Saju</strong>. Notre méthode propriétaire intègre les gains de productivité, les effets d'échelle, les monopoles fournisseurs et les cycles d'obsolescence. Vous obtenez un coefficient multiplicateur exact, défendable devant votre board."
+        },
+        en: {
+            step1_title: "Welcome", step1_sub: "Let's start with you — 30 seconds.",
+            step1_ctx: "Your simulation starts here. The configurator adapts each parameter to your reality.",
+            role_label: "Your role", role_help: "Your function in the organization. Helps us tailor the discussion.",
+            nom_label: "Full name", org_label: "Organization", email_label: "Email (optional)",
+            step2_title: "Your sector", step2_sub: "Price indices vary greatly by industry.",
+            step2_ctx: "Why it matters. Energy, labor and raw materials don't have the same weight in pharma and rail.",
+            secteur_label: "Industry sector", pays_label: "Country", devise_label: "Currency",
+            type_contrat_label: "Contract type", duree_label: "Total duration", valeur_label: "Estimated value",
+            step3_title: "Production & risks", step3_sub: "Your schedule, your perception of risks and opportunities.",
+            step3_ctx: "Phases define the formula structure. Your answers help us calibrate the coefficient.",
+            proto_label: "Prototyping year", prod_start_label: "Series production start", prod_dur_label: "Production duration",
+            self_prod_label: "Self-production %",
+            confiance_label: "Confidence in your costing", confiance_help: "0 = very uncertain, 10 = very confident",
+            retards_label: "Estimated project delays", retards_help: "Potential impact on costs",
+            crise_approx_label: "Probability of a major crisis (supply, tariffs, raw materials)", crise_approx_help: "Over 40 years, a crisis is statistically very likely",
+            tech_gain_label: "Potential technology gains", tech_gain_help: "Automation, AI, robotics",
+            eco_echelle_label: "Potential economies of scale", eco_echelle_help: "Volume, mutualization",
+            step4_title: "Summary", step4_sub: "Review your parameters before launching the simulation.",
+            step5_title: "Simulation & expertise", step5_sub: "What this simulator gives you — and what Saju can do more.",
+            btn_next: "Next", btn_prev: "Back", btn_launch: "Run my simulation",
+            expertise_msg: "This simulation is indicative. For a precise coefficient, calibrated on 125 years of real crises (wars, pandemics, oil shocks) and tailored to your business, <strong>contact Saju</strong>. Our proprietary method integrates productivity gains, scale effects, supplier monopolies and obsolescence cycles. You get an exact multiplier coefficient, defensible before your board."
+        }
+    };
+    // Pour les autres langues, on pourrait étendre, mais pour la démo on utilise fr/en.
+    let currentLang = 'fr';
+    function t(key) { return translations[currentLang][key] || key; }
 
-    const note = document.createElement('p');
-    note.className = 'launch-note';
-    note.innerHTML = 'Simulation indicative — <a href="mailto:fh@saju.be">contactez François</a> pour la vraie formule calibrée sur 125 ans de données.';
-    area.appendChild(note);
-    document.getElementById('btnNext').style.display = 'none';
-    return;
-  }
-
-  document.getElementById('btnNext').style.display = 'flex';
-
-  const s2 = steps[cur];
-  const pairs = [];
-  let i = 0;
-  while (i < s2.fields.length) {
-    const f = s2.fields[i];
-    if (f.full) { pairs.push([f]); i++; }
-    else if (s2.fields[i+1] && !s2.fields[i+1].full) { pairs.push([f, s2.fields[i+1]]); i += 2; }
-    else { pairs.push([f]); i++; }
-  }
-
-  pairs.forEach(pair => {
-    const row = document.createElement('div');
-    row.style.cssText = pair.length === 2 ? 'display:grid;grid-template-columns:1fr 1fr;gap:1rem' : '';
-    pair.forEach(f => {
-      const wrap = document.createElement('div');
-      wrap.className = 'field';
-      const lbl = document.createElement('label');
-      lbl.textContent = f.label;
-      wrap.appendChild(lbl);
-
-      if (f.type === 'range') {
-        const rrow = document.createElement('div');
-        rrow.className = 'range-row';
-        const inp = document.createElement('input');
-        inp.type = 'range';
-        inp.min = f.min; inp.max = f.max;
-        inp.value = data[f.id] !== undefined ? data[f.id] : f.value;
-        inp.step = 1;
-        const val = document.createElement('div');
-        val.className = 'range-val';
-        val.textContent = inp.value + f.unit;
-        inp.oninput = () => { data[f.id] = inp.value; val.textContent = inp.value + f.unit; };
-        data[f.id] = data[f.id] !== undefined ? data[f.id] : f.value;
-        rrow.appendChild(inp); rrow.appendChild(val);
-        wrap.appendChild(rrow);
-      } else if (f.type === 'select') {
-        const sel = document.createElement('select');
-        f.options.forEach(o => {
-          const opt = document.createElement('option');
-          opt.value = o; opt.textContent = o;
-          if (data[f.id] === o) opt.selected = true;
-          sel.appendChild(opt);
+    function setLang(l) {
+        currentLang = l;
+        localStorage.setItem('saju_lang', l);
+        document.documentElement.lang = l;
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
         });
-        sel.onchange = () => { data[f.id] = sel.value; };
-        data[f.id] = data[f.id] || f.options[0];
-        wrap.appendChild(sel);
-      } else {
-        const inp = document.createElement('input');
-        inp.type = 'text';
-        inp.placeholder = f.placeholder || '';
-        inp.value = data[f.id] || '';
-        inp.oninput = () => { data[f.id] = inp.value; };
-        wrap.appendChild(inp);
-      }
-      row.appendChild(wrap);
+        render(); // re-render le wizard avec la nouvelle langue
+    }
+
+    // ===== WIZARD LOGIC =====
+    const roles = [
+        "CEO", "CFO", "CPO", "Bid Manager", "Dir. Technique", "Commercial / Sales",
+        "Acheteur Public", "Banquier / Prêteur", "Actionnaire / Investisseur",
+        "Fonds de pension", "Analyste / Agence de notation", "Citoyen / Contribuable",
+        "Contrôleur financier / CPM", "Offre Controller"
+    ];
+
+    const steps = [
+        { // step 0
+            name: "Vous",
+            desc: "Profil",
+            titleKey: "step1_title",
+            subKey: "step1_sub",
+            ctxKey: "step1_ctx",
+            fields: [
+                { id:"nom", labelKey:"nom_label", type:"text", placeholder:"François Dupont", full:true, help:"" },
+                { id:"org", labelKey:"org_label", type:"text", placeholder:"Siemens Mobility, SNCB, Bayer…", full:true, help:"" },
+                { id:"role", labelKey:"role_label", type:"select", options:roles, full:false, helpKey:"role_help" },
+                { id:"email", labelKey:"email_label", type:"text", placeholder:"contact@organisation.com", full:false, help:"" }
+            ]
+        },
+        { // step 1
+            name: "Secteur",
+            desc: "Marché",
+            titleKey: "step2_title",
+            subKey: "step2_sub",
+            ctxKey: "step2_ctx",
+            fields: [
+                { id:"secteur", labelKey:"secteur_label", type:"select", options:["Ferroviaire & mobilité","Pharmacie & santé","Nucléaire & énergie","Automobile & aérospatial","Défense","Robotique & automatisation","Naval & maritime","Banque & assurance","Travaux & maintenance","Import-export","Autre"], full:true, help:"" },
+                { id:"pays", labelKey:"pays_label", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false, help:"" },
+                { id:"devise", labelKey:"devise_label", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false, help:"" },
+                { id:"type_contrat", labelKey:"type_contrat_label", type:"select", options:["Fourniture de matériel","Maintenance long terme","Concession / PPP","Marché public","Contrat cadre","Autre"], full:true, help:"" },
+                { id:"duree", labelKey:"duree_label", type:"range", min:3, max:40, value:15, unit:" ans", full:true, help:"" },
+                { id:"valeur", labelKey:"valeur_label", type:"select", options:["< 1M €","1M – 10M €","10M – 50M €","50M – 200M €","200M – 1Md €","> 1Md €"], full:true, help:"" }
+            ]
+        },
+        { // step 2
+            name: "Production & risques",
+            desc: "Planning & perception",
+            titleKey: "step3_title",
+            subKey: "step3_sub",
+            ctxKey: "step3_ctx",
+            fields: [
+                { id:"proto", labelKey:"proto_label", type:"range", min:2024, max:2032, value:2025, unit:"", full:false, help:"" },
+                { id:"prod_start", labelKey:"prod_start_label", type:"range", min:2025, max:2035, value:2027, unit:"", full:false, help:"" },
+                { id:"prod_dur", labelKey:"prod_dur_label", type:"range", min:1, max:20, value:8, unit:" ans", full:false, help:"" },
+                { id:"self_prod", labelKey:"self_prod_label", type:"range", min:0, max:100, value:40, unit:"%", full:false, help:"" },
+                { id:"confiance", labelKey:"confiance_label", type:"range", min:0, max:10, value:5, unit:"/10", full:false, helpKey:"confiance_help" },
+                { id:"retards", labelKey:"retards_label", type:"select", options:["Aucun","Quelques mois","Plus d'un an"], full:false, helpKey:"retards_help" },
+                { id:"crise_approx", labelKey:"crise_approx_label", type:"range", min:0, max:100, value:70, unit:"%", full:false, helpKey:"crise_approx_help" },
+                { id:"tech_gain", labelKey:"tech_gain_label", type:"range", min:0, max:100, value:40, unit:"%", full:false, helpKey:"tech_gain_help" },
+                { id:"eco_echelle", labelKey:"eco_echelle_label", type:"range", min:0, max:100, value:50, unit:"%", full:false, helpKey:"eco_echelle_help" }
+            ]
+        },
+        { // step 3: summary
+            name: "Récap",
+            desc: "Synthèse",
+            titleKey: "step4_title",
+            subKey: "step4_sub",
+            ctxKey: "step1_ctx",
+            fields: []
+        },
+        { // step 4: expertise + lancement
+            name: "Expertise",
+            desc: "Valeur ajoutée",
+            titleKey: "step5_title",
+            subKey: "step5_sub",
+            ctxKey: "step1_ctx",
+            fields: []
+        }
+    ];
+
+    let currentStep = 0;
+    let wizardData = {};
+
+    function renderLeft() {
+        const list = document.getElementById('stepList');
+        list.innerHTML = '';
+        steps.forEach((s, i) => {
+            const li = document.createElement('li');
+            li.className = `step-item ${i === currentStep ? 'active' : (i < currentStep ? 'done' : '')}`;
+            li.onclick = () => { if (i <= currentStep) { currentStep = i; render(); } };
+            li.innerHTML = `
+                <div class="step-num">${i < currentStep ? '✓' : i+1}</div>
+                <div class="step-info">
+                    <div class="step-name">${s.name}</div>
+                    <div class="step-desc">${s.desc}</div>
+                </div>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    function renderDots() {
+        const dots = document.getElementById('dots');
+        dots.innerHTML = '';
+        steps.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = `dot ${i === currentStep ? 'active' : (i < currentStep ? 'done' : '')}`;
+            dots.appendChild(dot);
+        });
+    }
+
+    function renderRight() {
+        const s = steps[currentStep];
+        document.getElementById('ctxText').innerHTML = `<strong>${t(s.ctxKey)}</strong> ${t(s.ctxKey+'body') || ''}`;
+        document.getElementById('stepTitle').textContent = t(s.titleKey);
+        document.getElementById('stepSub').textContent = t(s.subKey);
+        document.getElementById('btnPrev').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+        document.getElementById('btnLabel').textContent = currentStep === steps.length-1 ? t('btn_launch') : t('btn_next');
+
+        const area = document.getElementById('fieldsArea');
+        area.innerHTML = '';
+
+        if (currentStep === steps.length-2) {
+            // étape récapitulatif
+            const grid = document.createElement('div');
+            grid.className = 'summary-grid';
+            const labelsMap = {
+                nom: "Nom", org: "Organisation", role: "Rôle", secteur: "Secteur", pays: "Pays", devise: "Devise",
+                type_contrat: "Type contrat", duree: "Durée", valeur: "Valeur", proto: "Prototypage",
+                prod_start: "Prod. début", prod_dur: "Durée prod.", self_prod: "Auto-prod.",
+                confiance: "Confiance chiffrage", retards: "Retards", crise_approx: "Probabilité crise",
+                tech_gain: "Gains techno", eco_echelle: "Éco. échelle"
+            };
+            Object.entries(labelsMap).forEach(([k, lbl]) => {
+                if (wizardData[k] !== undefined) {
+                    const item = document.createElement('div');
+                    item.className = 'sum-item';
+                    let val = wizardData[k];
+                    if (k === 'duree') val += ' ans';
+                    if (k === 'prod_dur') val += ' ans';
+                    if (k === 'self_prod') val += '%';
+                    if (k === 'confiance') val += '/10';
+                    if (k === 'crise_approx') val += '%';
+                    if (k === 'tech_gain') val += '%';
+                    if (k === 'eco_echelle') val += '%';
+                    item.innerHTML = `<div class="sum-lbl">${lbl}</div><div class="sum-val">${val}</div>`;
+                    grid.appendChild(item);
+                }
+            });
+            area.appendChild(grid);
+            const btn = document.createElement('button');
+            btn.className = 'launch-btn';
+            btn.textContent = t('btn_launch');
+            btn.onclick = () => { currentStep = steps.length-1; render(); };
+            area.appendChild(btn);
+            document.getElementById('btnNext').style.display = 'none';
+            return;
+        }
+        if (currentStep === steps.length-1) {
+            // étape expertise + appel à l'action
+            const expertDiv = document.createElement('div');
+            expertDiv.className = 'expertise-message';
+            expertDiv.innerHTML = t('expertise_msg');
+            area.appendChild(expertDiv);
+            const contactBtn = document.createElement('a');
+            contactBtn.href = 'mailto:fh@saju.be?subject=Simulation%20configurateur';
+            contactBtn.className = 'btn btn-rouge';
+            contactBtn.style.display = 'block';
+            contactBtn.style.textAlign = 'center';
+            contactBtn.style.marginTop = '1rem';
+            contactBtn.textContent = '📅 Contacter Saju pour votre coefficient exact';
+            area.appendChild(contactBtn);
+            document.getElementById('btnNext').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('btnNext').style.display = 'flex';
+        const fields = s.fields;
+        const rows = [];
+        let i = 0;
+        while (i < fields.length) {
+            const f = fields[i];
+            if (f.full) { rows.push([f]); i++; }
+            else if (fields[i+1] && !fields[i+1].full) { rows.push([f, fields[i+1]]); i+=2; }
+            else { rows.push([f]); i++; }
+        }
+        rows.forEach(row => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = row.length === 2 ? 'field-row' : '';
+            row.forEach(f => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'field';
+                const labelSpan = document.createElement('label');
+                labelSpan.innerHTML = `${t(f.labelKey)} ${f.helpKey || f.help ? `<span class="help-icon" data-help="${t(f.helpKey || f.help)}">?</span>` : ''}`;
+                fieldDiv.appendChild(labelSpan);
+                // tooltip
+                if (f.helpKey || f.help) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = t(f.helpKey || f.help);
+                    fieldDiv.appendChild(tooltip);
+                }
+                if (f.type === 'range') {
+                    const rangeRow = document.createElement('div');
+                    rangeRow.className = 'range-row';
+                    const input = document.createElement('input');
+                    input.type = 'range';
+                    input.min = f.min;
+                    input.max = f.max;
+                    input.value = wizardData[f.id] !== undefined ? wizardData[f.id] : f.value;
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'range-val';
+                    valueSpan.textContent = input.value + (f.unit || '');
+                    input.oninput = () => {
+                        wizardData[f.id] = parseInt(input.value);
+                        valueSpan.textContent = wizardData[f.id] + (f.unit || '');
+                    };
+                    rangeRow.appendChild(input);
+                    rangeRow.appendChild(valueSpan);
+                    fieldDiv.appendChild(rangeRow);
+                    if (wizardData[f.id] === undefined) wizardData[f.id] = f.value;
+                } else if (f.type === 'select') {
+                    const select = document.createElement('select');
+                    f.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        if (wizardData[f.id] === opt) option.selected = true;
+                        select.appendChild(option);
+                    });
+                    select.onchange = () => { wizardData[f.id] = select.value; };
+                    if (!wizardData[f.id]) wizardData[f.id] = f.options[0];
+                    fieldDiv.appendChild(select);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = f.placeholder || '';
+                    input.value = wizardData[f.id] || '';
+                    input.oninput = () => { wizardData[f.id] = input.value; };
+                    fieldDiv.appendChild(input);
+                }
+                rowDiv.appendChild(fieldDiv);
+            });
+            area.appendChild(rowDiv);
+        });
+    }
+
+    function render() {
+        renderLeft();
+        renderDots();
+        renderRight();
+    }
+
+    function go(dir) {
+        if (dir === 1 && currentStep === steps.length-1) {
+            // déjà sur la dernière étape, on ne fait rien (contact déjà proposé)
+            return;
+        }
+        currentStep = Math.max(0, Math.min(steps.length-1, currentStep + dir));
+        render();
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => go(-1));
+    document.getElementById('btnNext').addEventListener('click', () => go(1));
+
+    // Animation
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('v'); });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+
+    window.addEventListener('load', () => {
+        const savedLang = localStorage.getItem('saju_lang');
+        if (savedLang && (savedLang === 'fr' || savedLang === 'en')) currentLang = savedLang;
+        else currentLang = 'fr';
+        setLang(currentLang);
+        render();
     });
-    area.appendChild(row);
-  });
-}
-
-function render() {
-  renderLeft();
-  renderDots();
-  renderRight();
-}
-
-function go(dir) {
-  if (dir === 1 && cur === steps.length - 1) {
-    window.open('https://www.saju.be/sim.html', '_blank');
-    return;
-  }
-  cur = Math.max(0, Math.min(steps.length - 1, cur + dir));
-  render();
-}
-
-render();
 </script>
-
 </body>
 </html>
