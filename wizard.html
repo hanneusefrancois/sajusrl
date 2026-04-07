@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Saju Srl — Configurateur de simulation</title>
+    <title>Saju — Configurateur de simulation</title>
     <meta name="description" content="Affinez votre simulation de contrat long terme avec Saju. Évaluez risques, opportunités et obtenez une formule de révision sur mesure.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -159,11 +159,10 @@
             margin-top:2rem;
             padding-top:1rem;
             border-top:1px solid var(--border);
-            font-size:0.7rem;
-            color:var(--blanc-low);
+            font-size:0.75rem;
             line-height:1.5;
+            color:var(--blanc-dim);
         }
-        .wizard-stats p{margin-bottom:0.3rem;}
         .wizard-stats strong{color:var(--or-p);}
 
         /* Panneau droit */
@@ -264,6 +263,14 @@
             font-size:0.9rem;color:var(--or-pale);
             min-width:55px;text-align:right;
         }
+        .qualitative-select{
+            background:var(--black);
+            border:1px solid var(--border);
+            border-radius:6px;
+            padding:0.7rem 1rem;
+            color:var(--blanc);
+            font-size:0.85rem;
+        }
         .nav-buttons{
             display:flex;
             justify-content:space-between;
@@ -300,6 +307,22 @@
             font-size:0.9rem;font-weight:500;
             margin-top:4px;
         }
+        .contact-section{
+            margin-top:1.5rem;
+            padding-top:1rem;
+            border-top:1px solid var(--border);
+        }
+        .contact-section h4{
+            font-family:'Cormorant Garamond',serif;
+            font-size:1rem;
+            margin-bottom:0.5rem;
+            color:var(--or-p);
+        }
+        .contact-note{
+            font-size:0.7rem;
+            color:var(--argent-c);
+            margin-top:0.5rem;
+        }
         .launch-btn{
             width:100%;
             background:var(--or);
@@ -311,22 +334,29 @@
             color:#000;
             cursor:pointer;
             transition:0.2s;
+            margin-top:1rem;
         }
         .launch-btn:hover{
             background:var(--or-p);
             transform:translateY(-2px);
         }
         .expertise-message{
-            background:var(--em-dim);
+            background:rgba(5,150,105,0.08);
             border-left:3px solid var(--em);
             border-radius:8px;
             padding:1rem;
             margin-top:1.5rem;
-            font-size:0.8rem;
+            font-size:0.85rem;
             line-height:1.5;
             color:var(--blanc-dim);
         }
         .expertise-message strong{color:var(--em-bright);}
+        .concurrent-note{
+            font-size:0.7rem;
+            color:var(--argent-c);
+            margin-top:0.5rem;
+            font-style:italic;
+        }
         footer{
             border-top:1px solid var(--border);
             padding:clamp(18px,3vw,26px) 0;
@@ -411,17 +441,16 @@
         <div class="fi v" style="text-align:center; margin-bottom:2rem;">
             <div class="s-tag or" style="justify-content:center;">Configurateur</div>
             <h1 class="s-title" style="text-align:center;">Affinez votre contrat <em>long terme</em></h1>
-            <p class="s-sub" style="text-align:center; margin:0 auto;">Ce simulateur vous donne une première vision. Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact.</p>
+            <p class="s-sub" style="text-align:center; margin:0 auto;">Ce simulateur vous donne un ordre de grandeur. Pour un coefficient exact, Saju analyse 125 ans de données.</p>
         </div>
 
         <div class="wizard-wrapper fi" id="wizardApp">
             <div class="wizard-steps">
                 <div class="wizard-steps-title">Paramètres</div>
-                <div class="wizard-steps-sub">Votre profil, votre contrat</div>
+                <div class="wizard-steps-sub">Votre contrat, vos risques</div>
                 <ul class="steps-list" id="stepList"></ul>
                 <div class="wizard-stats">
-                    <p><strong>🔬 Une simulation réaliste.</strong> Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact à partir de <strong>125 ans de données historiques</strong> et <strong>18 ans d’expérience terrain</strong>.</p>
-                    <p style="font-size:0.65rem; margin-top:0.5rem;">Ce configurateur vous aide à prendre conscience des impacts. L’expertise Saju crée une véritable valeur ajoutée sur les contrats long terme.</p>
+                    <p><strong>🔬 Simulation réaliste.</strong> Pour une formule sur mesure, experte et documentée, Saju construit votre coefficient multiplicateur exact, votre formule de révision optimale.</p>
                 </div>
             </div>
             <div class="wizard-form">
@@ -466,56 +495,83 @@
         }
     });
 
-    // ===== TRADUCTIONS (extrait, toutes langues pour démo, ici on simplifie avec fr/en) =====
+    // ===== DONNÉES SECTEURS ET PRODUITS =====
+    const sectorProducts = {
+        "Ferroviaire & mobilité": ["Locomotive", "EMU (Rame automoteur)", "Metro", "Tram/LRV", "Signalisation"],
+        "Pharmacie & santé": ["IRM", "Scanner", "Protonthérapie", "Équipement de laboratoire"],
+        "Nucléaire & énergie": ["Réacteur", "SMR", "Démantèlement", "Turbine à gaz", "CCGT"],
+        "Automobile & aérospatial": ["Aircraft", "Moteur d'avion", "Voiture", "Systèmes embarqués"],
+        "Défense": ["Chasseur", "Hélicoptère", "Drone", "Satellite", "Radar", "Fregate", "Sous-marin"],
+        "Robotique & automatisation": ["Data Center", "5G/6G Core", "Tour/Mât", "Robot industriel"],
+        "Naval & maritime": ["Pétrolier", "LNG Carrier", "Porte-conteneurs", "Navire de croisière", "FPSO", "Plateforme"],
+        "Banque & assurance": ["Infrastructure IT", "Plateforme de trading", "Système de gestion"],
+        "Travaux & maintenance": ["Pont", "Tunnel", "Barrage", "Terminal", "Grue/Écluse"],
+        "Import-export": ["Conteneur", "Système logistique", "Camion"],
+        "Autre": ["Produit personnalisé"]
+    };
+
+    // ===== TRADUCTIONS (FR/EN) =====
     const translations = {
         fr: {
-            step1_title: "Bienvenue", step1_sub: "Commençons par vous — 30 secondes.",
-            step1_ctx: "Votre simulation commence ici. Le configurateur adapte chaque paramètre à votre réalité.",
-            role_label: "Votre rôle", role_help: "Votre fonction dans l'organisation. Cela nous aide à adapter le discours.",
-            nom_label: "Nom & prénom", org_label: "Organisation", email_label: "Email (optionnel)",
-            step2_title: "Votre secteur", step2_sub: "Les indices de prix varient fortement selon l'industrie.",
-            step2_ctx: "Pourquoi c'est critique. Énergie, main-d'œuvre et matières premières n'ont pas le même poids selon le secteur.",
-            secteur_label: "Secteur d'activité", pays_label: "Pays", devise_label: "Devise",
-            type_contrat_label: "Type de contrat", duree_label: "Durée totale", valeur_label: "Valeur estimée",
-            step3_title: "Production & risques", step3_sub: "Votre planning, votre perception des risques et opportunités.",
-            step3_ctx: "Les phases définissent la structure de la formule. Vos réponses nous aident à calibrer le coefficient.",
-            proto_label: "Année prototypage", prod_start_label: "Début production série", prod_dur_label: "Durée production",
-            self_prod_label: "Auto-production %",
-            confiance_label: "Confiance dans votre chiffrage", confiance_help: "0 = très incertain, 10 = très confiant",
-            retards_label: "Retards estimés sur projet", retards_help: "Impact possible sur les coûts",
-            crise_approx_label: "Probabilité d'une crise majeure (approvisionnement, douanes, matières premières)", crise_approx_help: "Sur 40 ans, une crise est statistiquement très probable",
-            tech_gain_label: "Potentiel de gains technologiques", tech_gain_help: "Automatisation, IA, robotique",
-            eco_echelle_label: "Potentiel d'économies d'échelle", eco_echelle_help: "Mutualisation, volumes",
-            step4_title: "Récapitulatif", step4_sub: "Vérifiez vos paramètres avant de lancer la simulation.",
-            step5_title: "Simulation & expertise", step5_sub: "Ce que ce simulateur vous apporte — et ce que Saju peut faire de plus.",
-            btn_next: "Continuer", btn_prev: "Retour", btn_launch: "Lancer ma simulation",
-            expertise_msg: "Cette simulation est indicative. Pour un coefficient précis, calibré sur 125 ans de crises réelles (guerres, pandémies, chocs pétroliers) et adapté à votre entreprise, <strong>contactez Saju</strong>. Notre méthode propriétaire intègre les gains de productivité, les effets d'échelle, les monopoles fournisseurs et les cycles d'obsolescence. Vous obtenez un coefficient multiplicateur exact, défendable devant votre board."
+            step0_title: "Contexte du contrat", step0_sub: "Secteur, produit, géographie, volume",
+            step0_ctx: "Énergie, main-d'œuvre et matières premières n'ont pas le même poids selon le secteur et le produit.",
+            step1_title: "Production & support", step1_sub: "Planning, internalisation, maintenance",
+            step1_ctx: "Les phases de production et de support définissent la structure de la formule de révision.",
+            step2_title: "Risques & opportunités", step2_sub: "Votre perception face à l'incertain",
+            step2_ctx: "Ces questions aident à calibrer votre coefficient multiplicateur.",
+            step3_title: "Récapitulatif & sauvegarde", step3_sub: "Vérifiez vos réponses",
+            step3_ctx: "Vous pouvez revenir en arrière pour modifier.",
+            step4_title: "Simulation", step4_sub: "Votre configuration est prête",
+            step4_ctx: "Ce simulateur vous donne un ordre de grandeur. Pour un coefficient exact, Saju analyse 125 ans de données.",
+            role: "Votre rôle", role_autre: "Autre (précisez)",
+            secteur: "Secteur", produit: "Produit", pays: "Pays", devise: "Devise",
+            duree: "Durée totale (ans)", nb_unites: "Nombre d'unités", cout_unitaire: "Coût unitaire (M€)",
+            concurrent_note: "Si vous préférez ne pas indiquer vos prix, utilisez ceux d'un concurrent – les crises majeures seront les mêmes.",
+            proto: "Année de prototypage", prod_start: "Début production série", prod_dur: "Durée de production (ans)", self_prod: "Part interne (%)", maint_dur: "Durée de maintenance (ans)",
+            confiance: "Confiance dans votre chiffrage (0=incertain, 10=confiant)", retards: "Retards estimés",
+            crise_impact: "Impact probable d'une crise majeure (approvisionnement, douanes, guerre, matières premières)",
+            tech_gain: "Potentiel de gains technologiques",
+            eco_echelle: "Potentiel d'économies d'échelle",
+            qualitatif: ["Très faible", "Faible", "Modéré", "Élevé", "Très élevé"],
+            retards_opt: ["Aucun", "Quelques mois", "Plus d'un an"],
+            nom: "Nom", organisation: "Organisation", email: "Email", telephone: "Téléphone",
+            contact_title: "🔐 Sauvegarder cette configuration",
+            contact_sub: "En renseignant vos coordonnées, vous pourrez retrouver cette simulation plus tard et recevoir un récapitulatif par email.",
+            contact_note: "Votre email ne sera utilisé qu'à cette fin.",
+            btn_next: "Continuer", btn_prev: "Retour", btn_launch: "Lancer la simulation",
+            expertise_msg: "Cette simulation est indicative. Pour un coefficient précis, calibré sur 125 ans de crises réelles (guerres, pandémies, chocs pétroliers) et adapté à votre entreprise, <strong>contactez Saju</strong>."
         },
         en: {
-            step1_title: "Welcome", step1_sub: "Let's start with you — 30 seconds.",
-            step1_ctx: "Your simulation starts here. The configurator adapts each parameter to your reality.",
-            role_label: "Your role", role_help: "Your function in the organization. Helps us tailor the discussion.",
-            nom_label: "Full name", org_label: "Organization", email_label: "Email (optional)",
-            step2_title: "Your sector", step2_sub: "Price indices vary greatly by industry.",
-            step2_ctx: "Why it matters. Energy, labor and raw materials don't have the same weight in pharma and rail.",
-            secteur_label: "Industry sector", pays_label: "Country", devise_label: "Currency",
-            type_contrat_label: "Contract type", duree_label: "Total duration", valeur_label: "Estimated value",
-            step3_title: "Production & risks", step3_sub: "Your schedule, your perception of risks and opportunities.",
-            step3_ctx: "Phases define the formula structure. Your answers help us calibrate the coefficient.",
-            proto_label: "Prototyping year", prod_start_label: "Series production start", prod_dur_label: "Production duration",
-            self_prod_label: "Self-production %",
-            confiance_label: "Confidence in your costing", confiance_help: "0 = very uncertain, 10 = very confident",
-            retards_label: "Estimated project delays", retards_help: "Potential impact on costs",
-            crise_approx_label: "Probability of a major crisis (supply, tariffs, raw materials)", crise_approx_help: "Over 40 years, a crisis is statistically very likely",
-            tech_gain_label: "Potential technology gains", tech_gain_help: "Automation, AI, robotics",
-            eco_echelle_label: "Potential economies of scale", eco_echelle_help: "Volume, mutualization",
-            step4_title: "Summary", step4_sub: "Review your parameters before launching the simulation.",
-            step5_title: "Simulation & expertise", step5_sub: "What this simulator gives you — and what Saju can do more.",
-            btn_next: "Next", btn_prev: "Back", btn_launch: "Run my simulation",
-            expertise_msg: "This simulation is indicative. For a precise coefficient, calibrated on 125 years of real crises (wars, pandemics, oil shocks) and tailored to your business, <strong>contact Saju</strong>. Our proprietary method integrates productivity gains, scale effects, supplier monopolies and obsolescence cycles. You get an exact multiplier coefficient, defensible before your board."
+            step0_title: "Contract context", step0_sub: "Sector, product, geography, volume",
+            step0_ctx: "Energy, labor and raw materials weight differently by sector and product.",
+            step1_title: "Production & support", step1_sub: "Schedule, internalization, maintenance",
+            step1_ctx: "Production and support phases define the revision formula structure.",
+            step2_title: "Risks & opportunities", step2_sub: "Your perception of uncertainty",
+            step2_ctx: "These questions help calibrate your multiplier coefficient.",
+            step3_title: "Summary & save", step3_sub: "Review your answers",
+            step3_ctx: "You can go back to modify.",
+            step4_title: "Simulation", step4_sub: "Your configuration is ready",
+            step4_ctx: "This simulator gives you an order of magnitude. For an exact coefficient, Saju analyzes 125 years of data.",
+            role: "Your role", role_autre: "Other (specify)",
+            secteur: "Sector", produit: "Product", pays: "Country", devise: "Currency",
+            duree: "Total duration (years)", nb_unites: "Number of units", cout_unitaire: "Unit cost (M€)",
+            concurrent_note: "If you prefer not to disclose your prices, use a competitor's – major crises will be the same.",
+            proto: "Prototyping year", prod_start: "Series production start", prod_dur: "Production duration (years)", self_prod: "In-house share (%)", maint_dur: "Maintenance duration (years)",
+            confiance: "Confidence in your costing (0=uncertain, 10=confident)", retards: "Estimated delays",
+            crise_impact: "Likely impact of a major crisis (supply, tariffs, war, raw materials)",
+            tech_gain: "Potential technology gains",
+            eco_echelle: "Potential economies of scale",
+            qualitatif: ["Very low", "Low", "Moderate", "High", "Very high"],
+            retards_opt: ["None", "A few months", "More than a year"],
+            nom: "Name", organisation: "Organization", email: "Email", telephone: "Phone",
+            contact_title: "🔐 Save this configuration",
+            contact_sub: "By providing your contact details, you can retrieve this simulation later and receive a summary by email.",
+            contact_note: "Your email will only be used for this purpose.",
+            btn_next: "Next", btn_prev: "Back", btn_launch: "Run simulation",
+            expertise_msg: "This simulation is indicative. For an exact coefficient, calibrated on 125 years of real crises (wars, pandemics, oil shocks) and tailored to your business, <strong>contact Saju</strong>."
         }
     };
-    // Pour les autres langues, on pourrait étendre, mais pour la démo on utilise fr/en.
+
     let currentLang = 'fr';
     function t(key) { return translations[currentLang][key] || key; }
 
@@ -526,84 +582,72 @@
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
         });
-        render(); // re-render le wizard avec la nouvelle langue
+        render();
     }
 
     // ===== WIZARD LOGIC =====
-    const roles = [
+    const rolesList = [
         "CEO", "CFO", "CPO", "Bid Manager", "Dir. Technique", "Commercial / Sales",
         "Acheteur Public", "Banquier / Prêteur", "Actionnaire / Investisseur",
         "Fonds de pension", "Analyste / Agence de notation", "Citoyen / Contribuable",
-        "Contrôleur financier / CPM", "Offre Controller"
+        "Contrôleur financier / CPM", "Offre Controller", "Autre"
     ];
 
     const steps = [
-        { // step 0
-            name: "Vous",
-            desc: "Profil",
-            titleKey: "step1_title",
-            subKey: "step1_sub",
-            ctxKey: "step1_ctx",
-            fields: [
-                { id:"nom", labelKey:"nom_label", type:"text", placeholder:"François Dupont", full:true, help:"" },
-                { id:"org", labelKey:"org_label", type:"text", placeholder:"Siemens Mobility, SNCB, Bayer…", full:true, help:"" },
-                { id:"role", labelKey:"role_label", type:"select", options:roles, full:false, helpKey:"role_help" },
-                { id:"email", labelKey:"email_label", type:"text", placeholder:"contact@organisation.com", full:false, help:"" }
-            ]
-        },
-        { // step 1
-            name: "Secteur",
-            desc: "Marché",
-            titleKey: "step2_title",
-            subKey: "step2_sub",
-            ctxKey: "step2_ctx",
-            fields: [
-                { id:"secteur", labelKey:"secteur_label", type:"select", options:["Ferroviaire & mobilité","Pharmacie & santé","Nucléaire & énergie","Automobile & aérospatial","Défense","Robotique & automatisation","Naval & maritime","Banque & assurance","Travaux & maintenance","Import-export","Autre"], full:true, help:"" },
-                { id:"pays", labelKey:"pays_label", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false, help:"" },
-                { id:"devise", labelKey:"devise_label", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false, help:"" },
-                { id:"type_contrat", labelKey:"type_contrat_label", type:"select", options:["Fourniture de matériel","Maintenance long terme","Concession / PPP","Marché public","Contrat cadre","Autre"], full:true, help:"" },
-                { id:"duree", labelKey:"duree_label", type:"range", min:3, max:40, value:15, unit:" ans", full:true, help:"" },
-                { id:"valeur", labelKey:"valeur_label", type:"select", options:["< 1M €","1M – 10M €","10M – 50M €","50M – 200M €","200M – 1Md €","> 1Md €"], full:true, help:"" }
-            ]
-        },
-        { // step 2
-            name: "Production & risques",
-            desc: "Planning & perception",
-            titleKey: "step3_title",
-            subKey: "step3_sub",
-            ctxKey: "step3_ctx",
-            fields: [
-                { id:"proto", labelKey:"proto_label", type:"range", min:2024, max:2032, value:2025, unit:"", full:false, help:"" },
-                { id:"prod_start", labelKey:"prod_start_label", type:"range", min:2025, max:2035, value:2027, unit:"", full:false, help:"" },
-                { id:"prod_dur", labelKey:"prod_dur_label", type:"range", min:1, max:20, value:8, unit:" ans", full:false, help:"" },
-                { id:"self_prod", labelKey:"self_prod_label", type:"range", min:0, max:100, value:40, unit:"%", full:false, help:"" },
-                { id:"confiance", labelKey:"confiance_label", type:"range", min:0, max:10, value:5, unit:"/10", full:false, helpKey:"confiance_help" },
-                { id:"retards", labelKey:"retards_label", type:"select", options:["Aucun","Quelques mois","Plus d'un an"], full:false, helpKey:"retards_help" },
-                { id:"crise_approx", labelKey:"crise_approx_label", type:"range", min:0, max:100, value:70, unit:"%", full:false, helpKey:"crise_approx_help" },
-                { id:"tech_gain", labelKey:"tech_gain_label", type:"range", min:0, max:100, value:40, unit:"%", full:false, helpKey:"tech_gain_help" },
-                { id:"eco_echelle", labelKey:"eco_echelle_label", type:"range", min:0, max:100, value:50, unit:"%", full:false, helpKey:"eco_echelle_help" }
-            ]
-        },
-        { // step 3: summary
-            name: "Récap",
-            desc: "Synthèse",
-            titleKey: "step4_title",
-            subKey: "step4_sub",
-            ctxKey: "step1_ctx",
-            fields: []
-        },
-        { // step 4: expertise + lancement
-            name: "Expertise",
-            desc: "Valeur ajoutée",
-            titleKey: "step5_title",
-            subKey: "step5_sub",
-            ctxKey: "step1_ctx",
-            fields: []
-        }
+        { name: "Contexte", titleKey: "step0_title", subKey: "step0_sub", ctxKey: "step0_ctx",
+          fields: [
+            { id:"role", labelKey:"role", type:"select", options:rolesList, full:false },
+            { id:"role_autre", labelKey:"role_autre", type:"text", full:false, depends:{field:"role",value:"Autre"} },
+            { id:"secteur", labelKey:"secteur", type:"select", options:Object.keys(sectorProducts), full:true, onchange:"updateProducts" },
+            { id:"produit", labelKey:"produit", type:"select", options:sectorProducts["Ferroviaire & mobilité"], full:true },
+            { id:"pays", labelKey:"pays", type:"select", options:["Belgique","France","Allemagne","Pays-Bas","Europe (multi-pays)","Hors Europe"], full:false },
+            { id:"devise", labelKey:"devise", type:"select", options:["EUR","USD","GBP","JPY","CHF","Autre"], full:false },
+            { id:"duree", labelKey:"duree", type:"range", min:3, max:60, value:15, unit:" ans", full:true },
+            { id:"nb_unites", labelKey:"nb_unites", type:"number", min:1, max:100000, value:100, full:false },
+            { id:"cout_unitaire", labelKey:"cout_unitaire", type:"number", min:0.1, max:1000, step:0.1, value:5, full:false, unit:" M€" }
+          ] },
+        { name: "Production", titleKey: "step1_title", subKey: "step1_sub", ctxKey: "step1_ctx",
+          fields: [
+            { id:"proto", labelKey:"proto", type:"range", min:2024, max:2032, value:2025, unit:"", full:false },
+            { id:"prod_start", labelKey:"prod_start", type:"range", min:2025, max:2035, value:2027, unit:"", full:false },
+            { id:"prod_dur", labelKey:"prod_dur", type:"range", min:1, max:40, value:8, unit:" ans", full:false },
+            { id:"self_prod", labelKey:"self_prod", type:"range", min:0, max:100, value:40, unit:"%", full:false },
+            { id:"maint_dur", labelKey:"maint_dur", type:"range", min:0, max:60, value:15, unit:" ans", full:true }
+          ] },
+        { name: "Risques", titleKey: "step2_title", subKey: "step2_sub", ctxKey: "step2_ctx",
+          fields: [
+            { id:"confiance", labelKey:"confiance", type:"range", min:0, max:10, value:5, unit:"/10", full:true },
+            { id:"retards", labelKey:"retards", type:"select", options:t('retards_opt'), full:false },
+            { id:"crise_impact", labelKey:"crise_impact", type:"qualitative", options:t('qualitatif'), full:true },
+            { id:"tech_gain", labelKey:"tech_gain", type:"qualitative", options:t('qualitatif'), full:true },
+            { id:"eco_echelle", labelKey:"eco_echelle", type:"qualitative", options:t('qualitatif'), full:true }
+          ] },
+        { name: "Récap", titleKey: "step3_title", subKey: "step3_sub", ctxKey: "step3_ctx", fields: [] },
+        { name: "Simulation", titleKey: "step4_title", subKey: "step4_sub", ctxKey: "step4_ctx", fields: [] }
     ];
 
     let currentStep = 0;
     let wizardData = {};
+
+    function updateProducts() {
+        const secteur = wizardData.secteur;
+        const productSelect = document.querySelector('#fieldsArea select[id$="produit"]');
+        if (productSelect && secteur && sectorProducts[secteur]) {
+            const currentVal = wizardData.produit;
+            productSelect.innerHTML = '';
+            sectorProducts[secteur].forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                if (currentVal === p) opt.selected = true;
+                productSelect.appendChild(opt);
+            });
+            if (!currentVal && sectorProducts[secteur].length) {
+                wizardData.produit = sectorProducts[secteur][0];
+                productSelect.value = wizardData.produit;
+            }
+        }
+    }
 
     function renderLeft() {
         const list = document.getElementById('stepList');
@@ -612,13 +656,7 @@
             const li = document.createElement('li');
             li.className = `step-item ${i === currentStep ? 'active' : (i < currentStep ? 'done' : '')}`;
             li.onclick = () => { if (i <= currentStep) { currentStep = i; render(); } };
-            li.innerHTML = `
-                <div class="step-num">${i < currentStep ? '✓' : i+1}</div>
-                <div class="step-info">
-                    <div class="step-name">${s.name}</div>
-                    <div class="step-desc">${s.desc}</div>
-                </div>
-            `;
+            li.innerHTML = `<div class="step-num">${i < currentStep ? '✓' : i+1}</div><div class="step-info"><div class="step-name">${s.name}</div></div>`;
             list.appendChild(li);
         });
     }
@@ -633,9 +671,62 @@
         });
     }
 
+    function buildParamsForSim() {
+        // Mapper les données du wizard vers les paramètres attendus par sim.html
+        const params = {};
+        // Secteur et produit
+        if (wizardData.secteur) {
+            const sectorMap = {
+                "Ferroviaire & mobilité": "rail",
+                "Pharmacie & santé": "med",
+                "Nucléaire & énergie": "nuke",
+                "Automobile & aérospatial": "aero",
+                "Défense": "def",
+                "Robotique & automatisation": "telco",
+                "Naval & maritime": "navcom",
+                "Banque & assurance": "med",
+                "Travaux & maintenance": "infra",
+                "Import-export": "navcom",
+                "Autre": "def"
+            };
+            params.sector = sectorMap[wizardData.secteur] || "rail";
+        }
+        if (wizardData.produit) {
+            const productMap = {
+                "Locomotive": "loco", "EMU (Rame automoteur)": "emu", "Metro": "metro", "Tram/LRV": "tram", "Signalisation": "signal",
+                "IRM": "mri", "Scanner": "mri", "Protonthérapie": "proton",
+                "Réacteur": "reactor", "SMR": "smr", "Turbine à gaz": "gasturb", "CCGT": "ccgt",
+                "Aircraft": "aircraft", "Moteur d'avion": "engine",
+                "Chasseur": "fighter", "Hélicoptère": "heli", "Drone": "uav", "Satellite": "sat", "Radar": "radar",
+                "Data Center": "dc", "Robot industriel": "robot",
+                "Pétrolier": "tanker", "LNG Carrier": "lng", "Porte-conteneurs": "container", "FPSO": "fpso", "Plateforme": "platform",
+                "Pont": "bridge", "Tunnel": "tunnel", "Barrage": "dam", "Terminal": "terminal", "Grue/Écluse": "crane"
+            };
+            params.product = productMap[wizardData.produit] || "loco";
+        }
+        if (wizardData.duree) params.prodDur = wizardData.duree;
+        if (wizardData.maint_dur) params.maintDur = wizardData.maint_dur;
+        if (wizardData.self_prod) params.selfProd = wizardData.self_prod;
+        if (wizardData.nb_unites) params.totalUnits = wizardData.nb_unites;
+        if (wizardData.cout_unitaire) params.unitPrice = wizardData.cout_unitaire;
+        if (wizardData.devise && wizardData.devise !== 'EUR') params.cur = wizardData.devise;
+        // Production start approximative
+        if (wizardData.prod_start) params.prodStart = (wizardData.prod_start - 2027) * 52;
+        if (wizardData.proto) params.protoDur = wizardData.proto - 2024;
+        return params;
+    }
+
+    function launchSimulation() {
+        const params = buildParamsForSim();
+        // Sauvegarder dans localStorage pour sim.html
+        localStorage.setItem('wizard_params', JSON.stringify(params));
+        // Rediriger vers sim.html
+        window.location.href = 'sim.html';
+    }
+
     function renderRight() {
         const s = steps[currentStep];
-        document.getElementById('ctxText').innerHTML = `<strong>${t(s.ctxKey)}</strong> ${t(s.ctxKey+'body') || ''}`;
+        document.getElementById('ctxText').innerHTML = `<strong>${t(s.ctxKey)}</strong>`;
         document.getElementById('stepTitle').textContent = t(s.titleKey);
         document.getElementById('stepSub').textContent = t(s.subKey);
         document.getElementById('btnPrev').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
@@ -645,55 +736,76 @@
         area.innerHTML = '';
 
         if (currentStep === steps.length-2) {
-            // étape récapitulatif
+            // Récapitulatif + coordonnées
             const grid = document.createElement('div');
             grid.className = 'summary-grid';
             const labelsMap = {
-                nom: "Nom", org: "Organisation", role: "Rôle", secteur: "Secteur", pays: "Pays", devise: "Devise",
-                type_contrat: "Type contrat", duree: "Durée", valeur: "Valeur", proto: "Prototypage",
-                prod_start: "Prod. début", prod_dur: "Durée prod.", self_prod: "Auto-prod.",
-                confiance: "Confiance chiffrage", retards: "Retards", crise_approx: "Probabilité crise",
-                tech_gain: "Gains techno", eco_echelle: "Éco. échelle"
+                role: "Rôle", role_autre: "Autre rôle", secteur: "Secteur", produit: "Produit", pays: "Pays", devise: "Devise",
+                duree: "Durée (ans)", nb_unites: "Nb unités", cout_unitaire: "Coût unitaire (M€)",
+                proto: "Prototypage", prod_start: "Début prod", prod_dur: "Durée prod (ans)",
+                self_prod: "Part interne (%)", maint_dur: "Durée maintenance (ans)",
+                confiance: "Confiance (/10)", retards: "Retards", crise_impact: "Impact crise",
+                tech_gain: "Gains techno", eco_echelle: "Économies d'échelle"
             };
             Object.entries(labelsMap).forEach(([k, lbl]) => {
-                if (wizardData[k] !== undefined) {
+                let val = wizardData[k];
+                if (val !== undefined && val !== '') {
+                    if (k === 'duree' || k === 'prod_dur' || k === 'maint_dur') val += ' ans';
+                    if (k === 'self_prod') val += '%';
+                    if (k === 'cout_unitaire') val = val + ' M€';
+                    if (k === 'confiance') val = val + '/10';
                     const item = document.createElement('div');
                     item.className = 'sum-item';
-                    let val = wizardData[k];
-                    if (k === 'duree') val += ' ans';
-                    if (k === 'prod_dur') val += ' ans';
-                    if (k === 'self_prod') val += '%';
-                    if (k === 'confiance') val += '/10';
-                    if (k === 'crise_approx') val += '%';
-                    if (k === 'tech_gain') val += '%';
-                    if (k === 'eco_echelle') val += '%';
                     item.innerHTML = `<div class="sum-lbl">${lbl}</div><div class="sum-val">${val}</div>`;
                     grid.appendChild(item);
                 }
             });
             area.appendChild(grid);
+            // Bloc coordonnées optionnel
+            const contactDiv = document.createElement('div');
+            contactDiv.className = 'contact-section';
+            contactDiv.innerHTML = `
+                <h4>${t('contact_title')}</h4>
+                <p style="font-size:0.75rem; margin-bottom:0.8rem;">${t('contact_sub')}</p>
+                <div class="field-row">
+                    <div class="field"><label>${t('nom')}</label><input type="text" id="contact_nom" value="${wizardData.contact_nom || ''}"></div>
+                    <div class="field"><label>${t('organisation')}</label><input type="text" id="contact_org" value="${wizardData.contact_org || ''}"></div>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>${t('email')}</label><input type="email" id="contact_email" value="${wizardData.contact_email || ''}"></div>
+                    <div class="field"><label>${t('telephone')}</label><input type="tel" id="contact_phone" value="${wizardData.contact_phone || ''}"></div>
+                </div>
+                <div class="contact-note">${t('contact_note')}</div>
+            `;
+            area.appendChild(contactDiv);
             const btn = document.createElement('button');
             btn.className = 'launch-btn';
             btn.textContent = t('btn_launch');
-            btn.onclick = () => { currentStep = steps.length-1; render(); };
+            btn.onclick = () => {
+                wizardData.contact_nom = document.getElementById('contact_nom').value;
+                wizardData.contact_org = document.getElementById('contact_org').value;
+                wizardData.contact_email = document.getElementById('contact_email').value;
+                wizardData.contact_phone = document.getElementById('contact_phone').value;
+                if (wizardData.contact_email) {
+                    localStorage.setItem('saju_saved_profile_' + wizardData.contact_email, JSON.stringify(wizardData));
+                }
+                launchSimulation();
+            };
             area.appendChild(btn);
             document.getElementById('btnNext').style.display = 'none';
             return;
         }
         if (currentStep === steps.length-1) {
-            // étape expertise + appel à l'action
+            // Étape simulation (déjà gérée par le bouton, mais afficher un message d'expertise)
             const expertDiv = document.createElement('div');
             expertDiv.className = 'expertise-message';
             expertDiv.innerHTML = t('expertise_msg');
             area.appendChild(expertDiv);
-            const contactBtn = document.createElement('a');
-            contactBtn.href = 'mailto:fh@saju.be?subject=Simulation%20configurateur';
-            contactBtn.className = 'btn btn-rouge';
-            contactBtn.style.display = 'block';
-            contactBtn.style.textAlign = 'center';
-            contactBtn.style.marginTop = '1rem';
-            contactBtn.textContent = '📅 Contacter Saju pour votre coefficient exact';
-            area.appendChild(contactBtn);
+            const relaunchBtn = document.createElement('button');
+            relaunchBtn.className = 'launch-btn';
+            relaunchBtn.textContent = t('btn_launch');
+            relaunchBtn.onclick = () => launchSimulation();
+            area.appendChild(relaunchBtn);
             document.getElementById('btnNext').style.display = 'none';
             return;
         }
@@ -715,15 +827,8 @@
                 const fieldDiv = document.createElement('div');
                 fieldDiv.className = 'field';
                 const labelSpan = document.createElement('label');
-                labelSpan.innerHTML = `${t(f.labelKey)} ${f.helpKey || f.help ? `<span class="help-icon" data-help="${t(f.helpKey || f.help)}">?</span>` : ''}`;
+                labelSpan.innerHTML = `${t(f.labelKey)} ${f.helpKey ? `<span class="help-icon" data-help="${t(f.helpKey)}">?</span>` : ''}`;
                 fieldDiv.appendChild(labelSpan);
-                // tooltip
-                if (f.helpKey || f.help) {
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip';
-                    tooltip.textContent = t(f.helpKey || f.help);
-                    fieldDiv.appendChild(tooltip);
-                }
                 if (f.type === 'range') {
                     const rangeRow = document.createElement('div');
                     rangeRow.className = 'range-row';
@@ -736,7 +841,7 @@
                     valueSpan.className = 'range-val';
                     valueSpan.textContent = input.value + (f.unit || '');
                     input.oninput = () => {
-                        wizardData[f.id] = parseInt(input.value);
+                        wizardData[f.id] = parseFloat(input.value);
                         valueSpan.textContent = wizardData[f.id] + (f.unit || '');
                     };
                     rangeRow.appendChild(input);
@@ -752,21 +857,69 @@
                         if (wizardData[f.id] === opt) option.selected = true;
                         select.appendChild(option);
                     });
-                    select.onchange = () => { wizardData[f.id] = select.value; };
+                    select.onchange = () => {
+                        wizardData[f.id] = select.value;
+                        if (f.id === 'secteur') {
+                            if (!wizardData.produit) wizardData.produit = sectorProducts[wizardData.secteur][0];
+                            updateProducts();
+                            render();
+                        }
+                    };
                     if (!wizardData[f.id]) wizardData[f.id] = f.options[0];
+                    select.value = wizardData[f.id];
                     fieldDiv.appendChild(select);
+                } else if (f.type === 'qualitative') {
+                    const select = document.createElement('select');
+                    select.className = 'qualitative-select';
+                    f.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        if (wizardData[f.id] === opt) option.selected = true;
+                        select.appendChild(option);
+                    });
+                    select.onchange = () => { wizardData[f.id] = select.value; };
+                    if (!wizardData[f.id]) wizardData[f.id] = f.options[2];
+                    select.value = wizardData[f.id];
+                    fieldDiv.appendChild(select);
+                } else if (f.type === 'number') {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = f.step || 1;
+                    input.min = f.min;
+                    input.max = f.max;
+                    input.value = wizardData[f.id] !== undefined ? wizardData[f.id] : f.value;
+                    input.oninput = () => { wizardData[f.id] = parseFloat(input.value); };
+                    fieldDiv.appendChild(input);
+                    if (wizardData[f.id] === undefined) wizardData[f.id] = f.value;
                 } else {
                     const input = document.createElement('input');
                     input.type = 'text';
-                    input.placeholder = f.placeholder || '';
                     input.value = wizardData[f.id] || '';
                     input.oninput = () => { wizardData[f.id] = input.value; };
                     fieldDiv.appendChild(input);
                 }
+                if (f.depends && wizardData[f.depends.field] !== f.depends.value) fieldDiv.style.display = 'none';
                 rowDiv.appendChild(fieldDiv);
             });
             area.appendChild(rowDiv);
         });
+        if (currentStep === 0) {
+            const note = document.createElement('div');
+            note.className = 'concurrent-note';
+            note.textContent = t('concurrent_note');
+            area.appendChild(note);
+        }
+        const roleSelect = area.querySelector('select[id$="role"]');
+        if (roleSelect) {
+            roleSelect.addEventListener('change', () => {
+                wizardData.role = roleSelect.value;
+                const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
+                if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
+            });
+            const autreDiv = area.querySelector('.field:has(input[id$="role_autre"])');
+            if (autreDiv) autreDiv.style.display = wizardData.role === 'Autre' ? 'flex' : 'none';
+        }
     }
 
     function render() {
@@ -777,7 +930,7 @@
 
     function go(dir) {
         if (dir === 1 && currentStep === steps.length-1) {
-            // déjà sur la dernière étape, on ne fait rien (contact déjà proposé)
+            launchSimulation();
             return;
         }
         currentStep = Math.max(0, Math.min(steps.length-1, currentStep + dir));
@@ -787,7 +940,6 @@
     document.getElementById('btnPrev').addEventListener('click', () => go(-1));
     document.getElementById('btnNext').addEventListener('click', () => go(1));
 
-    // Animation
     const obs = new IntersectionObserver((entries) => {
         entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('v'); });
     }, { threshold: 0.07 });
@@ -798,6 +950,19 @@
         if (savedLang && (savedLang === 'fr' || savedLang === 'en')) currentLang = savedLang;
         else currentLang = 'fr';
         setLang(currentLang);
+        // Valeurs par défaut
+        wizardData.role = rolesList[0];
+        wizardData.secteur = Object.keys(sectorProducts)[0];
+        wizardData.produit = sectorProducts[wizardData.secteur][0];
+        wizardData.duree = 15;
+        wizardData.prod_dur = 8;
+        wizardData.maint_dur = 15;
+        wizardData.self_prod = 40;
+        wizardData.confiance = 5;
+        wizardData.retards = t('retards_opt')[0];
+        wizardData.crise_impact = t('qualitatif')[2];
+        wizardData.tech_gain = t('qualitatif')[2];
+        wizardData.eco_echelle = t('qualitatif')[2];
         render();
     });
 </script>
