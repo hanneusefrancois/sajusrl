@@ -1,0 +1,102 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: fr_FR.UTF-8
+  keyboard:
+    layout: fr
+    variant: oss
+  timezone: Europe/Brussels
+  identity:
+    hostname: nec-lavie
+    username: furayumi
+    password: '$6$QR8/JDodcs/BuhSA$cBpOo2lmUubZtni1XqvV9vBBAfinb.WSYL.TW90qfA7RDXwVT/uraDBUjSD30M2BucvNdCc5rgv/Pqmy1HJU.0'
+  storage:
+    layout:
+      name: direct
+  packages:
+    - build-essential
+    - git
+    - curl
+    - wget
+    - htop
+    - ncdu
+    - neofetch
+    - vim
+    - terminator
+    - falkon
+    - libreoffice
+    - libreoffice-l10n-fr
+    - hunspell-fr
+    - evince
+    - g++
+    - gdb
+    - cmake
+    - make
+    - valgrind
+    - openjdk-21-jdk
+    - arduino
+    - rpi-imager
+    - prusa-slicer
+    - inkscape
+    - mosquitto
+    - mosquitto-clients
+    - vlc
+    - gimp
+    - cheese
+    - anki
+    - stellarium
+    - gcompris-qt
+    - scratch
+    - tuxtype
+    - ktouch
+    - bambam
+    - language-pack-ja
+    - language-pack-zh-hans
+    - fcitx5
+    - fcitx5-mozc
+    - fcitx5-chinese-addons
+    - fcitx5-configtool
+    - goldendict
+    - audio-recorder
+    - goodvibes
+    - radiotray-ng
+    - obs-studio
+    - openssh-client
+    - nmap
+    - net-tools
+    - samba
+    - samba-common-bin
+    - zram-config
+    - linux-firmware
+    - pciutils
+    - usbutils
+  late-commands:
+    - |
+      curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+      apt install -y nodejs
+      npm install -g npm@latest
+    - |
+      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/packages.microsoft.gpg
+      install -o root -g root -m 644 /tmp/packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+      echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list
+      apt update
+      apt install -y code
+    - |
+      add-apt-repository -y ppa:deadsnakes/ppa
+      apt update
+      apt install -y python3.12 python3.12-venv python3-pip
+    - python3 -m pip install platformio
+    - curl -fsSL https://tailscale.com/install.sh | sh
+    - usermod -aG dialout furayumi
+    - |
+      mkdir -p /srv/partage
+      chmod 777 /srv/partage
+      echo -e "\n[Partage]\n    path = /srv/partage\n    browseable = yes\n    read only = no\n    guest ok = yes\n    create mask = 0777\n    directory mask = 0777" >> /etc/samba/smb.conf
+      systemctl enable smbd
+    - im-config -n fcitx5
+    - systemctl disable mosquitto
+    - systemctl disable smbd
+    - systemctl enable zram-config
+    - apt autoremove -y
+    - apt autoclean
+  shutdown: reboot
