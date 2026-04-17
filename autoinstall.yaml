@@ -9,7 +9,7 @@ autoinstall:
   identity:
     hostname: nec-lavie
     username: furayumi
-    password: '$6$QR8/JDodcs/BuhSA$cBpOo2lmUubZtni1XqvV9vBBAfinb.WSYL.TW90qfA7RDXwVT/uraDBUjSD30M2BucvNdCc5rgv/Pqmy1HJU.0'
+    password: '$6$q3HJnpADPwcXMtN1$naxrALHblz2xRv93ssH0YSwwN3uNA5dHUehN8DJJ4znHACgwW8teAQsYeYrEVokRxG.PIhs.XETMZIr60fLmm1'
   storage:
     layout:
       name: direct
