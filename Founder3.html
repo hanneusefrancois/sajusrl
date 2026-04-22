@@ -97,6 +97,45 @@
         @media(max-width:900px){.tri-grid,.crises-grid{grid-template-columns:1fr}.duo-grid,.whom-grid,.poles-grid{grid-template-columns:1fr}.coef-grid{grid-template-columns:1fr 1fr}.proof-strip{grid-template-columns:1fr 1fr}.proof-item:nth-child(2){border-right:none}.profile-inner{grid-template-columns:1fr}.profile-left{border-right:none;border-bottom:1px solid var(--border)}.name-content{grid-template-columns:1fr}.crisis-key{grid-template-columns:1fr}.ck-item{border-right:none!important}.contact-grid{grid-template-columns:1fr}.pole-flagship{grid-column:1/-1}}
         @media(max-width:680px){.nav-links{display:none}.nav-mobile-toggle{display:flex;align-items:center}.coef-grid{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}.nav-inner{height:70px}.nav-logo img{height:50px;padding:6px 14px}.nav-mobile-menu{top:114px}}
         @media(max-width:380px){.coef-grid{grid-template-columns:1fr}}
+     /* ----- TIMELINE GRID (NOUVEAU STYLE) ----- */
+        .tl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 2px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .tl-item {
+            background: var(--card);
+            padding: clamp(16px, 2vw, 24px) clamp(14px, 1.8vw, 20px);
+            transition: background 0.3s;
+            border-left: 3px solid var(--or-p);
+        }
+        .tl-item:hover {
+            background: var(--card2);
+        }
+        .tl-icon {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .tl-company {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--blanc);
+            margin-bottom: 4px;
+        }
+        .tl-desc {
+            font-size: 0.8rem;
+            color: var(--blanc-low);
+            line-height: 1.6;
+        }
+
+
+     
     </style>
 </head>
 <body>
@@ -164,17 +203,17 @@
     <div class="s-tag emer" data-i="tag_timeline">10 industries · 1 fil rouge</div>
     <h2 class="s-title" data-i="h_timeline">Les systèmes, les coûts,<br>et les <em>crises.</em></h2>
     <div class="tl-grid">
-        <div class="tl-item"><div class="tl-icon">🏦</div><div class="tl-company">ING</div><div class="tl-desc" data-i="tl_ing">Finance &amp; IT — Japan Desk, crédits documentaires, cœur du système bancaire international</div></div>
-        <div class="tl-item"><div class="tl-icon">❄️</div><div class="tl-company">Mayekawa</div><div class="tl-desc" data-i="tl_may">Systèmes de refroidissement industriel</div></div>
-        <div class="tl-item"><div class="tl-icon">🍵</div><div class="tl-company">SAJU</div><div class="tl-desc" data-i="tl_saju">Entrepreneur — Import thé japonais, Fukushima vécu en direct, réglementation douanière</div></div>
-        <div class="tl-item"><div class="tl-icon">🚗</div><div class="tl-company">Toyota</div><div class="tl-desc" data-i="tl_toyota">Automobile — Contrats négociés en japonais, gestion multi-usines Europe, système Toyota</div></div>
-        <div class="tl-item"><div class="tl-icon">⚓</div><div class="tl-company">Twin Disc</div><div class="tl-desc" data-i="tl_twin">Marine — Transmission, composants critiques, cycle de vie long</div></div>
-        <div class="tl-item"><div class="tl-icon">🏦</div><div class="tl-company">AXA</div><div class="tl-desc" data-i="tl_axa">Assurance — Travail avec les actuaires, modélisation de risques complexes</div></div>
-        <div class="tl-item"><div class="tl-icon">💊</div><div class="tl-company">Baxter</div><div class="tl-desc" data-i="tl_baxter">Pharma — Matières premières, crise Covid, livraison aux hôpitaux malgré la pénurie mondiale</div></div>
-        <div class="tl-item"><div class="tl-icon">☢️</div><div class="tl-company">IRE</div><div class="tl-desc" data-i="tl_ire">Nucléaire — Radiopharmaceutique, marchés publics européens</div></div>
-        <div class="tl-item"><div class="tl-icon">🤖</div><div class="tl-company">Stow</div><div class="tl-desc" data-i="tl_stow">Robotique — R&amp;D, lancement de nouveaux produits, supply chain en construction</div></div>
-        <div class="tl-item"><div class="tl-icon">🚄</div><div class="tl-company">Siemens</div><div class="tl-desc" data-i="tl_siemens">Ferroviaire — Head of Procurement, BIDs majeurs, IA &amp; data, formules de révision sur 40 ans</div></div>
-    </div>
+    <div class="tl-item"><span class="tl-icon">🏦</span><div class="tl-company">ING</div><div class="tl-desc" data-i="tl_ing">Finance &amp; IT — Japan Desk, crédits documentaires, cœur du système bancaire international</div></div>
+    <div class="tl-item"><span class="tl-icon">❄️</span><div class="tl-company">Mayekawa</div><div class="tl-desc" data-i="tl_may">Systèmes de refroidissement industriel</div></div>
+    <div class="tl-item"><span class="tl-icon">🍵</span><div class="tl-company">SAJU</div><div class="tl-desc" data-i="tl_saju">Entrepreneur — Import thé japonais, Fukushima vécu en direct, réglementation douanière</div></div>
+    <div class="tl-item"><span class="tl-icon">🚗</span><div class="tl-company">Toyota</div><div class="tl-desc" data-i="tl_toyota">Automobile — Contrats négociés en japonais, gestion multi-usines Europe, système Toyota</div></div>
+    <div class="tl-item"><span class="tl-icon">⚓</span><div class="tl-company">Twin Disc</div><div class="tl-desc" data-i="tl_twin">Marine — Transmission, composants critiques, cycle de vie long</div></div>
+    <div class="tl-item"><span class="tl-icon">🏦</span><div class="tl-company">AXA</div><div class="tl-desc" data-i="tl_axa">Assurance — Travail avec les actuaires, modélisation de risques complexes</div></div>
+    <div class="tl-item"><span class="tl-icon">💊</span><div class="tl-company">Baxter</div><div class="tl-desc" data-i="tl_baxter">Pharma — Matières premières, crise Covid, livraison aux hôpitaux malgré la pénurie mondiale</div></div>
+    <div class="tl-item"><span class="tl-icon">☢️</span><div class="tl-company">IRE</div><div class="tl-desc" data-i="tl_ire">Nucléaire — Radiopharmaceutique, marchés publics européens</div></div>
+    <div class="tl-item"><span class="tl-icon">🤖</span><div class="tl-company">Stow</div><div class="tl-desc" data-i="tl_stow">Robotique — R&amp;D, lancement de nouveaux produits, supply chain en construction</div></div>
+    <div class="tl-item"><span class="tl-icon">🚄</span><div class="tl-company">Siemens</div><div class="tl-desc" data-i="tl_siemens">Ferroviaire — Head of Procurement, BIDs majeurs, IA &amp; data, formules de révision sur 40 ans</div></div>
+</div>
 </div></section>
 <div class="rule"></div>
 
