@@ -674,20 +674,39 @@
         // Fermer le menu mobile si ouvert
         const mobileMenu = document.getElementById('mobileMenu');
         if (mobileMenu) mobileMenu.classList.remove('open');
+
+         // 🔽 AJOUTER ICI - Mise à jour de l'URL sans recharger la page
+            const url = new URL(window.location);
+            url.searchParams.set('lang', l);
+            window.history.replaceState({}, '', url);
+
+
+
+        
     }
 
-    // Initialisation au chargement
-    window.addEventListener('load', function() {
+window.addEventListener('load', function() {
+    const supportedLangs = ['fr', 'en', 'de', 'nl', 'uk', 'ru', 'jp', 'zh'];
+    let initialLang = 'fr';
+
+    // 1) Priorité au paramètre d'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam && supportedLangs.includes(langParam)) {
+        initialLang = langParam;
+    } else {
+        // 2) Sinon, utiliser la valeur sauvegardée
         const savedLang = localStorage.getItem('saju_lang');
-        const supportedLangs = ['fr', 'en', 'de', 'nl', 'uk', 'ru', 'jp', 'zh'];
-        let initialLang = 'fr';
         if (savedLang && supportedLangs.includes(savedLang)) {
             initialLang = savedLang;
         }
-        setLang(initialLang);
-        // Animation des sections
-        document.querySelectorAll('.fi').forEach(el => obs.observe(el));
-    });
+    }
+
+    setLang(initialLang);
+
+    // Animation des sections (conserve cette ligne)
+    document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+});
 </script>
 </body>
 </html>
