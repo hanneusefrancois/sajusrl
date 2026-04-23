@@ -1496,13 +1496,40 @@ footer_copy:'© 2026 Saju Srl · 布鲁塞尔，比利时 · fh@saju.be · www.s
         });
         var m=document.getElementById('mobileMenu');
         if(m) m.classList.remove('open');
+         // 🔽 AJOUTER ICI - Mise à jour de l'URL sans recharger la page
+            const url = new URL(window.location);
+            url.searchParams.set('lang', l);
+            window.history.replaceState({}, '', url);
+
+
+
+
+
+        
     }
-    window.addEventListener('load',function(){
-        var savedLang=localStorage.getItem('saju_lang');
-        if(savedLang && T[savedLang]) setLang(savedLang);
-        else setLang('fr');
-        if(window.Calendly) Calendly.initInlineWidgets();
-    });
+    window.addEventListener('load', function() {
+    var supportedLangs = Object.keys(T); // ou ['fr','en','de',...]
+    var initialLang = 'fr';
+
+    // 1) Vérifier le paramètre d'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam && supportedLangs.includes(langParam)) {
+        initialLang = langParam;
+    } 
+    // 2) Sinon utiliser localStorage
+    else {
+        var savedLang = localStorage.getItem('saju_lang');
+        if (savedLang && supportedLangs.includes(savedLang)) {
+            initialLang = savedLang;
+        }
+    }
+
+    setLang(initialLang);
+
+    // 3) Initialiser Calendly (inchangé)
+    if (window.Calendly) Calendly.initInlineWidgets();
+});
 </script>
 </body>
 </html>
