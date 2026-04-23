@@ -1,1 +1,49 @@
+<div class="booking-form">
+    <h3>📅 Prendre rendez-vous</h3>
+    <form id="appointmentForm">
+        <input type="text" id="name" placeholder="Votre nom" required>
+        <input type="email" id="email" placeholder="Votre email" required>
+        <input type="date" id="date" required>
+        <select id="time" required>
+            <option value="09:00">09:00</option>
+            <option value="09:30">09:30</option>
+            <option value="10:00">10:00</option>
+            <option value="10:30">10:30</option>
+            <option value="11:00">11:00</option>
+        </select>
+        <textarea id="message" placeholder="Votre message (optionnel)"></textarea>
+        <button type="submit">Réserver</button>
+    </form>
+    <div id="bookingResult"></div>
+</div>
 
+<script>
+document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const message = document.getElementById('message').value;
+    
+    const resultDiv = document.getElementById('bookingResult');
+    resultDiv.textContent = '⏳ Création du rendez-vous...';
+    
+    try {
+        const res = await fetch('/api/book-appointment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, date, time, message })
+        });
+        const data = await res.json();
+        if (data.success) {
+            resultDiv.innerHTML = `✅ Rendez-vous confirmé ! <a href="${data.eventLink}" target="_blank">Ajouter à Google Agenda</a>`;
+            document.getElementById('appointmentForm').reset();
+        } else {
+            resultDiv.textContent = '❌ Erreur : ' + (data.error || 'inconnue');
+        }
+    } catch (err) {
+        resultDiv.textContent = '❌ Erreur réseau.';
+    }
+});
+</script>
