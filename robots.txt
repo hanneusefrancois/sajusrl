@@ -5,8 +5,18 @@
 User-agent: *
 Allow: /
 
+# Blocage des zones privées ou inutiles
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /verify
+Disallow: /login
+Disallow: /logout
+Disallow: /*.json$
+Disallow: /*.xml$   # sauf sitemap bien sûr
+
 # Sitemap
 Sitemap: https://www.saju.be/sitemap.xml
 
-# Délai de politesse pour les crawlers
+# Optionnel – ignoré par Googlebot mais utile pour Bing/Yandex
 Crawl-delay: 1
