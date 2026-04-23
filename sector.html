@@ -1388,6 +1388,18 @@ function setLang(l) {
     // Fermer le menu mobile si ouvert
     var mobileMenu = document.getElementById('mobileMenu');
     if (mobileMenu) mobileMenu.classList.remove('open');
+
+
+    // 🔽 AJOUTER ICI - Mise à jour de l'URL sans recharger la page
+    const url = new URL(window.location);
+    url.searchParams.set('lang', l);
+    window.history.replaceState({}, '', url);
+
+
+
+
+
+    
 }
 
 
