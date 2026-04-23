@@ -920,13 +920,35 @@
         }
         const mobileMenu = document.getElementById('mobileMenu');
         if (mobileMenu) mobileMenu.classList.remove('open');
+
+         // 🔽 AJOUTER ICI - Mise à jour de l'URL sans recharger la page
+        const url = new URL(window.location);
+        url.searchParams.set('lang', l);
+        window.history.replaceState({}, '', url);
+
+        
+
+        
     }
 
     window.addEventListener('load', function() {
+    let initialLang = 'fr';
+
+    // 1) Priorité au paramètre d'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam && (T[langParam] || referencesData[langParam])) {
+        initialLang = langParam;
+    } else {
+        // 2) Sinon, utiliser la valeur sauvegardée
         const savedLang = localStorage.getItem('saju_lang');
-        if (savedLang && (T[savedLang] || referencesData[savedLang])) setLang(savedLang);
-        else setLang('fr');
-    });
+        if (savedLang && (T[savedLang] || referencesData[savedLang])) {
+            initialLang = savedLang;
+        }
+    }
+
+    setLang(initialLang);
+});
 </script>
 </body>
 </html>
