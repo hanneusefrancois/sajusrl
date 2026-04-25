@@ -13,7 +13,7 @@ Disallow: /verify
 Disallow: /login
 Disallow: /logout
 Disallow: /*.json$
-Disallow: /*.xml$   # sauf sitemap bien sûr
+
 
 # Sitemap
 Sitemap: https://www.saju.be/sitemap.xml
