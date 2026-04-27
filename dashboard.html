@@ -45,7 +45,7 @@
 <section class="hero"><div class="ctr">
 <h1>Tableau de bord économique — Multi‑sources</h1>
 <p style="color:rgba(255,255,255,.6); max-width:700px; margin:10px auto;">
-    Collecte automatique de données publiques (FRED, Banque Mondiale, Eurostat, CoinGecko, Frankfurter).<br>
+    Collecte automatique de données publiques (FRED, Banque Mondiale, Eurostat, CoinGecko, Frankfurter, FMI, OCDE).<br>
     Les indices de matières premières 1900‑2025 proviennent de recherches maison Saju Srl.
 </p>
 </div></section>
@@ -56,8 +56,8 @@
 </div>
 
 <div class="footer">
-    © 2026 Saju Srl — Les données brutes proviennent de sources publiques. Pour une analyse personnalisée (coefficient de révision, Monte Carlo, rolling‑window), contactez <a href="mailto:fh@saju.be">fh@saju.be</a><br>
-    François Hanneuse — Saju Srl · VAT BE0785.280.227 · Chaussée d'Alsemberg 1108/6, 1180 Uccle
+    © 2026 Saju Srl — Les données brutes proviennent de sources publiques. Pour une analyse personnalisée, contactez <a href="mailto:fh@saju.be">fh@saju.be</a><br>
+    François Hanneuse — Saju Srl
 </div>
 
 <script>
@@ -103,27 +103,30 @@ const tabConfigs = [
                 });
             }
         },
-        {
-            title: 'Croissance PIB réel (Banque Mondiale)',
-            source: 'WB – NY.GDP.MKTP.KD.ZG',
-            render: (data, canvas) => {
-                if (!data.gdpGrowth) return;
-                const { US, EU, China } = data.gdpGrowth;
-                const labels = [...new Set([...(US||[]).map(o=>o.date), ...(EU||[]).map(o=>o.date), ...(China||[]).map(o=>o.date)])].sort();
-                new Chart(canvas, {
-                    type: 'line',
-                    data: {
-                        labels,
-                        datasets: [
-                            { label: 'US', data: labels.map(d => US?.find(o=>o.date===d)?.value), borderColor: '#3b82f6', tension: 0.2 },
-                            { label: 'EU', data: labels.map(d => EU?.find(o=>o.date===d)?.value), borderColor: '#f59e0b', tension: 0.2 },
-                            { label: 'China', data: labels.map(d => China?.find(o=>o.date===d)?.value), borderColor: '#ef4444', tension: 0.2 },
-                        ]
-                    },
-                    options: baseOptions
-                });
-            }
-        },
+       {
+        title: 'Croissance PIB réel (Banque Mondiale)',
+        source: 'WB – NY.GDP.MKTP.KD.ZG',
+        render: (data, canvas) => {
+            if (!data.gdpGrowth) return;
+            const growthData = data.gdpGrowth['NY.GDP.MKTP.KD.ZG'] || {};
+            const US = growthData.USA || [];
+            const EU = growthData.EUU || [];
+            const China = growthData.CHN || [];
+            const labels = [...new Set([...US.map(o=>o.date), ...EU.map(o=>o.date), ...China.map(o=>o.date)])].sort();
+            new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'US', data: labels.map(d => US.find(o=>o.date===d)?.value), borderColor: '#3b82f6', tension: 0.2 },
+                        { label: 'EU', data: labels.map(d => EU.find(o=>o.date===d)?.value), borderColor: '#f59e0b', tension: 0.2 },
+                        { label: 'China', data: labels.map(d => China.find(o=>o.date===d)?.value), borderColor: '#ef4444', tension: 0.2 },
+                    ]
+                },
+                options: baseOptions
+            });
+        }
+    },
     ]
 },
 {
@@ -696,25 +699,38 @@ function renderCommodityChart(seriesKey, canvasOverride) {
     });
 }
 
-// Charger les données et initialiser
-(async () => {
-    try {
-        const res = await fetch(API_BASE + '/api/dashboard');
-        DASHBOARD_DATA = await res.json();
-        buildTabs();
-        // Initialiser les graphiques du premier onglet
-        const firstTab = tabConfigs[0];
-        firstTab.charts.forEach((chartDef, i) => {
-            const canvas = document.getElementById(`chart-${firstTab.id}-${i}`);
-            if (canvas) {
-                chartDef.render(DASHBOARD_DATA, canvas);
-                canvas.chart = true;
+// ==================== CHARGEMENT INITIAL ====================
+    (async () => {
+        try {
+            const res = await fetch(API_BASE + '/api/dashboard');
+            if (!res.ok) throw new Error('Erreur serveur ' + res.status);
+            
+            DASHBOARD_DATA = await res.json();
+            
+            buildTabs();
+
+            // Initialiser les graphiques du premier onglet (Macroéconomie)
+            const firstTab = tabConfigs[0];
+            if (firstTab && firstTab.charts) {
+                firstTab.charts.forEach((chartDef, i) => {
+                    const canvas = document.getElementById(`chart-${firstTab.id}-${i}`);
+                    if (canvas && typeof chartDef.render === 'function') {
+                        chartDef.render(DASHBOARD_DATA, canvas);
+                        canvas.chart = true;   // pour éviter de recréer plusieurs fois
+                    }
+                });
             }
-        });
-    } catch (err) {
-        document.body.innerHTML = '<p style="color:red;">Erreur de chargement des données.</p>';
-    }
-})();
+
+            console.log('✅ Dashboard chargé avec succès');
+        } catch (err) {
+            console.error('Erreur de chargement du dashboard:', err);
+            document.getElementById('tabContents').innerHTML = 
+                `<p style="color:red; padding:20px; text-align:center;">
+                    Erreur de chargement des données.<br>
+                    Vérifiez que le serveur <strong>data.saju.be</strong> est bien en ligne.
+                </p>`;
+        }
+    })();
 </script>
 </body>
 </html>
