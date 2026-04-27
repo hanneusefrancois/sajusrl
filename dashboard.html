@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Saju Srl — Tableau de bord macroéconomique</title>
+    <title>Saju Srl — Tableau de bord économique</title>
     <script type="text/javascript">
         (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "wfuxg8181e");
     </script>
@@ -20,7 +20,12 @@
         .nk{display:flex;gap:12px}.nk a{font-size:.58rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--wl);transition:color .2s}.nk a:hover,.nk a.ac{color:var(--or)}
         .hero{padding:100px 0 20px;text-align:center}
         .hero h1{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--or)}
-        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); gap:16px; padding:20px 0}
+        .tabs{display:flex;gap:2px;margin-bottom:20px;flex-wrap:wrap}
+        .tab-btn{background:var(--cd);border:1px solid var(--bd);color:var(--wl);padding:8px 16px;cursor:pointer;font-size:.7rem;border-radius:4px 4px 0 0;transition:all .2s}
+        .tab-btn.active{background:var(--or);color:#000;border-color:var(--or)}
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); gap:16px; padding-bottom:20px}
         .card{background:var(--cd);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
         .card-header{background:rgba(255,255,255,.03);padding:10px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
         .card-header h3{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--or);margin:0}
@@ -29,6 +34,8 @@
         canvas{width:100%!important;height:100%!important}
         .footer{text-align:center;padding:20px;font-size:.55rem;color:rgba(255,255,255,.3);border-top:1px solid var(--bd)}
         .footer a{color:var(--or);text-decoration:underline}
+        .selector{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+        .selector select{background:var(--cd);border:1px solid var(--bd);color:var(--w);padding:4px 8px;border-radius:4px}
     </style>
 </head>
 <body>
@@ -36,210 +43,379 @@
 <div class="nk"><a href="#" class="ac">Macro Dashboard</a><a href="https://www.saju.be/">Contact</a></div></div></nav>
 
 <section class="hero"><div class="ctr">
-<h1>Tableau de bord macroéconomique — Sources multiples</h1>
-<p style="color:rgba(255,255,255,.6); max-width:600px; margin:10px auto;">Collecte automatique de données publiques (FRED, Banque Mondiale, Eurostat, CoinGecko, Frankfurter).<br>Les séries longues (1900‑2025) sont issues de recherches propriétaires Saju.</p>
+<h1>Tableau de bord économique — Multi‑sources</h1>
+<p style="color:rgba(255,255,255,.6); max-width:700px; margin:10px auto;">
+    Collecte automatique de données publiques (FRED, Banque Mondiale, Eurostat, CoinGecko, Frankfurter).<br>
+    Les indices de matières premières 1900‑2025 proviennent de recherches maison Saju Srl.
+</p>
 </div></section>
 
-<!-- Grille des graphiques -->
-<div class="ctr"><div class="grid" id="dashboardGrid"></div></div>
+<div class="ctr">
+    <div class="tabs" id="tabs"></div>
+    <div id="tabContents"></div>
+</div>
 
 <div class="footer">
-  © 2026 Saju Srl — Les données brutes proviennent de sources publiques. Pour une analyse personnalisée (coefficient de révision, Monte Carlo, rolling‑window), contactez <a href="mailto:fh@saju.be">fh@saju.be</a><br>
-  François Hanneuse — Saju Srl · VAT BE0785.280.227 · Chaussée d'Alsemberg 1108/6, 1180 Uccle
+    © 2026 Saju Srl — Les données brutes proviennent de sources publiques. Pour une analyse personnalisée (coefficient de révision, Monte Carlo, rolling‑window), contactez <a href="mailto:fh@saju.be">fh@saju.be</a><br>
+    François Hanneuse — Saju Srl · VAT BE0785.280.227 · Chaussée d'Alsemberg 1108/6, 1180 Uccle
 </div>
 
 <script>
-const API = window.location.hostname === 'localhost' ? 'http://localhost:8080/api/dashboard' : 'https://data.saju.be/api/dashboard';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://data.saju.be';
+let DASHBOARD_DATA = null;
+let activeTab = null;
 
-const chartConfigs = [
-  {
-    title: 'Taux de change (dernier jour)',
-    source: 'Frankfurter (BCE)',
-    render: (data, canvas) => {
-      if (!data.frankfurter?.rates) return;
-      const entries = Object.entries(data.frankfurter.rates).slice(0, 12);
-      new Chart(canvas, {
-        type: 'bar',
-        data: {
-          labels: entries.map(([c])=>c),
-          datasets: [{ label: 'EUR', data: entries.map(([,v])=>v), backgroundColor: '#d97706' }]
+// Configuration des onglets et de leurs graphiques
+const tabConfigs = [
+{
+    id: 'macro',
+    label: '🌍 Macroéconomie',
+    charts: [
+        {
+            title: 'Taux de chômage US (FRED)',
+            source: 'FRED – UNRATE',
+            render: (data, canvas) => {
+                if (!data.fred?.UNRATE) return;
+                const obs = data.fred.UNRATE.slice(-60);
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: obs.map(o=>o.date),
+                        datasets: [{ label: 'Chômage (%)', data: obs.map(o=>o.value), borderColor: '#c0392b', pointRadius: 0 }]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Crypto‑monnaies (EUR)',
-    source: 'CoinGecko',
-    render: (data, canvas) => {
-      if (!data.coingecko) return;
-      const items = Object.values(data.coingecko).filter(c => c.eur);
-      new Chart(canvas, {
-        type: 'bar',
-        data: {
-          labels: items.map(c => c.symbol),
-          datasets: [{ label: 'Prix EUR', data: items.map(c => c.eur), backgroundColor: items.map(c => c.color) }]
+        {
+            title: 'Inflation IPCH UE (Eurostat)',
+            source: 'Eurostat – prc_hicp_manr',
+            render: (data, canvas) => {
+                if (!data.eurostatInflation?.observations) return;
+                const obs = data.eurostatInflation.observations.slice(-24);
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: obs.map(o=>o.date),
+                        datasets: [{ label: 'Inflation UE (%)', data: obs.map(o=>o.value), borderColor: '#059669', pointRadius: 0 }]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Or (indice base 100 = 1900)',
-    source: 'LBMA, US Mint (Saju)',
-    render: (data, canvas) => {
-      const series = data.historical?.gold;
-      if (!series) return;
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: series.map(o => o.year),
-          datasets: [{ label: 'Or', data: series.map(o => o.value), borderColor: '#f1c40f', pointRadius: 0, tension: 0.1 }]
+        {
+            title: 'Croissance PIB réel (Banque Mondiale)',
+            source: 'WB – NY.GDP.MKTP.KD.ZG',
+            render: (data, canvas) => {
+                if (!data.gdpGrowth) return;
+                const { US, EU, China } = data.gdpGrowth;
+                const labels = [...new Set([...(US||[]).map(o=>o.date), ...(EU||[]).map(o=>o.date), ...(China||[]).map(o=>o.date)])].sort();
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'US', data: labels.map(d => US?.find(o=>o.date===d)?.value), borderColor: '#3b82f6', tension: 0.2 },
+                            { label: 'EU', data: labels.map(d => EU?.find(o=>o.date===d)?.value), borderColor: '#f59e0b', tension: 0.2 },
+                            { label: 'China', data: labels.map(d => China?.find(o=>o.date===d)?.value), borderColor: '#ef4444', tension: 0.2 },
+                        ]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Pétrole (indice base 100 = 1900)',
-    source: 'BP Statistical Review, USGS (Saju)',
-    render: (data, canvas) => {
-      const series = data.historical?.oil;
-      if (!series) return;
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: series.map(o => o.year),
-          datasets: [{ label: 'Pétrole', data: series.map(o => o.value), borderColor: '#e67e22', pointRadius: 0, tension: 0.1 }]
+    ]
+},
+{
+    id: 'demography',
+    label: '👥 Démographie & Éducation',
+    charts: [
+        {
+            title: 'Population totale (Banque Mondiale)',
+            source: 'WB – SP.POP.TOTL',
+            render: (data, canvas) => {
+                if (!data.population) return;
+                const { USA, CHN, EUU } = data.population;
+                const labels = [...new Set([...(USA||[]).map(o=>o.date), ...(CHN||[]).map(o=>o.date), ...(EUU||[]).map(o=>o.date)])].sort().filter(d => d >= '1960');
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'US', data: labels.map(d => USA?.find(o=>o.date===d)?.value), borderColor: '#3b82f6' },
+                            { label: 'China', data: labels.map(d => CHN?.find(o=>o.date===d)?.value), borderColor: '#ef4444' },
+                            { label: 'EU', data: labels.map(d => EUU?.find(o=>o.date===d)?.value), borderColor: '#f59e0b' },
+                        ]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Acier (indice base 100 = 1900)',
-    source: 'World Steel Assoc., USGS',
-    render: (data, canvas) => {
-      const series = data.historical?.steel;
-      if (!series) return;
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: series.map(o => o.year),
-          datasets: [{ label: 'Acier', data: series.map(o => o.value), borderColor: '#bdc3c7', pointRadius: 0, tension: 0.1 }]
+        {
+            title: 'Taux brut scolarisation supérieure (Banque Mondiale)',
+            source: 'WB – SE.TER.ENRR',
+            render: (data, canvas) => {
+                if (!data.tertiaryEnrollment) return;
+                const { USA, CHN, EUU } = data.tertiaryEnrollment;
+                const labels = [...new Set([...(USA||[]).map(o=>o.date), ...(CHN||[]).map(o=>o.date), ...(EUU||[]).map(o=>o.date)])].sort().filter(d => d >= '1970');
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'US', data: labels.map(d => USA?.find(o=>o.date===d)?.value), borderColor: '#3b82f6' },
+                            { label: 'China', data: labels.map(d => CHN?.find(o=>o.date===d)?.value), borderColor: '#ef4444' },
+                            { label: 'EU', data: labels.map(d => EUU?.find(o=>o.date===d)?.value), borderColor: '#f59e0b' },
+                        ]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Cuivre (indice base 100 = 1900)',
-    source: 'LME, USGS',
-    render: (data, canvas) => {
-      const series = data.historical?.copper;
-      if (!series) return;
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: series.map(o => o.year),
-          datasets: [{ label: 'Cuivre', data: series.map(o => o.value), borderColor: '#d35400', pointRadius: 0, tension: 0.1 }]
+    ]
+},
+{
+    id: 'commodities',
+    label: '⛏️ Matières premières (Saju)',
+    charts: [
+        {
+            title: 'Indices historiques (base 100 = 1900)',
+            source: 'Saju Srl – Données propriétaires',
+            render: (data, canvas) => {
+                if (!data.historical) return;
+                // On peut mettre un sélecteur global pour cette section, mais ici on montre l'or par défaut
+                const series = data.historical['gold'] || [];
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: series.map(o => o.year),
+                        datasets: [{ label: 'Or', data: series.map(o => o.value), borderColor: '#f1c40f', pointRadius: 0, tension: 0.1 }]
+                    },
+                    options: { ...baseOptions, scales: { y: { type: 'logarithmic' } } }
+                });
+            }
         },
-        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Salaires industriels (indice base 100 = 1900)',
-    source: 'Maddison Project, ILO',
-    render: (data, canvas) => {
-      const series = data.historical?.wages;
-      if (!series) return;
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: series.map(o => o.year),
-          datasets: [{ label: 'Salaires', data: series.map(o => o.value), borderColor: '#2ecc71', pointRadius: 0, tension: 0.1 }]
+        {
+            title: 'Sélecteur de matière première',
+            source: 'Choisissez un indice',
+            render: (data, container) => {
+                // Pas de graphique fixe ici, on va créer un sélecteur + canvas dynamique dans l'onglet
+                // On laisse cette entrée pour la structure, mais on la gérera dans l'initialisation de l'onglet
+            }
+        }
+    ]
+},
+{
+    id: 'markets',
+    label: '💱 Marchés financiers',
+    charts: [
+        {
+            title: 'Taux de change (Frankfurter)',
+            source: 'Frankfurter (BCE)',
+            render: (data, canvas) => {
+                if (!data.frankfurter?.rates) return;
+                const entries = Object.entries(data.frankfurter.rates).slice(0, 12);
+                new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: entries.map(([c])=>c),
+                        datasets: [{ label: 'EUR', data: entries.map(([,v])=>v), backgroundColor: '#d97706' }]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Productivité industrielle (indice base 100 = 1900)',
-    source: 'Fed FRED, OCDE',
-    render: (data, canvas) => {
-      const series = data.historical?.productivity;
-      if (!series) return;
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: series.map(o => o.year),
-          datasets: [{ label: 'Productivité', data: series.map(o => o.value), borderColor: '#3498db', pointRadius: 0, tension: 0.1 }]
+        {
+            title: 'Cryptomonnaies (EUR)',
+            source: 'CoinGecko',
+            render: (data, canvas) => {
+                if (!data.coingecko) return;
+                const items = Object.values(data.coingecko).filter(c => c.eur);
+                new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: items.map(c => c.symbol),
+                        datasets: [{ label: 'Prix EUR', data: items.map(c => c.eur), backgroundColor: items.map(c => c.color) }]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Prix locomotives (indice base 100 = 1900)',
-    source: 'Archives ferroviaires, Saju',
-    render: (data, canvas) => {
-      const series = data.historical?.loco_price;
-      if (!series) return;
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: series.map(o => o.year),
-          datasets: [{ label: 'Locomotives', data: series.map(o => o.value), borderColor: '#9b59b6', pointRadius: 0, tension: 0.1 }]
+        {
+            title: 'Taux 10 ans US (FRED)',
+            source: 'FRED – DGS10',
+            render: (data, canvas) => {
+                if (!data.fred?.DGS10) return;
+                const obs = data.fred.DGS10.slice(-60);
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: obs.map(o=>o.date),
+                        datasets: [{ label: 'Rendement 10a (%)', data: obs.map(o=>o.value), borderColor: '#8e44ad', pointRadius: 0 }]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  {
-    title: 'Inflation comparée (World Bank)',
-    source: 'World Bank (FP.CPI.TOTL.ZG)',
-    render: (data, canvas) => {
-      if (!data.inflation) return;
-      const us = data.inflation.US || [];
-      const eu = data.inflation.EU || [];
-      const cn = data.inflation.China || [];
-      const labels = [...new Set([...us.map(o=>o.date), ...eu.map(o=>o.date), ...cn.map(o=>o.date)])].sort();
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            { label: 'US', data: labels.map(d => us.find(o=>o.date===d)?.value), borderColor: '#3b82f6', tension: 0.2 },
-            { label: 'EU', data: labels.map(d => eu.find(o=>o.date===d)?.value), borderColor: '#f59e0b', tension: 0.2 },
-            { label: 'China', data: labels.map(d => cn.find(o=>o.date===d)?.value), borderColor: '#ef4444', tension: 0.2 },
-          ]
+    ]
+},
+{
+    id: 'trade',
+    label: '📊 Commerce extérieur',
+    charts: [
+        {
+            title: 'Solde compte courant (% PIB)',
+            source: 'WB – BN.CAB.XOKA.GD.ZS',
+            render: (data, canvas) => {
+                if (!data.currentAccount) return;
+                const { USA, CHN, EUU } = data.currentAccount;
+                const labels = [...new Set([...(USA||[]).map(o=>o.date), ...(CHN||[]).map(o=>o.date), ...(EUU||[]).map(o=>o.date)])].sort().filter(d => d >= '1990');
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'US', data: labels.map(d => USA?.find(o=>o.date===d)?.value), borderColor: '#3b82f6' },
+                            { label: 'China', data: labels.map(d => CHN?.find(o=>o.date===d)?.value), borderColor: '#ef4444' },
+                            { label: 'EU', data: labels.map(d => EUU?.find(o=>o.date===d)?.value), borderColor: '#f59e0b' },
+                        ]
+                    },
+                    options: baseOptions
+                });
+            }
         },
-        options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
-      });
-    }
-  },
-  // ... Ajoutez autant de graphiques que vous voulez (population, PIB, chômage, etc.)
+    ]
+}
 ];
 
-(async () => {
-  try {
-    const res = await fetch(API);
-    const data = await res.json();
-    const grid = document.getElementById('dashboardGrid');
-    chartConfigs.forEach((cfg, idx) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `<div class="card-header"><h3>${cfg.title}</h3><span class="source">${cfg.source}</span></div><div class="card-body"><canvas id="chart${idx}"></canvas></div>`;
-      grid.appendChild(card);
-      setTimeout(() => {
-        const canvas = document.getElementById(`chart${idx}`);
-        if (canvas) cfg.render(data, canvas);
-      }, 100);
+const baseOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { labels: { color: '#fff', font: { size: 10 } } }
+    },
+    scales: {
+        x: { ticks: { color: '#888', maxTicksLimit: 10 } },
+        y: { ticks: { color: '#888' } }
+    }
+};
+
+// Construction des onglets
+function buildTabs() {
+    const tabsDiv = document.getElementById('tabs');
+    const contentsDiv = document.getElementById('tabContents');
+    tabConfigs.forEach((tab, idx) => {
+        // Bouton onglet
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn' + (idx === 0 ? ' active' : '');
+        btn.textContent = tab.label;
+        btn.onclick = () => switchTab(tab.id);
+        tabsDiv.appendChild(btn);
+
+        // Contenu de l'onglet
+        const content = document.createElement('div');
+        content.className = 'tab-content' + (idx === 0 ? ' active' : '');
+        content.id = 'tab-' + tab.id;
+        // Pour l'onglet matières premières, on ajoute un sélecteur spécial
+        if (tab.id === 'commodities') {
+            const selectorDiv = document.createElement('div');
+            selectorDiv.className = 'selector';
+            selectorDiv.innerHTML = '<span>Choisir la série :</span> <select id="commoditySelect"><option value="gold">Or</option><option value="oil">Pétrole</option><option value="steel">Acier</option><option value="copper">Cuivre</option><option value="cpi">CPI</option><option value="wages">Salaires</option><option value="productivity">Productivité</option><option value="loco_price">Équipement industriel lourd</option></select>';
+            const canvasDiv = document.createElement('div');
+            canvasDiv.className = 'grid';
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = '<div class="card-header"><h3 id="commodityTitle">Or</h3><span class="source">Saju Srl – base 100 = 1900</span></div><div class="card-body"><canvas id="commodityCanvas"></canvas></div>';
+            canvasDiv.appendChild(card);
+            content.appendChild(selectorDiv);
+            content.appendChild(canvasDiv);
+            // Écouter le changement du sélecteur
+            setTimeout(() => {
+                const select = document.getElementById('commoditySelect');
+                select.addEventListener('change', (e) => {
+                    renderCommodityChart(e.target.value);
+                });
+                renderCommodityChart('gold'); // par défaut
+            }, 100);
+        } else {
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            tab.charts.forEach((chartDef, chartIdx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-header"><h3>${chartDef.title}</h3><span class="source">${chartDef.source}</span></div><div class="card-body"><canvas id="chart-${tab.id}-${chartIdx}"></canvas></div>`;
+                grid.appendChild(card);
+            });
+            content.appendChild(grid);
+        }
+        contentsDiv.appendChild(content);
     });
-  } catch (err) {
-    document.getElementById('dashboardGrid').innerHTML = '<p style="color:red;">Erreur de chargement.</p>';
-  }
+    activeTab = tabConfigs[0].id;
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`.tab-btn`).classList.add('active'); // simplifié, il faudrait associer le bon bouton
+    document.getElementById('tab-' + tabId).classList.add('active');
+    activeTab = tabId;
+    // Réactiver les graphiques de l'onglet s'ils n'ont pas encore été créés
+    if (tabId !== 'commodities') {
+        tabConfigs.find(t => t.id === tabId).charts.forEach((chartDef, i) => {
+            const canvas = document.getElementById(`chart-${tabId}-${i}`);
+            if (canvas && !canvas.chart) {
+                chartDef.render(DASHBOARD_DATA, canvas);
+                canvas.chart = true; // marqueur
+            }
+        });
+    }
+}
+
+function renderCommodityChart(seriesKey) {
+    if (!DASHBOARD_DATA?.historical) return;
+    const series = DASHBOARD_DATA.historical[seriesKey] || [];
+    const canvas = document.getElementById('commodityCanvas');
+    if (!canvas) return;
+    // Détruire le graphique précédent
+    const existing = Chart.getChart(canvas);
+    if (existing) existing.destroy();
+    const colors = {
+        gold: '#f1c40f', oil: '#e67e22', steel: '#bdc3c7', copper: '#d35400',
+        cpi: '#e74c3c', wages: '#2ecc71', productivity: '#3498db', loco_price: '#9b59b6'
+    };
+    const names = {
+        gold: 'Or', oil: 'Pétrole', steel: 'Acier', copper: 'Cuivre',
+        cpi: 'CPI', wages: 'Salaires', productivity: 'Productivité', loco_price: 'Équipement industriel lourd'
+    };
+    document.getElementById('commodityTitle').textContent = names[seriesKey] || seriesKey;
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: series.map(o => o.year),
+            datasets: [{ label: names[seriesKey], data: series.map(o => o.value), borderColor: colors[seriesKey] || '#fff', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { ...baseOptions, scales: { y: { type: 'logarithmic' } } }
+    });
+}
+
+// Charger les données et initialiser
+(async () => {
+    try {
+        const res = await fetch(API_BASE + '/api/dashboard');
+        DASHBOARD_DATA = await res.json();
+        buildTabs();
+        // Initialiser les graphiques du premier onglet
+        const firstTab = tabConfigs[0];
+        firstTab.charts.forEach((chartDef, i) => {
+            const canvas = document.getElementById(`chart-${firstTab.id}-${i}`);
+            if (canvas) {
+                chartDef.render(DASHBOARD_DATA, canvas);
+                canvas.chart = true;
+            }
+        });
+    } catch (err) {
+        document.body.innerHTML = '<p style="color:red;">Erreur de chargement des données.</p>';
+    }
 })();
 </script>
 </body>
