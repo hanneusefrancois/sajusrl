@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Saju Srl — Tableau de bord macroéconomique</title>
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "wfuxg8181e");
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root{--bk:#0f1117;--cd:#141822;--bd:rgba(255,255,255,.1);--w:#fff;--or:#d97706;--em:#059669;--r:#c0392b;--bl:#3b82f6}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bk);color:var(--w);line-height:1.5;font-size:14px}
+        .ctr{max-width:1440px;margin:0 auto;padding:0 20px}
+        nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(15,17,23,.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--bd)}
+        .ni{max-width:1440px;margin:0 auto;padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between}
+        .nl img{height:40px}
+        .nk{display:flex;gap:12px}.nk a{font-size:.58rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--wl);transition:color .2s}.nk a:hover,.nk a.ac{color:var(--or)}
+        .hero{padding:100px 0 20px;text-align:center}
+        .hero h1{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--or)}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); gap:16px; padding:20px 0}
+        .card{background:var(--cd);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+        .card-header{background:rgba(255,255,255,.03);padding:10px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+        .card-header h3{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--or);margin:0}
+        .card-header .source{font-size:.45rem;color:rgba(255,255,255,.4)}
+        .card-body{height:280px;position:relative;padding:8px}
+        canvas{width:100%!important;height:100%!important}
+        .footer{text-align:center;padding:20px;font-size:.55rem;color:rgba(255,255,255,.3);border-top:1px solid var(--bd)}
+        .footer a{color:var(--or);text-decoration:underline}
+    </style>
+</head>
+<body>
+<nav><div class="ni"><a href="https://www.saju.be/" class="nl"><img src="https://www.saju.be/Logo.png" alt="Saju srl"></a>
+<div class="nk"><a href="#" class="ac">Macro Dashboard</a><a href="https://www.saju.be/">Contact</a></div></div></nav>
+
+<section class="hero"><div class="ctr">
+<h1>Tableau de bord macroéconomique — Sources multiples</h1>
+<p style="color:rgba(255,255,255,.6); max-width:600px; margin:10px auto;">Collecte automatique de données publiques (FRED, Banque Mondiale, Eurostat, CoinGecko, Frankfurter).<br>Les séries longues (1900‑2025) sont issues de recherches propriétaires Saju.</p>
+</div></section>
+
+<!-- Grille des graphiques -->
+<div class="ctr"><div class="grid" id="dashboardGrid"></div></div>
+
+<div class="footer">
+  © 2026 Saju Srl — Les données brutes proviennent de sources publiques. Pour une analyse personnalisée (coefficient de révision, Monte Carlo, rolling‑window), contactez <a href="mailto:fh@saju.be">fh@saju.be</a><br>
+  François Hanneuse — Saju Srl · VAT BE0785.280.227 · Chaussée d'Alsemberg 1108/6, 1180 Uccle
+</div>
+
+<script>
+const API = window.location.hostname === 'localhost' ? 'http://localhost:8080/api/dashboard' : 'https://data.saju.be/api/dashboard';
+
+const chartConfigs = [
+  {
+    title: 'Taux de change (dernier jour)',
+    source: 'Frankfurter (BCE)',
+    render: (data, canvas) => {
+      if (!data.frankfurter?.rates) return;
+      const entries = Object.entries(data.frankfurter.rates).slice(0, 12);
+      new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: entries.map(([c])=>c),
+          datasets: [{ label: 'EUR', data: entries.map(([,v])=>v), backgroundColor: '#d97706' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Crypto‑monnaies (EUR)',
+    source: 'CoinGecko',
+    render: (data, canvas) => {
+      if (!data.coingecko) return;
+      const items = Object.values(data.coingecko).filter(c => c.eur);
+      new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: items.map(c => c.symbol),
+          datasets: [{ label: 'Prix EUR', data: items.map(c => c.eur), backgroundColor: items.map(c => c.color) }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Or (indice base 100 = 1900)',
+    source: 'LBMA, US Mint (Saju)',
+    render: (data, canvas) => {
+      const series = data.historical?.gold;
+      if (!series) return;
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: series.map(o => o.year),
+          datasets: [{ label: 'Or', data: series.map(o => o.value), borderColor: '#f1c40f', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Pétrole (indice base 100 = 1900)',
+    source: 'BP Statistical Review, USGS (Saju)',
+    render: (data, canvas) => {
+      const series = data.historical?.oil;
+      if (!series) return;
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: series.map(o => o.year),
+          datasets: [{ label: 'Pétrole', data: series.map(o => o.value), borderColor: '#e67e22', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Acier (indice base 100 = 1900)',
+    source: 'World Steel Assoc., USGS',
+    render: (data, canvas) => {
+      const series = data.historical?.steel;
+      if (!series) return;
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: series.map(o => o.year),
+          datasets: [{ label: 'Acier', data: series.map(o => o.value), borderColor: '#bdc3c7', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Cuivre (indice base 100 = 1900)',
+    source: 'LME, USGS',
+    render: (data, canvas) => {
+      const series = data.historical?.copper;
+      if (!series) return;
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: series.map(o => o.year),
+          datasets: [{ label: 'Cuivre', data: series.map(o => o.value), borderColor: '#d35400', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Salaires industriels (indice base 100 = 1900)',
+    source: 'Maddison Project, ILO',
+    render: (data, canvas) => {
+      const series = data.historical?.wages;
+      if (!series) return;
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: series.map(o => o.year),
+          datasets: [{ label: 'Salaires', data: series.map(o => o.value), borderColor: '#2ecc71', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Productivité industrielle (indice base 100 = 1900)',
+    source: 'Fed FRED, OCDE',
+    render: (data, canvas) => {
+      const series = data.historical?.productivity;
+      if (!series) return;
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: series.map(o => o.year),
+          datasets: [{ label: 'Productivité', data: series.map(o => o.value), borderColor: '#3498db', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Prix locomotives (indice base 100 = 1900)',
+    source: 'Archives ferroviaires, Saju',
+    render: (data, canvas) => {
+      const series = data.historical?.loco_price;
+      if (!series) return;
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: series.map(o => o.year),
+          datasets: [{ label: 'Locomotives', data: series.map(o => o.value), borderColor: '#9b59b6', pointRadius: 0, tension: 0.1 }]
+        },
+        options: { responsive: true, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  {
+    title: 'Inflation comparée (World Bank)',
+    source: 'World Bank (FP.CPI.TOTL.ZG)',
+    render: (data, canvas) => {
+      if (!data.inflation) return;
+      const us = data.inflation.US || [];
+      const eu = data.inflation.EU || [];
+      const cn = data.inflation.China || [];
+      const labels = [...new Set([...us.map(o=>o.date), ...eu.map(o=>o.date), ...cn.map(o=>o.date)])].sort();
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'US', data: labels.map(d => us.find(o=>o.date===d)?.value), borderColor: '#3b82f6', tension: 0.2 },
+            { label: 'EU', data: labels.map(d => eu.find(o=>o.date===d)?.value), borderColor: '#f59e0b', tension: 0.2 },
+            { label: 'China', data: labels.map(d => cn.find(o=>o.date===d)?.value), borderColor: '#ef4444', tension: 0.2 },
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
+      });
+    }
+  },
+  // ... Ajoutez autant de graphiques que vous voulez (population, PIB, chômage, etc.)
+];
+
+(async () => {
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+    const grid = document.getElementById('dashboardGrid');
+    chartConfigs.forEach((cfg, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<div class="card-header"><h3>${cfg.title}</h3><span class="source">${cfg.source}</span></div><div class="card-body"><canvas id="chart${idx}"></canvas></div>`;
+      grid.appendChild(card);
+      setTimeout(() => {
+        const canvas = document.getElementById(`chart${idx}`);
+        if (canvas) cfg.render(data, canvas);
+      }, 100);
+    });
+  } catch (err) {
+    document.getElementById('dashboardGrid').innerHTML = '<p style="color:red;">Erreur de chargement.</p>';
+  }
+})();
+</script>
+</body>
+</html>
