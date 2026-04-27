@@ -497,7 +497,7 @@ function buildTabs() {
             oecdIndicators.forEach((ind, i) => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE – sdmx.oecd.org</span></div><div class="card-body"><canvas id="oecd-chart-${i}"></canvas></div>`;
+                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE via World Bank</span></div><div class="card-body"><canvas id="oecd-chart-${i}"></canvas></div>`;
                 grid.appendChild(card);
             });
             content.appendChild(selectorDiv);
