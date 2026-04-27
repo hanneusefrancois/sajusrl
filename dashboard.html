@@ -425,7 +425,7 @@ function buildTabs() {
                 }
             };
             document.getElementById('imfRefresh').addEventListener('click', loadIMF);
-            setTimeout(loadIMF, 200);
+            setTimeout(loadIMF, 500);
          } else if (tab.id === 'oecd') {
             // Construction de l'onglet OCDE
             const selectorDiv = document.createElement('div');
@@ -503,7 +503,7 @@ function buildTabs() {
                 }
             };
             document.getElementById('oecdRefresh').addEventListener('click', loadOECD);
-            setTimeout(loadOECD, 200);
+            setTimeout(loadOECD, 500);
         } else {
             // --- Autres onglets (construction standard) ---
             const grid = document.createElement('div');
