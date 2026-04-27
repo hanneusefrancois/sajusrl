@@ -395,27 +395,38 @@ function buildTabs() {
         <select id="imfCountry">
             <option value="FRA">France</option>
             <option value="DEU">Allemagne</option>
+            <option value="BEL">Belgique</option>
             <option value="USA">États-Unis</option>
             <option value="CHN">Chine</option>
             <option value="JPN">Japon</option>
             <option value="ITA">Italie</option>
             <option value="ESP">Espagne</option>
             <option value="GBR">Royaume-Uni</option>
+            <option value="CAN">Canada</option>
+            <option value="KOR">Corée du Sud</option>
+            <option value="IND">Inde</option>
+            <option value="BRA">Brésil</option>
+            <option value="RUS">Russie</option>
         </select>
         <button id="imfRefresh">Actualiser</button>
     `;
     const grid = document.createElement('div');
     grid.className = 'grid';
-    const indicators = [
-        { id: 'NGDP_RPCH', title: 'Croissance PIB réel (%)' },
-        { id: 'PCPIPCH',    title: 'Inflation IPC (%)' },
-        { id: 'LUR',        title: 'Taux de chômage (%)' },
-        { id: 'BCA_NGDPD',  title: 'Solde courant (% PIB)' }
+    // 8 indicateurs WEO FMI – codes vérifiés
+    const imfIndicators = [
+        { id: 'NGDP_RPCH',   title: 'Croissance PIB réel (%)',          color: '#3b82f6' },
+        { id: 'PCPIPCH',     title: 'Inflation IPC (%)',                 color: '#ef4444' },
+        { id: 'LUR',         title: 'Taux de chômage (%)',               color: '#f59e0b' },
+        { id: 'BCA_NGDPD',   title: 'Solde courant (% PIB)',             color: '#059669' },
+        { id: 'GGXCNL_NGDP', title: 'Solde budgétaire (% PIB)',         color: '#8b5cf6' },
+        { id: 'GGXWDG_NGDP', title: 'Dette publique brute (% PIB)',     color: '#d97706' },
+        { id: 'NGDPD',       title: 'PIB nominal (Mrd USD)',             color: '#06b6d4' },
+        { id: 'PPPSH',       title: 'Part PIB mondial PPP (%)',          color: '#ec4899' },
     ];
-    indicators.forEach((ind, i) => {
+    imfIndicators.forEach((ind, i) => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">FMI – WEO</span></div><div class="card-body"><canvas id="imf-chart-${i}"></canvas></div>`;
+        card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">FMI – WEO DataMapper</span></div><div class="card-body"><canvas id="imf-chart-${i}"></canvas></div>`;
         grid.appendChild(card);
     });
     content.appendChild(selectorDiv);
@@ -423,49 +434,48 @@ function buildTabs() {
 
     const loadIMF = async () => {
         const country = document.getElementById('imfCountry').value;
-        const ids = ['NGDP_RPCH', 'PCPIPCH', 'LUR', 'BCA_NGDPD'];
-        try {
-            const results = await Promise.all(
-                ids.map(id => 
-                    fetch(`${API_BASE}/api/imf/${id}?country=${country}`)
-                        .then(r => {
-                            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                            return r.json();
-                        })
-                )
-            );
-            results.forEach((res, idx) => {
-                const canvas = document.getElementById(`imf-chart-${idx}`);
-                if (!canvas) return;
-                const old = Chart.getChart(canvas);
-                if (old) old.destroy();
-                if (res.observations && res.observations.length > 0) {
-                    new Chart(canvas, {
-                        type: 'line',
-                        data: {
-                            labels: res.observations.map(o => o.date),
-                            datasets: [{
-                                label: ids[idx],
-                                data: res.observations.map(o => o.value),
-                                borderColor: '#d97706',
-                                tension: 0.1
-                            }]
-                        },
-                        options: baseOptions
-                    });
-                } else {
-                    canvas.parentElement.innerHTML = '<p style="color:orange;">Pas de données pour ce pays</p>';
-                }
-            });
-        } catch (err) {
-            console.error('IMF load error:', err);
-        }
+        // Charger tous les indicateurs en parallèle, erreurs isolées
+        const results = await Promise.all(
+            imfIndicators.map(ind =>
+                fetch(`${API_BASE}/api/imf/${ind.id}?country=${country}`)
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null)
+            )
+        );
+        results.forEach((res, idx) => {
+            const canvas = document.getElementById(`imf-chart-${idx}`);
+            if (!canvas) return;
+            const old = Chart.getChart(canvas);
+            if (old) old.destroy();
+            if (res && res.observations && res.observations.length > 0) {
+                // Filtrer pour ne garder que les années avec données réelles (exclure forecasts trop lointains)
+                const obs = res.observations.filter(o => parseInt(o.date) <= new Date().getFullYear() + 2);
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: obs.map(o => o.date),
+                        datasets: [{
+                            label: imfIndicators[idx].title,
+                            data: obs.map(o => o.value),
+                            borderColor: imfIndicators[idx].color,
+                            backgroundColor: imfIndicators[idx].color + '22',
+                            fill: true,
+                            tension: 0.2,
+                            pointRadius: 2
+                        }]
+                    },
+                    options: baseOptions
+                });
+            } else {
+                canvas.parentElement.innerHTML = '<p style="color:rgba(255,255,255,0.4);padding:10px;text-align:center;font-size:.75rem;">Pas de données pour ce pays/indicateur</p>';
+            }
+        });
     };
 
     setTimeout(() => {
         const refreshBtn = document.getElementById('imfRefresh');
         if (refreshBtn) refreshBtn.addEventListener('click', loadIMF);
-        loadIMF();   // chargement initial
+        loadIMF();
     }, 100);
 }else if (tab.id === 'oecd') {
             const selectorDiv = document.createElement('div');
@@ -475,6 +485,7 @@ function buildTabs() {
                 <select id="oecdCountry">
                     <option value="FRA">France</option>
                     <option value="DEU">Allemagne</option>
+                    <option value="BEL">Belgique</option>
                     <option value="USA">États-Unis</option>
                     <option value="GBR">Royaume-Uni</option>
                     <option value="JPN">Japon</option>
@@ -483,8 +494,6 @@ function buildTabs() {
                     <option value="CAN">Canada</option>
                     <option value="AUS">Australie</option>
                     <option value="KOR">Corée du Sud</option>
-                    <option value="MEX">Mexique</option>
-                    <option value="TUR">Turquie</option>
                     <option value="NLD">Pays-Bas</option>
                     <option value="SWE">Suède</option>
                     <option value="CHE">Suisse</option>
@@ -493,70 +502,64 @@ function buildTabs() {
             `;
             const grid = document.createElement('div');
             grid.className = 'grid';
+            // dataset passé en premier paramètre (ignoré côté server, mais conservé pour la route)
             const oecdIndicators = [
-                { id: 'CPALTT01', title: 'Inflation IPC (croissance annuelle %)' },
-                { id: 'LRUNTTTT', title: 'Taux de chômage harmonisé (%)' },
-                { id: 'NAEXKP01',   title: 'Croissance du PIB réel (%)' }
+                { dataset: 'PRICES', id: 'CPALTT01', title: 'Inflation IPC – glissement annuel (%)', color: '#ef4444' },
+                { dataset: 'LFS',    id: 'LRUNTTTT', title: 'Taux de chômage harmonisé (%)',         color: '#f59e0b' },
+                { dataset: 'QNA',    id: 'NAEXKP01', title: 'Croissance PIB réel – trim/trim-4 (%)', color: '#3b82f6' },
             ];
             oecdIndicators.forEach((ind, i) => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE – KEI</span></div><div class="card-body"><canvas id="oecd-chart-${i}"></canvas></div>`;
+                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE – sdmx.oecd.org</span></div><div class="card-body"><canvas id="oecd-chart-${i}"></canvas></div>`;
                 grid.appendChild(card);
             });
             content.appendChild(selectorDiv);
             content.appendChild(grid);
 
             const loadOECD = async () => {
-        const country = document.getElementById('oecdCountry').value;
-        const queries = [
-            { dataset: 'KEI', indicator: 'CPALTT01', title: 'Inflation' },
-            { dataset: 'KEI', indicator: 'LRUNTTTT', title: 'Chômage' },
-            { dataset: 'KEI', indicator: 'NAEXKP01', title: 'Croissance PIB' }
-        ];
+                const country = document.getElementById('oecdCountry').value;
+                // Les erreurs sont isolées par indicateur
+                const results = await Promise.all(
+                    oecdIndicators.map(q =>
+                        fetch(`${API_BASE}/api/oecd/${q.dataset}/${q.id}?country=${country}`)
+                            .then(r => r.ok ? r.json() : null)
+                            .catch(() => null)
+                    )
+                );
 
-        try {
-            const results = await Promise.all(
-                queries.map(q => 
-                    fetch(`${API_BASE}/api/oecd/${q.dataset}/${q.indicator}?country=${country}`)
-                        .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
-                )
-            );
+                results.forEach((res, idx) => {
+                    const canvas = document.getElementById(`oecd-chart-${idx}`);
+                    if (!canvas) return;
+                    const old = Chart.getChart(canvas);
+                    if (old) old.destroy();
 
-            results.forEach((res, idx) => {
-                const canvas = document.getElementById(`oecd-chart-${idx}`);
-                if (!canvas) return;
-                const old = Chart.getChart(canvas);
-                if (old) old.destroy();
-
-                if (res.observations && res.observations.length > 0) {
-                    new Chart(canvas, {
-                        type: 'line',
-                        data: {
-                            labels: res.observations.map(o => o.date),
-                            datasets: [{
-                                label: queries[idx].title,
-                                data: res.observations.map(o => o.value),
-                                borderColor: '#059669',
-                                tension: 0.1
-                            }]
-                        },
-                        options: baseOptions
-                    });
-                } else {
-                    canvas.parentElement.innerHTML = '<p style="color:orange;">Pas de données</p>';
-                }
-            });
-        } catch (err) {
-            console.error('OECD Error:', err);
-        }
-    };
+                    if (res && res.observations && res.observations.length > 0) {
+                        new Chart(canvas, {
+                            type: 'line',
+                            data: {
+                                labels: res.observations.map(o => o.date),
+                                datasets: [{
+                                    label: oecdIndicators[idx].title,
+                                    data: res.observations.map(o => o.value),
+                                    borderColor: oecdIndicators[idx].color,
+                                    backgroundColor: oecdIndicators[idx].color + '22',
+                                    fill: true,
+                                    tension: 0.2,
+                                    pointRadius: 1
+                                }]
+                            },
+                            options: baseOptions
+                        });
+                    } else {
+                        canvas.parentElement.innerHTML = `<p style="color:rgba(255,255,255,0.4);padding:10px;text-align:center;font-size:.75rem;">Pas de données OCDE<br>${country} / ${oecdIndicators[idx].id}</p>`;
+                    }
+                });
+            };
 
             setTimeout(() => {
                 const refreshBtn = document.getElementById('oecdRefresh');
-                if (refreshBtn) {
-                    refreshBtn.addEventListener('click', loadOECD);
-                }
+                if (refreshBtn) refreshBtn.addEventListener('click', loadOECD);
                 loadOECD();
             }, 100);
         } else if (tab.id === 'education') {
