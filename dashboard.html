@@ -290,6 +290,11 @@ const tabConfigs = [
     id: 'imf',
     label: '🏛️ FMI',
     charts: []   // Les graphiques seront créés dynamiquement
+},
+{
+    id: 'oecd',
+    label: '🏢 OCDE',
+    charts: []   // dynamique
 }
 ];
 
@@ -310,19 +315,18 @@ function buildTabs() {
     const tabsDiv = document.getElementById('tabs');
     const contentsDiv = document.getElementById('tabContents');
     tabConfigs.forEach((tab, idx) => {
-        // Bouton onglet
         const btn = document.createElement('button');
         btn.className = 'tab-btn' + (idx === 0 ? ' active' : '');
         btn.textContent = tab.label;
         btn.onclick = () => switchTab(tab.id);
         tabsDiv.appendChild(btn);
 
-        // Contenu de l'onglet
         const content = document.createElement('div');
         content.className = 'tab-content' + (idx === 0 ? ' active' : '');
         content.id = 'tab-' + tab.id;
-        // Pour l'onglet matières premières, on ajoute un sélecteur spécial
+
         if (tab.id === 'commodities') {
+            // --- Onglet matières premières (inchangé) ---
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = '<span>Choisir la série :</span> <select id="commoditySelect"><option value="gold">Or</option><option value="oil">Pétrole</option><option value="steel">Acier</option><option value="copper">Cuivre</option><option value="cpi">CPI</option><option value="wages">Salaires</option><option value="productivity">Productivité</option><option value="loco_price">Équipement industriel lourd</option></select>';
@@ -334,26 +338,15 @@ function buildTabs() {
             canvasDiv.appendChild(card);
             content.appendChild(selectorDiv);
             content.appendChild(canvasDiv);
-            // Écouter le changement du sélecteur
             setTimeout(() => {
                 const select = document.getElementById('commoditySelect');
                 select.addEventListener('change', (e) => {
                     renderCommodityChart(e.target.value);
                 });
-                renderCommodityChart('gold'); // par défaut
+                renderCommodityChart('gold');
             }, 100);
-        } else {
-            const grid = document.createElement('div');
-            grid.className = 'grid';
-            tab.charts.forEach((chartDef, chartIdx) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `<div class="card-header"><h3>${chartDef.title}</h3><span class="source">${chartDef.source}</span></div><div class="card-body"><canvas id="chart-${tab.id}-${chartIdx}"></canvas></div>`;
-                grid.appendChild(card);
-            });
-            content.appendChild(grid);
         } else if (tab.id === 'imf') {
-            // Construction de l'onglet FMI
+            // --- Onglet FMI (corrigé et déplacé ici) ---
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = `
@@ -396,7 +389,6 @@ function buildTabs() {
             content.appendChild(selectorDiv);
             content.appendChild(grid);
 
-            // Fonction pour charger les données FMI et créer les graphiques
             const loadIMF = async () => {
                 const country = document.getElementById('imfCountry').value;
                 const ids = ['NGDP_RPCH', 'PCPIEPCH', 'LUR', 'BCA_NGDPD'];
@@ -407,7 +399,6 @@ function buildTabs() {
                     results.forEach((res, idx) => {
                         const canvas = document.getElementById(`imf-chart-${idx}`);
                         if (!canvas) return;
-                        // Détruire l'ancien graphique s'il existe
                         const old = Chart.getChart(canvas);
                         if (old) old.destroy();
                         if (res.observations && res.observations.length > 0) {
@@ -434,10 +425,87 @@ function buildTabs() {
                 }
             };
             document.getElementById('imfRefresh').addEventListener('click', loadIMF);
-            // Charger automatiquement au premier affichage
             setTimeout(loadIMF, 200);
+         } else if (tab.id === 'oecd') {
+            // Construction de l'onglet OCDE
+            const selectorDiv = document.createElement('div');
+            selectorDiv.className = 'selector';
+            selectorDiv.innerHTML = `
+                <span>Pays :</span>
+                <select id="oecdCountry">
+                    <option value="FRA">France</option>
+                    <option value="DEU">Allemagne</option>
+                    <option value="USA">États-Unis</option>
+                    <option value="GBR">Royaume-Uni</option>
+                    <option value="JPN">Japon</option>
+                    <option value="ITA">Italie</option>
+                    <option value="ESP">Espagne</option>
+                    <option value="CAN">Canada</option>
+                    <option value="AUS">Australie</option>
+                    <option value="KOR">Corée du Sud</option>
+                    <option value="MEX">Mexique</option>
+                    <option value="TUR">Turquie</option>
+                    <option value="NLD">Pays-Bas</option>
+                    <option value="SWE">Suède</option>
+                    <option value="CHE">Suisse</option>
+                </select>
+                <button id="oecdRefresh">Actualiser</button>
+            `;
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            const oecdIndicators = [
+                { id: 'CPALTT01', title: 'Inflation IPC (croissance annuelle %)' },
+                { id: 'LRUNTTTT', title: 'Taux de chômage harmonisé (%)' },
+                { id: 'NAGIG01',   title: 'Croissance du PIB réel (%)' }
+            ];
+            oecdIndicators.forEach((ind, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE – KEI</span></div><div class="card-body"><canvas id="oecd-chart-${i}"></canvas></div>`;
+                grid.appendChild(card);
+            });
+            content.appendChild(selectorDiv);
+            content.appendChild(grid);
+
+            const loadOECD = async () => {
+                const country = document.getElementById('oecdCountry').value;
+                const ids = ['CPALTT01', 'LRUNTTTT', 'NAGIG01'];
+                try {
+                    const results = await Promise.all(
+                        ids.map(id => fetch(`${API_BASE}/api/oecd/KEI/${id}?country=${country}`).then(r => r.json()))
+                    );
+                    results.forEach((res, idx) => {
+                        const canvas = document.getElementById(`oecd-chart-${idx}`);
+                        if (!canvas) return;
+                        const old = Chart.getChart(canvas);
+                        if (old) old.destroy();
+                        if (res.observations && res.observations.length > 0) {
+                            new Chart(canvas, {
+                                type: 'line',
+                                data: {
+                                    labels: res.observations.map(o => o.date),
+                                    datasets: [{
+                                        label: ids[idx],
+                                        data: res.observations.map(o => o.value),
+                                        borderColor: '#059669',
+                                        pointRadius: 0,
+                                        tension: 0.1
+                                    }]
+                                },
+                                options: baseOptions
+                            });
+                        } else {
+                            canvas.parentElement.innerHTML = '<p style="color:red;">Pas de données</p>';
+                        }
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+            document.getElementById('oecdRefresh').addEventListener('click', loadOECD);
+            setTimeout(loadOECD, 200);
         } else {
-            // Autres onglets (construction standard avec grid)
+            // --- Autres onglets (construction standard) ---
             const grid = document.createElement('div');
             grid.className = 'grid';
             tab.charts.forEach((chartDef, chartIdx) => {
