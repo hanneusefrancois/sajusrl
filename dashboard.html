@@ -213,8 +213,10 @@ const tabConfigs = [
             title: 'Taux de change (Frankfurter)',
             source: 'Frankfurter (BCE)',
             render: (data, canvas) => {
-                if (!data.frankfurter?.rates) return;
-                const entries = Object.entries(data.frankfurter.rates).slice(0, 12);
+    const mainCurrencies = ['USD','GBP','CHF','JPY','CNY','CAD','AUD','NOK','SEK'];
+    const entries = Object.entries(data.frankfurter.rates)
+        .filter(([c]) => mainCurrencies.includes(c))
+        .slice(0, 12);
                 new Chart(canvas, {
                     type: 'bar',
                     data: {
@@ -284,6 +286,39 @@ const tabConfigs = [
                 });
             }
         },
+        {
+            title: 'Balance commerciale UE (Eurostat)',
+            source: 'Eurostat – tet00002',
+            render: async (data, canvas) => {
+                try {
+                    const res = await fetch(`${API_BASE}/api/eurostat/trade`);
+                    const json = await res.json();
+                    if (!json.observations) return;
+                    const obs = json.observations.slice(-24); // 2 ans de données mensuelles
+                    new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels: obs.map(o => o.date),
+                            datasets: [{
+                                label: 'Balance UE (M€)',
+                                data: obs.map(o => o.value),
+                                borderColor: '#3498db',
+                                pointRadius: 0,
+                                tension: 0.2
+                            }]
+                        },
+                        options: baseOptions
+                    });
+                } catch (err) {
+                    canvas.parentElement.innerHTML = '<p style="color:red;">Erreur Eurostat</p>';
+                }
+            }
+        }
+        
+
+
+
+        
     ]
 },
 {
@@ -294,6 +329,11 @@ const tabConfigs = [
 {
     id: 'oecd',
     label: '🏢 OCDE',
+    charts: []   // dynamique
+},
+    {
+    id: 'education',
+    label: '🎓 Éducation & STEM',
     charts: []   // dynamique
 }
 ];
@@ -324,28 +364,27 @@ function buildTabs() {
         content.className = 'tab-content' + (idx === 0 ? ' active' : '');
         content.id = 'tab-' + tab.id;
 
-        if (tab.id === 'commodities') {
-            const selectorDiv = document.createElement('div');
-            selectorDiv.className = 'selector';
-            selectorDiv.innerHTML = '<span>Choisir la série :</span> <select id="commoditySelect"><option value="gold">Or</option><option value="oil">Pétrole</option><option value="steel">Acier</option><option value="copper">Cuivre</option><option value="cpi">CPI</option><option value="wages">Salaires</option><option value="productivity">Productivité</option><option value="loco_price">Équipement industriel lourd</option></select>';
-            const canvasDiv = document.createElement('div');
-            canvasDiv.className = 'grid';
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = '<div class="card-header"><h3 id="commodityTitle">Or</h3><span class="source">Saju Srl – base 100 = 1900</span></div><div class="card-body"><canvas id="commodityCanvas"></canvas></div>';
-            canvasDiv.appendChild(card);
-            content.appendChild(selectorDiv);
-            content.appendChild(canvasDiv);
-            setTimeout(() => {
-                const select = document.getElementById('commoditySelect');
-                if (select) {
-                    select.addEventListener('change', (e) => {
-                        renderCommodityChart(e.target.value);
-                    });
-                    renderCommodityChart('gold');
-                }
-            }, 100);
-        } else if (tab.id === 'imf') {
+       if (tab.id === 'commodities') {
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    const seriesList = ['gold','oil','steel','copper','cpi','wages','productivity','loco_price'];
+    const names = { gold:'Or', oil:'Pétrole', steel:'Acier', copper:'Cuivre', cpi:'CPI', wages:'Salaires', productivity:'Productivité', loco_price:'Équipement industriel lourd' };
+    seriesList.forEach(key => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<div class="card-header"><h3>${names[key]}</h3><span class="source">Saju Srl – base 100 = 1900</span></div><div class="card-body"><canvas id="comm-${key}"></canvas></div>`;
+        grid.appendChild(card);
+    });
+    content.appendChild(grid);
+    setTimeout(() => {
+        if (DASHBOARD_DATA?.historical) {
+            seriesList.forEach(key => {
+                const canvas = document.getElementById(`comm-${key}`);
+                if (canvas) renderCommodityChart(key, canvas);
+            });
+        }
+    }, 100);
+} else if (tab.id === 'imf') {
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = `
@@ -518,6 +557,81 @@ function buildTabs() {
                 }
                 loadOECD();
             }, 100);
+        } else if (tab.id === 'education') {
+            // Construction de l'onglet Éducation (OCDE STEM)
+            const selectorDiv = document.createElement('div');
+            selectorDiv.className = 'selector';
+            selectorDiv.innerHTML = `
+                <span>Pays :</span>
+                <select id="eduCountry">
+                    <option value="FRA">France</option>
+                    <option value="DEU">Allemagne</option>
+                    <option value="USA">États-Unis</option>
+                    <option value="JPN">Japon</option>
+                    <option value="KOR">Corée du Sud</option>
+                    <option value="CHE">Suisse</option>
+                    <option value="SWE">Suède</option>
+                    <option value="FIN">Finlande</option>
+                    <option value="CAN">Canada</option>
+                    <option value="GBR">Royaume-Uni</option>
+                </select>
+                <button id="eduRefresh">Actualiser</button>
+            `;
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            const eduIndicators = [
+                { id: 'GRADUATES.STEM', title: 'Diplômés en STEM (% du total)' },
+                { id: 'PISA.SCI',       title: 'Score PISA – Sciences' }
+            ];
+            eduIndicators.forEach((ind, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE – Éducation</span></div><div class="card-body"><canvas id="edu-chart-${i}"></canvas></div>`;
+                grid.appendChild(card);
+            });
+            content.appendChild(selectorDiv);
+            content.appendChild(grid);
+
+            const loadEdu = async () => {
+                const country = document.getElementById('eduCountry').value;
+                const ids = ['GRADUATES.STEM', 'PISA.SCI'];
+                try {
+                    const results = await Promise.all(
+                        ids.map(id => fetch(`${API_BASE}/api/oecd/EDU/${id}?country=${country}`).then(r => r.json()))
+                    );
+                    results.forEach((res, idx) => {
+                        const canvas = document.getElementById(`edu-chart-${idx}`);
+                        if (!canvas) return;
+                        const old = Chart.getChart(canvas);
+                        if (old) old.destroy();
+                        if (res.observations && res.observations.length > 0) {
+                            new Chart(canvas, {
+                                type: 'line',
+                                data: {
+                                    labels: res.observations.map(o => o.date),
+                                    datasets: [{
+                                        label: ids[idx],
+                                        data: res.observations.map(o => o.value),
+                                        borderColor: '#8e44ad',
+                                        pointRadius: 0,
+                                        tension: 0.1
+                                    }]
+                                },
+                                options: baseOptions
+                            });
+                        } else {
+                            canvas.parentElement.innerHTML = '<p style="color:red;">Pas de données</p>';
+                        }
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+            setTimeout(() => {
+                const refreshBtn = document.getElementById('eduRefresh');
+                if (refreshBtn) refreshBtn.addEventListener('click', loadEdu);
+                loadEdu();
+            }, 100);
         } else {
             const grid = document.createElement('div');
             grid.className = 'grid';
@@ -563,23 +677,15 @@ function switchTab(tabId) {
     }
 }
 
-function renderCommodityChart(seriesKey) {
+function renderCommodityChart(seriesKey, canvasOverride) {
     if (!DASHBOARD_DATA?.historical) return;
     const series = DASHBOARD_DATA.historical[seriesKey] || [];
-    const canvas = document.getElementById('commodityCanvas');
+    const canvas = canvasOverride || document.getElementById('commodityCanvas');
     if (!canvas) return;
-    // Détruire le graphique précédent
     const existing = Chart.getChart(canvas);
     if (existing) existing.destroy();
-    const colors = {
-        gold: '#f1c40f', oil: '#e67e22', steel: '#bdc3c7', copper: '#d35400',
-        cpi: '#e74c3c', wages: '#2ecc71', productivity: '#3498db', loco_price: '#9b59b6'
-    };
-    const names = {
-        gold: 'Or', oil: 'Pétrole', steel: 'Acier', copper: 'Cuivre',
-        cpi: 'CPI', wages: 'Salaires', productivity: 'Productivité', loco_price: 'Équipement industriel lourd'
-    };
-    document.getElementById('commodityTitle').textContent = names[seriesKey] || seriesKey;
+    const colors = { gold:'#f1c40f', oil:'#e67e22', steel:'#bdc3c7', copper:'#d35400', cpi:'#e74c3c', wages:'#2ecc71', productivity:'#3498db', loco_price:'#9b59b6' };
+    const names = { gold:'Or', oil:'Pétrole', steel:'Acier', copper:'Cuivre', cpi:'CPI', wages:'Salaires', productivity:'Productivité', loco_price:'Équipement industriel lourd' };
     new Chart(canvas, {
         type: 'line',
         data: {
