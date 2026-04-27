@@ -286,6 +286,11 @@ const tabConfigs = [
         },
     ]
 }
+{
+    id: 'imf',
+    label: '🏛️ FMI',
+    charts: []   // Les graphiques seront créés dynamiquement
+}
 ];
 
 const baseOptions = {
@@ -338,6 +343,101 @@ function buildTabs() {
                 renderCommodityChart('gold'); // par défaut
             }, 100);
         } else {
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            tab.charts.forEach((chartDef, chartIdx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-header"><h3>${chartDef.title}</h3><span class="source">${chartDef.source}</span></div><div class="card-body"><canvas id="chart-${tab.id}-${chartIdx}"></canvas></div>`;
+                grid.appendChild(card);
+            });
+            content.appendChild(grid);
+        } else if (tab.id === 'imf') {
+            // Construction de l'onglet FMI
+            const selectorDiv = document.createElement('div');
+            selectorDiv.className = 'selector';
+            selectorDiv.innerHTML = `
+                <span>Pays :</span>
+                <select id="imfCountry">
+                    <option value="FR">France</option>
+                    <option value="DE">Allemagne</option>
+                    <option value="US">États-Unis</option>
+                    <option value="CN">Chine</option>
+                    <option value="JP">Japon</option>
+                    <option value="IT">Italie</option>
+                    <option value="ES">Espagne</option>
+                    <option value="GB">Royaume-Uni</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australie</option>
+                    <option value="KR">Corée du Sud</option>
+                    <option value="IN">Inde</option>
+                    <option value="BR">Brésil</option>
+                    <option value="MX">Mexique</option>
+                    <option value="ZA">Afrique du Sud</option>
+                    <option value="TR">Turquie</option>
+                    <option value="SA">Arabie Saoudite</option>
+                </select>
+                <button id="imfRefresh">Actualiser</button>
+            `;
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            const indicators = [
+                { id: 'NGDP_RPCH', title: 'Croissance PIB réel (%)' },
+                { id: 'PCPIEPCH',   title: 'Inflation IPC (%)' },
+                { id: 'LUR',        title: 'Taux de chômage (%)' },
+                { id: 'BCA_NGDPD',  title: 'Solde courant (% PIB)' }
+            ];
+            indicators.forEach((ind, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">FMI – WEO</span></div><div class="card-body"><canvas id="imf-chart-${i}"></canvas></div>`;
+                grid.appendChild(card);
+            });
+            content.appendChild(selectorDiv);
+            content.appendChild(grid);
+
+            // Fonction pour charger les données FMI et créer les graphiques
+            const loadIMF = async () => {
+                const country = document.getElementById('imfCountry').value;
+                const ids = ['NGDP_RPCH', 'PCPIEPCH', 'LUR', 'BCA_NGDPD'];
+                try {
+                    const results = await Promise.all(
+                        ids.map(id => fetch(`${API_BASE}/api/imf/WEO/WEO_APIPUB/${id}?country=${country}&freq=A`).then(r => r.json()))
+                    );
+                    results.forEach((res, idx) => {
+                        const canvas = document.getElementById(`imf-chart-${idx}`);
+                        if (!canvas) return;
+                        // Détruire l'ancien graphique s'il existe
+                        const old = Chart.getChart(canvas);
+                        if (old) old.destroy();
+                        if (res.observations && res.observations.length > 0) {
+                            new Chart(canvas, {
+                                type: 'line',
+                                data: {
+                                    labels: res.observations.map(o => o.date),
+                                    datasets: [{
+                                        label: ids[idx],
+                                        data: res.observations.map(o => o.value),
+                                        borderColor: '#d97706',
+                                        pointRadius: 0,
+                                        tension: 0.1
+                                    }]
+                                },
+                                options: baseOptions
+                            });
+                        } else {
+                            canvas.parentElement.innerHTML = '<p style="color:red;">Pas de données</p>';
+                        }
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+            document.getElementById('imfRefresh').addEventListener('click', loadIMF);
+            // Charger automatiquement au premier affichage
+            setTimeout(loadIMF, 200);
+        } else {
+            // Autres onglets (construction standard avec grid)
             const grid = document.createElement('div');
             grid.className = 'grid';
             tab.charts.forEach((chartDef, chartIdx) => {
