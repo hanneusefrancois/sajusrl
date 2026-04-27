@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Saju Srl — Dashboard macro</title>
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "wfuxg8181e");
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root{--bk:#0f1117;--cd:#141822;--cd2:#1a2030;--bd:rgba(255,255,255,.1);--w:#fff;--wd:rgba(255,255,255,.88);--wl:rgba(255,255,255,.5);--or:#d97706;--em:#059669;--r:#c0392b;--bl:#3b82f6}
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}body{font-family:'DM Sans',sans-serif;background:var(--bk);color:var(--w);line-height:1.65;font-size:14px;overflow-x:hidden}
+        .ctr{max-width:1280px;margin:0 auto;padding:0 clamp(14px,3.5vw,44px)}
+        nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(15,17,23,.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--bd)}
+        .ni{max-width:1280px;margin:0 auto;padding:0 clamp(14px,3.5vw,44px);height:54px;display:flex;align-items:center;justify-content:space-between}
+        .nl img{height:40px;border-radius:8px;background:#fff;padding:4px 10px}
+        .nk{display:flex;gap:12px;align-items:center}.nk a{font-size:.58rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--wl);transition:color .2s}.nk a:hover,.nk a.ac{color:var(--or)}
+        .hero{padding:clamp(106px,11vw,128px) 0 clamp(12px,2vw,20px);background:linear-gradient(145deg,#0f1117,#111827 40%,#0c1425)}
+        .ey{display:inline-flex;align-items:center;gap:6px;margin-bottom:6px;font-size:.54rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--bl)}
+        .hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.3rem,2.6vw,2rem);font-weight:700;line-height:1.15;max-width:620px;margin-bottom:8px}
+        .hs{font-size:.74rem;color:var(--wd);max-width:500px;line-height:1.7;margin-bottom:12px}
+        .sbar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}.sb{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:.52rem;font-weight:600}
+        .sb.live{background:rgba(5,150,105,.1);color:var(--em);border:1px solid rgba(5,150,105,.2)}.sb.live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--em);animation:pulse 2s infinite}
+        .sb.inf{background:rgba(59,130,246,.08);color:var(--bl)}
+        .kpi-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:5px;margin:10px 0 6px}
+        .kpi{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:8px 10px;text-align:center;animation:fadeIn .4s ease both}
+        .kpi .kl{font-size:.42rem;color:var(--wl);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}.kpi .kv{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;color:var(--or)}
+        .sec{padding:clamp(12px,1.8vw,18px) 0}.sh{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(217,119,6,.18)}
+        .sh h2{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700}.badge{font-size:.44rem;font-weight:700;padding:2px 5px;border-radius:2px;text-transform:uppercase;letter-spacing:.04em}
+        .bg2{background:rgba(5,150,105,.1);color:#34d399;border:1px solid rgba(5,150,105,.2)}
+        .chart-box{background:var(--cd);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:20px;height:300px;position:relative;}
+        .chart-box canvas{width:100%!important;height:100%!important;}
+        .grid-2{display:grid;grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:16px;}
+        @media(max-width:700px){.chart-box{height:250px}}
+        .legal{font-size:.5rem;color:rgba(255,255,255,.3);text-align:center;padding:10px 0;border-top:1px solid var(--bd);margin-top:20px}
+    </style>
+</head>
+<body>
+<nav><div class="ni"><a href="https://www.saju.be/" class="nl"><img src="https://www.saju.be/Logo.png" alt="Saju srl"></a>
+<div class="nk"><a href="#" class="np ac">Live Data</a><a href="https://www.saju.be/" class="np">Contact</a></div></div></nav>
+<section class="hero"><div class="ctr">
+<div class="ey">🔴 Saju Srl · Live Market Intelligence</div>
+<h1>Données macro, éducation & matières premières.<br><em>World Bank, FRED, Eurostat, actualités.</em></h1>
+<p class="hs">Appels directs aux API <strong>World Bank, FRED, Eurostat</strong> · service data.saju.be<br>Pour une analyse personnalisée (coefficient de révision de prix, rolling‑window, Monte Carlo), <a href="mailto:fh@saju.be" style="color:var(--or); text-decoration:underline;">contactez-nous</a>.</p>
+<div class="sbar"><span class="sb live">LIVE</span><span class="sb inf">Mise à jour: <span id="ts">—</span></span></div>
+</div></section>
+
+<!-- Graphiques -->
+<section class="sec"><div class="ctr">
+<div class="grid-2">
+  <div class="chart-box"><canvas id="inflationCompare"></canvas></div>
+  <div class="chart-box"><canvas id="populationChart"></canvas></div>
+  <div class="chart-box"><canvas id="gdpGrowthChart"></canvas></div>
+  <div class="chart-box"><canvas id="unemploymentUSChart"></canvas></div>
+  <div class="chart-box"><canvas id="cryptoChart"></canvas></div>
+  <div class="chart-box"><canvas id="fxChart"></canvas></div>
+  <div class="chart-box"><canvas id="euroInflationChart"></canvas></div>
+  <div class="chart-box"><canvas id="fedRateChart"></canvas></div>
+</div>
+</div></section>
+
+<!-- Mention légale / contact -->
+<div class="ctr legal">
+  Les données présentées proviennent de sources publiques (FRED, World Bank, Eurostat, CoinGecko, Frankfurter).<br>
+  Pour une analyse approfondie avec des modèles propriétaires (coefficient de révision de prix, simulation Monte Carlo, analyse par fenêtre glissante), contactez <strong>François Hanneuse — Saju Srl</strong><br>
+  📧 fh@saju.be · 📞 +32 483 37 98 · VAT BE0785.280.227 · Ch. d'Alsemberg 1108/6, 1180 Uccle
+</div>
+
+<script>
+const API = window.location.hostname === 'localhost' ? 'http://localhost:8080/api/dashboard' : 'https://data.saju.be/api/dashboard';
+
+(async () => {
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+    document.getElementById('ts').textContent = new Date(data.updated).toLocaleString('fr-BE');
+
+    const chartOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#888', maxTicksLimit: 8 } }, y: { ticks: { color: '#888' } } } };
+
+    // Inflation comparée
+    if (data.inflation) {
+      const labels = [...new Set([...(data.inflation.US||[]).map(o=>o.date), ...(data.inflation.EU||[]).map(o=>o.date), ...(data.inflation.China||[]).map(o=>o.date)])].sort();
+      const datasets = [
+        { label: 'US', data: labels.map(d => (data.inflation.US?.find(o=>o.date===d)?.value ?? null)), borderColor: '#3b82f6', tension: 0.2 },
+        { label: 'EU', data: labels.map(d => (data.inflation.EU?.find(o=>o.date===d)?.value ?? null)), borderColor: '#f59e0b', tension: 0.2 },
+        { label: 'China', data: labels.map(d => (data.inflation.China?.find(o=>o.date===d)?.value ?? null)), borderColor: '#ef4444', tension: 0.2 },
+      ];
+      new Chart(document.getElementById('inflationCompare'), { type: 'line', data: { labels, datasets }, options: chartOpts });
+    }
+
+    // Population
+    if (data.population) {
+      const popLabels = [...new Set([...(data.population.US||[]).map(o=>o.date), ...(data.population.EU||[]).map(o=>o.date), ...(data.population.China||[]).map(o=>o.date)])].sort().filter(d => d >= '1960');
+      new Chart(document.getElementById('populationChart'), {
+        type: 'line',
+        data: {
+          labels: popLabels,
+          datasets: [
+            { label: 'US', data: popLabels.map(d => data.population.US?.find(o=>o.date===d)?.value), borderColor: '#3b82f6' },
+            { label: 'EU', data: popLabels.map(d => data.population.EU?.find(o=>o.date===d)?.value), borderColor: '#f59e0b' },
+            { label: 'China', data: popLabels.map(d => data.population.China?.find(o=>o.date===d)?.value), borderColor: '#ef4444' },
+          ]
+        }, options: chartOpts
+      });
+    }
+
+    // Croissance PIB
+    if (data.gdpGrowth) {
+      const gdpLabels = [...new Set([...(data.gdpGrowth.US||[]).map(o=>o.date), ...(data.gdpGrowth.EU||[]).map(o=>o.date), ...(data.gdpGrowth.China||[]).map(o=>o.date)])].sort().filter(d => d >= '1990');
+      new Chart(document.getElementById('gdpGrowthChart'), {
+        type: 'bar',
+        data: {
+          labels: gdpLabels,
+          datasets: [
+            { label: 'US', data: gdpLabels.map(d => data.gdpGrowth.US?.find(o=>o.date===d)?.value), backgroundColor: 'rgba(59,130,246,0.6)' },
+            { label: 'EU', data: gdpLabels.map(d => data.gdpGrowth.EU?.find(o=>o.date===d)?.value), backgroundColor: 'rgba(245,158,11,0.6)' },
+            { label: 'China', data: gdpLabels.map(d => data.gdpGrowth.China?.find(o=>o.date===d)?.value), backgroundColor: 'rgba(239,68,68,0.6)' },
+          ]
+        }, options: chartOpts
+      });
+    }
+
+    // Chômage US (FRED)
+    if (data.fred?.UNRATE) {
+      const un = data.fred.UNRATE.slice(-60);
+      new Chart(document.getElementById('unemploymentUSChart'), {
+        type: 'line',
+        data: { labels: un.map(o=>o.date), datasets: [{ label: 'US Unemployment', data: un.map(o=>o.value), borderColor: '#c0392b' }] },
+        options: chartOpts
+      });
+    }
+
+    // Cryptos
+    if (data.coingecko) {
+      const c = Object.values(data.coingecko).filter(c => c.eur);
+      new Chart(document.getElementById('cryptoChart'), {
+        type: 'bar',
+        data: { labels: c.map(x=>x.symbol), datasets: [{ label: 'EUR', data: c.map(x=>x.eur), backgroundColor: c.map(x=>x.color) }] },
+        options: chartOpts
+      });
+    }
+
+    // FX rates
+    if (data.frankfurter?.rates) {
+      const fx = Object.entries(data.frankfurter.rates).slice(0, 12);
+      new Chart(document.getElementById('fxChart'), {
+        type: 'bar',
+        data: { labels: fx.map(([c])=>c), datasets: [{ label: 'EUR', data: fx.map(([,v])=>v), backgroundColor: '#d97706' }] },
+        options: chartOpts
+      });
+    }
+
+    // Eurostat inflation
+    if (data.eurostatInflation?.observations) {
+      const eu = data.eurostatInflation.observations.slice(-24);
+      new Chart(document.getElementById('euroInflationChart'), {
+        type: 'line',
+        data: { labels: eu.map(o=>o.date), datasets: [{ label: 'EU IPCH', data: eu.map(o=>o.value), borderColor: '#059669' }] },
+        options: chartOpts
+      });
+    }
+
+    // Fed Funds Rate
+    if (data.fred?.FEDFUNDS) {
+      const f = data.fred.FEDFUNDS.slice(-60);
+      new Chart(document.getElementById('fedRateChart'), {
+        type: 'line',
+        data: { labels: f.map(o=>o.date), datasets: [{ label: 'Fed Funds', data: f.map(o=>o.value), borderColor: '#d97706', stepped: true }] },
+        options: chartOpts
+      });
+    }
+
+  } catch (err) {
+    document.body.innerHTML += '<div style="color:red; text-align:center;">Erreur de chargement des données.</div>';
+  }
+})();
+</script>
+</body>
+</html>
