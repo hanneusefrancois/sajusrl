@@ -310,7 +310,6 @@ const baseOptions = {
     }
 };
 
-// Construction des onglets
 function buildTabs() {
     const tabsDiv = document.getElementById('tabs');
     const contentsDiv = document.getElementById('tabContents');
@@ -326,7 +325,6 @@ function buildTabs() {
         content.id = 'tab-' + tab.id;
 
         if (tab.id === 'commodities') {
-            // --- Onglet matières premières (inchangé) ---
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = '<span>Choisir la série :</span> <select id="commoditySelect"><option value="gold">Or</option><option value="oil">Pétrole</option><option value="steel">Acier</option><option value="copper">Cuivre</option><option value="cpi">CPI</option><option value="wages">Salaires</option><option value="productivity">Productivité</option><option value="loco_price">Équipement industriel lourd</option></select>';
@@ -340,13 +338,14 @@ function buildTabs() {
             content.appendChild(canvasDiv);
             setTimeout(() => {
                 const select = document.getElementById('commoditySelect');
-                select.addEventListener('change', (e) => {
-                    renderCommodityChart(e.target.value);
-                });
-                renderCommodityChart('gold');
+                if (select) {
+                    select.addEventListener('change', (e) => {
+                        renderCommodityChart(e.target.value);
+                    });
+                    renderCommodityChart('gold');
+                }
             }, 100);
         } else if (tab.id === 'imf') {
-            // --- Onglet FMI (corrigé et déplacé ici) ---
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = `
@@ -390,7 +389,9 @@ function buildTabs() {
             content.appendChild(grid);
 
             const loadIMF = async () => {
-                const country = document.getElementById('imfCountry').value;
+                const countrySelect = document.getElementById('imfCountry');
+                if (!countrySelect) return;
+                const country = countrySelect.value;
                 const ids = ['NGDP_RPCH', 'PCPIEPCH', 'LUR', 'BCA_NGDPD'];
                 try {
                     const results = await Promise.all(
@@ -424,10 +425,15 @@ function buildTabs() {
                     console.error(err);
                 }
             };
-            document.getElementById('imfRefresh').addEventListener('click', loadIMF);
-            setTimeout(loadIMF, 500);
-         } else if (tab.id === 'oecd') {
-            // Construction de l'onglet OCDE
+
+            setTimeout(() => {
+                const refreshBtn = document.getElementById('imfRefresh');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', loadIMF);
+                }
+                loadIMF();
+            }, 100);
+        } else if (tab.id === 'oecd') {
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = `
@@ -468,7 +474,9 @@ function buildTabs() {
             content.appendChild(grid);
 
             const loadOECD = async () => {
-                const country = document.getElementById('oecdCountry').value;
+                const countrySelect = document.getElementById('oecdCountry');
+                if (!countrySelect) return;
+                const country = countrySelect.value;
                 const ids = ['CPALTT01', 'LRUNTTTT', 'NAGIG01'];
                 try {
                     const results = await Promise.all(
@@ -502,10 +510,15 @@ function buildTabs() {
                     console.error(err);
                 }
             };
-            document.getElementById('oecdRefresh').addEventListener('click', loadOECD);
-            setTimeout(loadOECD, 500);
+
+            setTimeout(() => {
+                const refreshBtn = document.getElementById('oecdRefresh');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', loadOECD);
+                }
+                loadOECD();
+            }, 100);
         } else {
-            // --- Autres onglets (construction standard) ---
             const grid = document.createElement('div');
             grid.className = 'grid';
             tab.charts.forEach((chartDef, chartIdx) => {
@@ -520,22 +533,33 @@ function buildTabs() {
     });
     activeTab = tabConfigs[0].id;
 }
-
 function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector(`.tab-btn`).classList.add('active'); // simplifié, il faudrait associer le bon bouton
+
+    // Activer le bouton correspondant
+    const targetTab = tabConfigs.find(t => t.id === tabId);
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.textContent === targetTab.label) {
+            btn.classList.add('active');
+        }
+    });
+
     document.getElementById('tab-' + tabId).classList.add('active');
     activeTab = tabId;
-    // Réactiver les graphiques de l'onglet s'ils n'ont pas encore été créés
-    if (tabId !== 'commodities') {
-        tabConfigs.find(t => t.id === tabId).charts.forEach((chartDef, i) => {
-            const canvas = document.getElementById(`chart-${tabId}-${i}`);
-            if (canvas && !canvas.chart) {
-                chartDef.render(DASHBOARD_DATA, canvas);
-                canvas.chart = true; // marqueur
-            }
-        });
+
+    // Réactiver les graphiques standards (onglets hors FMI/OCDE/commodities)
+    if (tabId !== 'commodities' && tabId !== 'imf' && tabId !== 'oecd') {
+        const tabCfg = tabConfigs.find(t => t.id === tabId);
+        if (tabCfg && tabCfg.charts) {
+            tabCfg.charts.forEach((chartDef, i) => {
+                const canvas = document.getElementById(`chart-${tabId}-${i}`);
+                if (canvas && !canvas.chart && typeof chartDef.render === 'function') {
+                    chartDef.render(DASHBOARD_DATA, canvas);
+                    canvas.chart = true;
+                }
+            });
+        }
     }
 }
 
