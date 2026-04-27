@@ -393,14 +393,14 @@ function buildTabs() {
     selectorDiv.innerHTML = `
         <span>Pays :</span>
         <select id="imfCountry">
-            <option value="FR">France</option>
-            <option value="DE">Allemagne</option>
-            <option value="US">États-Unis</option>
-            <option value="CN">Chine</option>
-            <option value="JP">Japon</option>
-            <option value="IT">Italie</option>
-            <option value="ES">Espagne</option>
-            <option value="GB">Royaume-Uni</option>
+            <option value="FRA">France</option>
+            <option value="DEU">Allemagne</option>
+            <option value="USA">États-Unis</option>
+            <option value="CHN">Chine</option>
+            <option value="JPN">Japon</option>
+            <option value="ITA">Italie</option>
+            <option value="ESP">Espagne</option>
+            <option value="GBR">Royaume-Uni</option>
         </select>
         <button id="imfRefresh">Actualiser</button>
     `;
@@ -408,7 +408,7 @@ function buildTabs() {
     grid.className = 'grid';
     const indicators = [
         { id: 'NGDP_RPCH', title: 'Croissance PIB réel (%)' },
-        { id: 'PCPIEPCH',   title: 'Inflation IPC (%)' },
+        { id: 'PCPIPCH',    title: 'Inflation IPC (%)' },
         { id: 'LUR',        title: 'Taux de chômage (%)' },
         { id: 'BCA_NGDPD',  title: 'Solde courant (% PIB)' }
     ];
@@ -423,7 +423,7 @@ function buildTabs() {
 
     const loadIMF = async () => {
         const country = document.getElementById('imfCountry').value;
-        const ids = ['NGDP_RPCH', 'PCPIEPCH', 'LUR', 'BCA_NGDPD'];
+        const ids = ['NGDP_RPCH', 'PCPIPCH', 'LUR', 'BCA_NGDPD'];
         try {
             const results = await Promise.all(
                 ids.map(id => 
