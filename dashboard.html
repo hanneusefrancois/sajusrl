@@ -427,7 +427,7 @@ function buildTabs() {
         try {
             const results = await Promise.all(
                 ids.map(id => 
-                    fetchfetch(`${API_BASE}/api/imf/${id}?country=${country}`)
+                    fetch(`${API_BASE}/api/imf/${id}?country=${country}`)
                         .then(r => {
                             if (!r.ok) throw new Error(`HTTP ${r.status}`);
                             return r.json();
@@ -496,7 +496,7 @@ function buildTabs() {
             const oecdIndicators = [
                 { id: 'CPALTT01', title: 'Inflation IPC (croissance annuelle %)' },
                 { id: 'LRUNTTTT', title: 'Taux de chômage harmonisé (%)' },
-                { id: 'NAGIG01',   title: 'Croissance du PIB réel (%)' }
+                { id: 'NAEXKP01',   title: 'Croissance du PIB réel (%)' }
             ];
             oecdIndicators.forEach((ind, i) => {
                 const card = document.createElement('div');
@@ -512,7 +512,7 @@ function buildTabs() {
         const queries = [
             { dataset: 'KEI', indicator: 'CPALTT01', title: 'Inflation' },
             { dataset: 'KEI', indicator: 'LRUNTTTT', title: 'Chômage' },
-            { dataset: 'KEI', indicator: 'NAGIG01', title: 'Croissance PIB' }
+            { dataset: 'KEI', indicator: 'NAEXKP01', title: 'Croissance PIB' }
         ];
 
         try {
