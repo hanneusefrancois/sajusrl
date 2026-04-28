@@ -37,8 +37,8 @@
 <section class="hero"><div class="ctr">
 <h1>Graphiques économiques historiques — FRED</h1>
 <p style="color:rgba(255,255,255,.6); max-width:700px; margin:10px auto;">
-    Séries complètes (siècle) de la Federal Reserve Bank of Saint Louis, via data.saju.be.<br>
-    Visualisation interactive avec infobulles et échelle automatique.
+    Séries longues (siècle) de la Federal Reserve Bank of Saint Louis.<br>
+    Visualisation interactive — données récupérées par data.saju.be.
 </p>
 </div></section>
 
@@ -49,7 +49,7 @@
 </div>
 
 <div class="footer">
-    © 2026 Saju Srl — Données FRED, graphiques Chart.js.<br>
+    © 2026 Saju Srl — Graphiques générés à partir des données de <a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED</a>.<br>
     François Hanneuse — Saju Srl · <a href="mailto:fh@saju.be">fh@saju.be</a>
 </div>
 
@@ -70,7 +70,7 @@ const milleniumCharts = [
     { title: 'Dette fédérale en % du PIB (GFDEGDQ188S)', series: 'GFDEGDQ188S' }
 ];
 
-// Options communes (fond sombre)
+// Options communes (fond sombre, axe catégoriel)
 const darkOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -81,13 +81,7 @@ const darkOptions = {
     },
     scales: {
         x: {
-            type: 'time',
-            time: {
-                unit: 'year',
-                displayFormats: { year: 'yyyy' },
-                tooltipFormat: 'dd/MM/yyyy'
-            },
-            ticks: { color: '#aaa', maxTicksLimit: 15 },
+            ticks: { color: '#aaa', maxTicksLimit: 10, autoSkip: true },
             grid: { color: 'rgba(255,255,255,0.05)' }
         },
         y: {
@@ -99,7 +93,7 @@ const darkOptions = {
 
 const grid = document.getElementById('fred-grid');
 
-// Créer les cartes
+// Création des conteneurs de cartes
 milleniumCharts.forEach((item, index) => {
     const card = document.createElement('div');
     card.className = 'card';
@@ -112,11 +106,14 @@ milleniumCharts.forEach((item, index) => {
     grid.appendChild(card);
 });
 
-// Charger toutes les données (limit=0 pour tout l'historique)
+// Charger les données avec limit=5000 (suffisant pour plusieurs siècles)
 async function loadCharts() {
     const promises = milleniumCharts.map(item =>
-        fetch(`${API_BASE}/api/fred/${item.series}?limit=0`)
-            .then(r => r.json())
+        fetch(`${API_BASE}/api/fred/${item.series}?limit=5000`)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
             .then(data => ({ ...item, data }))
             .catch(err => {
                 console.error(`Erreur ${item.series}`, err);
@@ -134,9 +131,10 @@ async function loadCharts() {
             return;
         }
 
-        const obs = res.data.observations;
-        const labels = obs.map(o => o.date);
-        const values = obs.map(o => o.value);
+        const observations = res.data.observations;
+        // Utiliser les dates comme libellés (chaînes), tout afficher
+        const labels = observations.map(o => o.date);
+        const values = observations.map(o => o.value);
 
         new Chart(canvas, {
             type: 'line',
