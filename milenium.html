@@ -8,8 +8,6 @@
         (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "wfuxg8181e");
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Adaptateur de dates pour Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root{--bk:#0f1117;--cd:#141822;--bd:rgba(255,255,255,.1);--w:#fff;--or:#d97706;--em:#059669;--r:#c0392b;--bl:#3b82f6}
@@ -39,8 +37,8 @@
 <section class="hero"><div class="ctr">
 <h1>Graphiques économiques historiques — FRED</h1>
 <p style="color:rgba(255,255,255,.6); max-width:700px; margin:10px auto;">
-    Séries longues (siècle et plus) de la Federal Reserve Bank of Saint Louis.<br>
-    Visualisation interactive via Chart.js — données récupérées par data.saju.be.
+    Séries longues (siècle) de la Federal Reserve Bank of Saint Louis.<br>
+    Visualisation interactive — données récupérées par data.saju.be.
 </p>
 </div></section>
 
@@ -58,7 +56,6 @@
 <script>
 const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://data.saju.be';
 
-// Séries FRED — certaines remontent à 1791, d'autres à 1900, etc.
 const milleniumCharts = [
     { title: 'Indice large du dollar US (TWEXB)', series: 'DTWEXBGS' },
     { title: 'Taux de change USD / GBP (depuis 1971)', series: 'EXUSUK' },
@@ -73,7 +70,7 @@ const milleniumCharts = [
     { title: 'Dette fédérale en % du PIB (GFDEGDQ188S)', series: 'GFDEGDQ188S' }
 ];
 
-// Options communes (fond sombre, échelle temporelle)
+// Options communes (fond sombre, axe catégoriel)
 const darkOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -84,13 +81,7 @@ const darkOptions = {
     },
     scales: {
         x: {
-            type: 'time',
-            time: {
-                unit: 'year',
-                displayFormats: { year: 'yyyy' },
-                tooltipFormat: 'dd/MM/yyyy'
-            },
-            ticks: { color: '#aaa', maxTicksLimit: 15 },
+            ticks: { color: '#aaa', maxTicksLimit: 10, autoSkip: true },
             grid: { color: 'rgba(255,255,255,0.05)' }
         },
         y: {
@@ -102,7 +93,7 @@ const darkOptions = {
 
 const grid = document.getElementById('fred-grid');
 
-// Création des conteneurs
+// Création des conteneurs de cartes
 milleniumCharts.forEach((item, index) => {
     const card = document.createElement('div');
     card.className = 'card';
@@ -115,7 +106,7 @@ milleniumCharts.forEach((item, index) => {
     grid.appendChild(card);
 });
 
-// Chargement des données avec limit=5000 (large fenêtre historique)
+// Charger les données avec limit=5000 (suffisant pour plusieurs siècles)
 async function loadCharts() {
     const promises = milleniumCharts.map(item =>
         fetch(`${API_BASE}/api/fred/${item.series}?limit=5000`)
@@ -140,16 +131,18 @@ async function loadCharts() {
             return;
         }
 
-        const obs = res.data.observations;
-        // Conversion en format adapté pour l'axe temporel
-        const mapped = obs.map(o => ({ x: new Date(o.date), y: o.value }));
+        const observations = res.data.observations;
+        // Utiliser les dates comme libellés (chaînes), tout afficher
+        const labels = observations.map(o => o.date);
+        const values = observations.map(o => o.value);
 
         new Chart(canvas, {
             type: 'line',
             data: {
+                labels,
                 datasets: [{
                     label: res.title,
-                    data: mapped,
+                    data: values,
                     borderColor: '#d97706',
                     backgroundColor: 'rgba(217,119,6,0.05)',
                     pointRadius: 0,
