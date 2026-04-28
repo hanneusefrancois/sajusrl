@@ -7,6 +7,7 @@
     <script type="text/javascript">
         (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "wfuxg8181e");
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -37,8 +38,8 @@
 <section class="hero"><div class="ctr">
 <h1>Graphiques économiques historiques — FRED</h1>
 <p style="color:rgba(255,255,255,.6); max-width:700px; margin:10px auto;">
-    Données longues de la Federal Reserve Bank of Saint Louis, affichées via Chart.js.<br>
-    Les séries sont récupérées en temps réel par data.saju.be.
+    Séries complètes (siècle) de la Federal Reserve Bank of Saint Louis, via data.saju.be.<br>
+    Visualisation interactive avec infobulles et échelle automatique.
 </p>
 </div></section>
 
@@ -49,14 +50,13 @@
 </div>
 
 <div class="footer">
-    © 2026 Saju Srl — Graphiques générés à partir des données de <a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED</a>.<br>
+    © 2026 Saju Srl — Données FRED, graphiques Chart.js.<br>
     François Hanneuse — Saju Srl · <a href="mailto:fh@saju.be">fh@saju.be</a>
 </div>
 
 <script>
 const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://data.saju.be';
 
-// Configuration des graphiques : titre + série FRED
 const milleniumCharts = [
     { title: 'Indice large du dollar US (TWEXB)', series: 'DTWEXBGS' },
     { title: 'Taux de change USD / GBP (depuis 1971)', series: 'EXUSUK' },
@@ -71,16 +71,24 @@ const milleniumCharts = [
     { title: 'Dette fédérale en % du PIB (GFDEGDQ188S)', series: 'GFDEGDQ188S' }
 ];
 
-// Options communes des graphiques (fond sombre, axes lisibles)
+// Options communes (fond sombre)
 const darkOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
     plugins: {
+        tooltip: { enabled: true },
         legend: { display: false }
     },
     scales: {
         x: {
-            ticks: { color: '#aaa', maxTicksLimit: 10 },
+            type: 'time',
+            time: {
+                unit: 'year',
+                displayFormats: { year: 'yyyy' },
+                tooltipFormat: 'dd/MM/yyyy'
+            },
+            ticks: { color: '#aaa', maxTicksLimit: 15 },
             grid: { color: 'rgba(255,255,255,0.05)' }
         },
         y: {
@@ -105,10 +113,10 @@ milleniumCharts.forEach((item, index) => {
     grid.appendChild(card);
 });
 
-// Charger les données et créer les graphiques
+// Charger toutes les données (limit=0 pour tout l'historique)
 async function loadCharts() {
     const promises = milleniumCharts.map(item =>
-        fetch(`${API_BASE}/api/fred/${item.series}`)
+        fetch(`${API_BASE}/api/fred/${item.series}?limit=0`)
             .then(r => r.json())
             .then(data => ({ ...item, data }))
             .catch(err => {
