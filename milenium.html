@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Saju Srl — Graphiques historiques (FRED)</title>
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "wfuxg8181e");
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bk:#0f1117;--cd:#141822;--bd:rgba(255,255,255,.1);--w:#fff;--or:#d97706;--em:#059669;--r:#c0392b;--bl:#3b82f6}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bk);color:var(--w);line-height:1.5;font-size:14px}
+        .ctr{max-width:1440px;margin:0 auto;padding:0 20px}
+        nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(15,17,23,.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--bd)}
+        .ni{max-width:1440px;margin:0 auto;padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between}
+        .nl img{height:40px}
+        .nk{display:flex;gap:12px}.nk a{font-size:.58rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--wl);transition:color .2s}.nk a:hover,.nk a.ac{color:var(--or)}
+        .hero{padding:100px 0 20px;text-align:center}
+        .hero h1{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--or)}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(400px, 1fr)); gap:16px; padding-bottom:20px}
+        .card{background:var(--cd);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+        .card-header{background:rgba(255,255,255,.03);padding:10px 16px;border-bottom:1px solid var(--bd);}
+        .card-header h3{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--or);margin:0}
+        .card-body{height:475px;position:relative;padding:0}
+        .embed-container {position:relative;width:100%;height:100%;overflow:hidden;}
+        .embed-container iframe {width:100%;height:100%;border:none;}
+        .footer{text-align:center;padding:20px;font-size:.55rem;color:rgba(255,255,255,.3);border-top:1px solid var(--bd);margin-top:20px}
+        .footer a{color:var(--or);text-decoration:underline}
+    </style>
+</head>
+<body>
+<nav><div class="ni"><a href="https://www.saju.be/" class="nl"><img src="https://www.saju.be/Logo.png" alt="Saju srl"></a>
+<div class="nk"><a href="https://www.saju.be/millenium.html" class="ac">Millenium Dashboard</a><a href="https://www.saju.be/">Contact</a></div></div></nav>
+
+<section class="hero"><div class="ctr">
+<h1>Graphiques économiques historiques — FRED</h1>
+<p style="color:rgba(255,255,255,.6); max-width:700px; margin:10px auto;">
+    Données longues (siècle et plus) de la Federal Reserve Bank of Saint Louis.<br>
+    Affiche des séries clés : dollar, or, inflation, taux, dette, population, productivité.
+</p>
+</div></section>
+
+<div class="ctr">
+    <div class="grid" id="fred-grid">
+        <!-- Les iframes seront insérées ici par JavaScript -->
+    </div>
+</div>
+
+<div class="footer">
+    © 2026 Saju Srl — Graphiques fournis par <a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED</a> (Federal Reserve Economic Data).<br>
+    François Hanneuse — Saju Srl · <a href="mailto:fh@saju.be">fh@saju.be</a>
+</div>
+
+<script>
+    // Liste des identifiants de graphiques FRED (g=...)
+    const fredGraphs = [
+        { id: '1Vr1p', title: 'Taux de change effectif du dollar américain (indice large)' },
+        { id: '1Vr0L', title: 'Valeur du dollar vs. livre sterling depuis 1791' },
+        { id: '1Vr1C', title: 'Prix de l\'or en dollars (1833–)' },
+        { id: '1Vr1M', title: 'IPC américain (Consumer Price Index) depuis 1913' },
+        { id: '1Vr1P', title: 'Taux des fonds fédéraux (Fed Funds Rate) depuis 1954' },
+        { id: '1Vr1S', title: 'Rendement des obligations à 10 ans (Treasury 10Y)' },
+        { id: '1Vr20', title: 'Masse monétaire M2 depuis 1959' },
+        { id: '1QMPT', title: 'Population des États-Unis depuis 1900' },
+        { id: '1Vr2a', title: 'Productivité du travail (output par heure) depuis 1947' },
+        { id: '1Vr2i', title: 'Dette fédérale américaine (total public debt) depuis 1966' },
+        { id: '1Vr2k', title: 'Dette fédérale en % du PIB depuis 1966' },
+    ];
+
+    const grid = document.getElementById('fred-grid');
+
+    fredGraphs.forEach(g => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="card-header"><h3>${g.title}</h3></div>
+            <div class="card-body">
+                <div class="embed-container">
+                    <iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=${g.id}&width=670&height=475" scrolling="no" allowTransparency="true" loading="lazy"></iframe>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+
+    // Charger le script d'embed FRED (une seule fois)
+    const script = document.createElement('script');
+    script.src = 'https://fred.stlouisfed.org/assets/research/fred-graph-react/embed.min.js';
+    script.type = 'text/javascript';
+    document.body.appendChild(script);
+</script>
+</body>
+</html>
