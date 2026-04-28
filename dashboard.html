@@ -56,8 +56,8 @@
 </div>
 
 <div class="footer">
-    © 2026 Saju Srl — Les données brutes proviennent de sources publiques. Pour une analyse personnalisée, contactez <a href="mailto:fh@saju.be">fh@saju.be</a><br>
-    François Hanneuse — Saju Srl
+    © 2026 Saju Srl — Les données brutes proviennent de sources publiques. Pour une analyse personnalisée (coefficient de révision, Monte Carlo, rolling‑window), contactez <a href="mailto:fh@saju.be">fh@saju.be</a><br>
+    François Hanneuse — Saju Srl · VAT BE0785.280.227 · Chaussée d'Alsemberg 1108/6, 1180 Uccle
 </div>
 
 <script>
@@ -65,7 +65,7 @@ const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:80
 let DASHBOARD_DATA = null;
 let activeTab = null;
 
-// Configuration des onglets et de leurs graphiques
+// Configuration des onglets
 const tabConfigs = [
 {
     id: 'macro',
@@ -79,10 +79,7 @@ const tabConfigs = [
                 const obs = data.fred.UNRATE.slice(-60);
                 new Chart(canvas, {
                     type: 'line',
-                    data: {
-                        labels: obs.map(o=>o.date),
-                        datasets: [{ label: 'Chômage (%)', data: obs.map(o=>o.value), borderColor: '#c0392b', pointRadius: 0 }]
-                    },
+                    data: { labels: obs.map(o=>o.date), datasets: [{ label: 'Chômage (%)', data: obs.map(o=>o.value), borderColor: '#c0392b', pointRadius: 0 }] },
                     options: baseOptions
                 });
             }
@@ -95,38 +92,35 @@ const tabConfigs = [
                 const obs = data.eurostatInflation.observations.slice(-24);
                 new Chart(canvas, {
                     type: 'line',
+                    data: { labels: obs.map(o=>o.date), datasets: [{ label: 'Inflation UE (%)', data: obs.map(o=>o.value), borderColor: '#059669', pointRadius: 0 }] },
+                    options: baseOptions
+                });
+            }
+        },
+        {
+            title: 'Croissance PIB réel (Banque Mondiale)',
+            source: 'WB – NY.GDP.MKTP.KD.ZG',
+            render: (data, canvas) => {
+                if (!data.gdpGrowth) return;
+                const growthData = data.gdpGrowth['NY.GDP.MKTP.KD.ZG'] || {};
+                const US = growthData.USA || [];
+                const EU = growthData.EUU || [];
+                const China = growthData.CHN || [];
+                const labels = [...new Set([...US.map(o=>o.date), ...EU.map(o=>o.date), ...China.map(o=>o.date)])].sort();
+                new Chart(canvas, {
+                    type: 'line',
                     data: {
-                        labels: obs.map(o=>o.date),
-                        datasets: [{ label: 'Inflation UE (%)', data: obs.map(o=>o.value), borderColor: '#059669', pointRadius: 0 }]
+                        labels,
+                        datasets: [
+                            { label: 'US', data: labels.map(d => US.find(o=>o.date===d)?.value), borderColor: '#3b82f6', tension: 0.2 },
+                            { label: 'EU', data: labels.map(d => EU.find(o=>o.date===d)?.value), borderColor: '#f59e0b', tension: 0.2 },
+                            { label: 'China', data: labels.map(d => China.find(o=>o.date===d)?.value), borderColor: '#ef4444', tension: 0.2 },
+                        ]
                     },
                     options: baseOptions
                 });
             }
         },
-       {
-        title: 'Croissance PIB réel (Banque Mondiale)',
-        source: 'WB – NY.GDP.MKTP.KD.ZG',
-        render: (data, canvas) => {
-            if (!data.gdpGrowth) return;
-            const growthData = data.gdpGrowth['NY.GDP.MKTP.KD.ZG'] || {};
-            const US = growthData.USA || [];
-            const EU = growthData.EUU || [];
-            const China = growthData.CHN || [];
-            const labels = [...new Set([...US.map(o=>o.date), ...EU.map(o=>o.date), ...China.map(o=>o.date)])].sort();
-            new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [
-                        { label: 'US', data: labels.map(d => US.find(o=>o.date===d)?.value), borderColor: '#3b82f6', tension: 0.2 },
-                        { label: 'EU', data: labels.map(d => EU.find(o=>o.date===d)?.value), borderColor: '#f59e0b', tension: 0.2 },
-                        { label: 'China', data: labels.map(d => China.find(o=>o.date===d)?.value), borderColor: '#ef4444', tension: 0.2 },
-                    ]
-                },
-                options: baseOptions
-            });
-        }
-    },
     ]
 },
 {
@@ -180,33 +174,7 @@ const tabConfigs = [
 {
     id: 'commodities',
     label: '⛏️ Matières premières (Saju)',
-    charts: [
-        {
-            title: 'Indices historiques (base 100 = 1900)',
-            source: 'Saju Srl – Données propriétaires',
-            render: (data, canvas) => {
-                if (!data.historical) return;
-                // On peut mettre un sélecteur global pour cette section, mais ici on montre l'or par défaut
-                const series = data.historical['gold'] || [];
-                new Chart(canvas, {
-                    type: 'line',
-                    data: {
-                        labels: series.map(o => o.year),
-                        datasets: [{ label: 'Or', data: series.map(o => o.value), borderColor: '#f1c40f', pointRadius: 0, tension: 0.1 }]
-                    },
-                    options: { ...baseOptions, scales: { y: { type: 'logarithmic' } } }
-                });
-            }
-        },
-        {
-            title: 'Sélecteur de matière première',
-            source: 'Choisissez un indice',
-            render: (data, container) => {
-                // Pas de graphique fixe ici, on va créer un sélecteur + canvas dynamique dans l'onglet
-                // On laisse cette entrée pour la structure, mais on la gérera dans l'initialisation de l'onglet
-            }
-        }
-    ]
+    charts: []   // sera construit en grille
 },
 {
     id: 'markets',
@@ -216,32 +184,13 @@ const tabConfigs = [
             title: 'Taux de change (Frankfurter)',
             source: 'Frankfurter (BCE)',
             render: (data, canvas) => {
-    const mainCurrencies = ['USD','GBP','CHF','JPY','CNY','CAD','AUD','NOK','SEK'];
-    const entries = Object.entries(data.frankfurter.rates)
-        .filter(([c]) => mainCurrencies.includes(c))
-        .slice(0, 12);
+                const mainCurrencies = ['USD','GBP','CHF','JPY','CNY','CAD','AUD','NOK','SEK'];
+                const entries = Object.entries(data.frankfurter.rates)
+                    .filter(([c]) => mainCurrencies.includes(c))
+                    .slice(0, 12);
                 new Chart(canvas, {
                     type: 'bar',
-                    data: {
-                        labels: entries.map(([c])=>c),
-                        datasets: [{ label: 'EUR', data: entries.map(([,v])=>v), backgroundColor: '#d97706' }]
-                    },
-                    options: baseOptions
-                });
-            }
-        },
-        {
-            title: 'Cryptomonnaies (EUR)',
-            source: 'CoinGecko',
-            render: (data, canvas) => {
-                if (!data.coingecko) return;
-                const items = Object.values(data.coingecko).filter(c => c.eur);
-                new Chart(canvas, {
-                    type: 'bar',
-                    data: {
-                        labels: items.map(c => c.symbol),
-                        datasets: [{ label: 'Prix EUR', data: items.map(c => c.eur), backgroundColor: items.map(c => c.color) }]
-                    },
+                    data: { labels: entries.map(([c])=>c), datasets: [{ label: 'EUR', data: entries.map(([,v])=>v), backgroundColor: '#d97706' }] },
                     options: baseOptions
                 });
             }
@@ -254,10 +203,7 @@ const tabConfigs = [
                 const obs = data.fred.DGS10.slice(-60);
                 new Chart(canvas, {
                     type: 'line',
-                    data: {
-                        labels: obs.map(o=>o.date),
-                        datasets: [{ label: 'Rendement 10a (%)', data: obs.map(o=>o.value), borderColor: '#8e44ad', pointRadius: 0 }]
-                    },
+                    data: { labels: obs.map(o=>o.date), datasets: [{ label: 'Rendement 10a (%)', data: obs.map(o=>o.value), borderColor: '#8e44ad', pointRadius: 0 }] },
                     options: baseOptions
                 });
             }
@@ -297,19 +243,10 @@ const tabConfigs = [
                     const res = await fetch(`${API_BASE}/api/eurostat/trade`);
                     const json = await res.json();
                     if (!json.observations) return;
-                    const obs = json.observations.slice(-24); // 2 ans de données mensuelles
+                    const obs = json.observations.slice(-24);
                     new Chart(canvas, {
                         type: 'line',
-                        data: {
-                            labels: obs.map(o => o.date),
-                            datasets: [{
-                                label: 'Balance UE (M€)',
-                                data: obs.map(o => o.value),
-                                borderColor: '#3498db',
-                                pointRadius: 0,
-                                tension: 0.2
-                            }]
-                        },
+                        data: { labels: obs.map(o => o.date), datasets: [{ label: 'Balance UE (M€)', data: obs.map(o => o.value), borderColor: '#3498db', pointRadius: 0, tension: 0.2 }] },
                         options: baseOptions
                     });
                 } catch (err) {
@@ -317,24 +254,19 @@ const tabConfigs = [
                 }
             }
         }
-        
-
-
-
-        
     ]
 },
 {
     id: 'imf',
     label: '🏛️ FMI',
-    charts: []   // Les graphiques seront créés dynamiquement
+    charts: []   // dynamique
 },
 {
     id: 'oecd',
     label: '🏢 OCDE',
     charts: []   // dynamique
 },
-    {
+{
     id: 'education',
     label: '🎓 Éducation & STEM',
     charts: []   // dynamique
@@ -344,9 +276,7 @@ const tabConfigs = [
 const baseOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-        legend: { labels: { color: '#fff', font: { size: 10 } } }
-    },
+    plugins: { legend: { labels: { color: '#fff', font: { size: 10 } } } },
     scales: {
         x: { ticks: { color: '#888', maxTicksLimit: 10 } },
         y: { ticks: { color: '#888' } }
@@ -367,104 +297,102 @@ function buildTabs() {
         content.className = 'tab-content' + (idx === 0 ? ' active' : '');
         content.id = 'tab-' + tab.id;
 
-       if (tab.id === 'commodities') {
-    const grid = document.createElement('div');
-    grid.className = 'grid';
-    const seriesList = ['gold','oil','steel','copper','cpi','wages','productivity','loco_price'];
-    const names = { gold:'Or', oil:'Pétrole', steel:'Acier', copper:'Cuivre', cpi:'CPI', wages:'Salaires', productivity:'Productivité', loco_price:'Équipement industriel lourd' };
-    seriesList.forEach(key => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<div class="card-header"><h3>${names[key]}</h3><span class="source">Saju Srl – base 100 = 1900</span></div><div class="card-body"><canvas id="comm-${key}"></canvas></div>`;
-        grid.appendChild(card);
-    });
-    content.appendChild(grid);
-    setTimeout(() => {
-        if (DASHBOARD_DATA?.historical) {
+        if (tab.id === 'commodities') {
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            const seriesList = ['gold','oil','steel','copper','cpi','wages','productivity','loco_price'];
+            const names = { gold:'Or', oil:'Pétrole', steel:'Acier', copper:'Cuivre', cpi:'CPI', wages:'Salaires', productivity:'Productivité', loco_price:'Équipement industriel lourd' };
             seriesList.forEach(key => {
-                const canvas = document.getElementById(`comm-${key}`);
-                if (canvas) renderCommodityChart(key, canvas);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-header"><h3>${names[key]}</h3><span class="source">Saju Srl – base 100 = 1900</span></div><div class="card-body"><canvas id="comm-${key}"></canvas></div>`;
+                grid.appendChild(card);
             });
-        }
-    }, 100);
-} else if (tab.id === 'imf') {
-    const selectorDiv = document.createElement('div');
-    selectorDiv.className = 'selector';
-    selectorDiv.innerHTML = `
-        <span>Pays :</span>
-        <select id="imfCountry">
-            <option value="FR">France</option>
-            <option value="BE">Belgique</option>
-            <option value="DE">Allemagne</option>
-            <option value="US">États-Unis</option>
-            <option value="CN">Chine</option>
-            <option value="JP">Japon</option>
-            <option value="IT">Italie</option>
-            <option value="ES">Espagne</option>
-            <option value="GB">Royaume-Uni</option>
-            <option value="CA">Canada</option>
-            <option value="KR">Corée du Sud</option>
-            <option value="IN">Inde</option>
-            <option value="BR">Brésil</option>
-        </select>
-        <button id="imfRefresh">Actualiser</button>
-    `;
-    const grid = document.createElement('div');
-    grid.className = 'grid';
-    const imfIndicators = [
-        { id: 'NGDP_RPCH',   title: 'Croissance PIB réel (%)',      color: '#3b82f6' },
-        { id: 'PCPIPCH',     title: 'Inflation IPC (%)',             color: '#ef4444' },
-        { id: 'LUR',         title: 'Taux de chômage (%)',           color: '#f59e0b' },
-        { id: 'BCA_NGDPD',   title: 'Solde courant (% PIB)',         color: '#059669' },
-        { id: 'GGXCNL_NGDP', title: 'Solde budgétaire (% PIB)',     color: '#8b5cf6' },
-        { id: 'GGXWDG_NGDP', title: 'Dette publique brute (% PIB)', color: '#d97706' },
-        { id: 'NGDPD',       title: 'PIB nominal (Mrd USD)',         color: '#06b6d4' },
-        { id: 'PPPSH',       title: 'Part PIB mondial PPP (%)',      color: '#ec4899' },
-    ];
-    imfIndicators.forEach((ind, i) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">FMI – WEO DataMapper</span></div><div class="card-body"><canvas id="imf-chart-${i}"></canvas></div>`;
-        grid.appendChild(card);
-    });
-    content.appendChild(selectorDiv);
-    content.appendChild(grid);
+            content.appendChild(grid);
+            setTimeout(() => {
+                if (DASHBOARD_DATA?.historical) {
+                    seriesList.forEach(key => {
+                        const canvas = document.getElementById(`comm-${key}`);
+                        if (canvas) renderCommodityChart(key, canvas);
+                    });
+                }
+            }, 100);
+        } else if (tab.id === 'imf') {
+            // Onglet FMI
+            const selectorDiv = document.createElement('div');
+            selectorDiv.className = 'selector';
+            selectorDiv.innerHTML = `
+                <span>Pays :</span>
+                <select id="imfCountry">
+                    <option value="FR">France</option>
+                    <option value="BE">Belgique</option>
+                    <option value="DE">Allemagne</option>
+                    <option value="US">États-Unis</option>
+                    <option value="CN">Chine</option>
+                    <option value="JP">Japon</option>
+                    <option value="IT">Italie</option>
+                    <option value="ES">Espagne</option>
+                    <option value="GB">Royaume-Uni</option>
+                    <option value="CA">Canada</option>
+                    <option value="KR">Corée du Sud</option>
+                    <option value="IN">Inde</option>
+                    <option value="BR">Brésil</option>
+                </select>
+                <button id="imfRefresh">Actualiser</button>
+            `;
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            const imfIndicators = [
+                { id: 'NGDP_RPCH',   title: 'Croissance PIB réel (%)',      color: '#3b82f6' },
+                { id: 'PCPIPCH',     title: 'Inflation IPC (%)',             color: '#ef4444' },
+                { id: 'LUR',         title: 'Taux de chômage (%)',           color: '#f59e0b' },
+                { id: 'BCA_NGDPD',   title: 'Solde courant (% PIB)',         color: '#059669' },
+                { id: 'GGXCNL_NGDP', title: 'Solde budgétaire (% PIB)',     color: '#8b5cf6' },
+                { id: 'GGXWDG_NGDP', title: 'Dette publique brute (% PIB)', color: '#d97706' },
+                { id: 'NGDPD',       title: 'PIB nominal (Mrd USD)',         color: '#06b6d4' },
+                { id: 'PPPSH',       title: 'Part PIB mondial PPP (%)',      color: '#ec4899' },
+            ];
+            imfIndicators.forEach((ind, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">FMI – DataMapper</span></div><div class="card-body"><canvas id="imf-chart-${i}"></canvas></div>`;
+                grid.appendChild(card);
+            });
+            content.appendChild(selectorDiv);
+            content.appendChild(grid);
 
-    const loadIMF = async () => {
-        const country = document.getElementById('imfCountry').value;
-        // Erreurs isolées par graphique — un 404 ne bloque pas les autres
-        const results = await Promise.all(
-            imfIndicators.map(ind =>
-                fetch(`${API_BASE}/api/imf/${ind.id}?country=${country}`)
-                    .then(r => r.ok ? r.json() : null)
-                    .catch(() => null)
-            )
-        );
-        results.forEach((res, idx) => {
-            const canvas = document.getElementById(`imf-chart-${idx}`);
-            if (!canvas) return;
-            const old = Chart.getChart(canvas);
-            if (old) old.destroy();
-            if (res && res.observations && res.observations.length > 0) {
-                new Chart(canvas, {
-                    type: 'line',
-                    data: {
-                        labels: res.observations.map(o => o.date),
-                        datasets: [{ label: imfIndicators[idx].title, data: res.observations.map(o => o.value), borderColor: imfIndicators[idx].color, tension: 0.2, pointRadius: 2 }]
-                    },
-                    options: baseOptions
+            const loadIMF = async () => {
+                const country = document.getElementById('imfCountry').value;
+                const results = await Promise.all(
+                    imfIndicators.map(ind =>
+                        fetch(`${API_BASE}/api/imf/${ind.id}?country=${country}`)
+                            .then(r => r.ok ? r.json() : null)
+                            .catch(() => null)
+                    )
+                );
+                results.forEach((res, idx) => {
+                    const canvas = document.getElementById(`imf-chart-${idx}`);
+                    if (!canvas) return;
+                    const old = Chart.getChart(canvas);
+                    if (old) old.destroy();
+                    if (res && res.observations && res.observations.length > 0) {
+                        new Chart(canvas, {
+                            type: 'line',
+                            data: { labels: res.observations.map(o => o.date), datasets: [{ label: imfIndicators[idx].title, data: res.observations.map(o => o.value), borderColor: imfIndicators[idx].color, tension: 0.2, pointRadius: 2 }] },
+                            options: baseOptions
+                        });
+                    } else {
+                        canvas.parentElement.innerHTML = '<p style="color:rgba(255,255,255,.4);padding:10px;text-align:center;font-size:.75rem;">Pas de données</p>';
+                    }
                 });
-            } else {
-                canvas.parentElement.innerHTML = '<p style="color:rgba(255,255,255,.4);padding:10px;text-align:center;font-size:.75rem;">Pas de données</p>';
-            }
-        });
-    };
-    setTimeout(() => {
-        const refreshBtn = document.getElementById('imfRefresh');
-        if (refreshBtn) refreshBtn.addEventListener('click', loadIMF);
-        loadIMF();
-    }, 100);
-}else if (tab.id === 'oecd') {
+            };
+            setTimeout(() => {
+                const refreshBtn = document.getElementById('imfRefresh');
+                if (refreshBtn) refreshBtn.addEventListener('click', loadIMF);
+                loadIMF();
+            }, 100);
+        } else if (tab.id === 'oecd') {
+            // Onglet OCDE (redirigé WB)
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = `
@@ -497,7 +425,7 @@ function buildTabs() {
             oecdIndicators.forEach((ind, i) => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE via World Bank</span></div><div class="card-body"><canvas id="oecd-chart-${i}"></canvas></div>`;
+                card.innerHTML = `<div class="card-header"><h3>${ind.title}</h3><span class="source">OCDE (via Banque Mondiale)</span></div><div class="card-body"><canvas id="oecd-chart-${i}"></canvas></div>`;
                 grid.appendChild(card);
             });
             content.appendChild(selectorDiv);
@@ -505,7 +433,6 @@ function buildTabs() {
 
             const loadOECD = async () => {
                 const country = document.getElementById('oecdCountry').value;
-                // Erreurs isolées par graphique
                 const results = await Promise.all(
                     oecdIndicators.map(q =>
                         fetch(`${API_BASE}/api/oecd/${q.dataset}/${q.id}?country=${country}`)
@@ -521,10 +448,7 @@ function buildTabs() {
                     if (res && res.observations && res.observations.length > 0) {
                         new Chart(canvas, {
                             type: 'line',
-                            data: {
-                                labels: res.observations.map(o => o.date),
-                                datasets: [{ label: oecdIndicators[idx].title, data: res.observations.map(o => o.value), borderColor: oecdIndicators[idx].color, tension: 0.2, pointRadius: 1 }]
-                            },
+                            data: { labels: res.observations.map(o => o.date), datasets: [{ label: oecdIndicators[idx].title, data: res.observations.map(o => o.value), borderColor: oecdIndicators[idx].color, tension: 0.2, pointRadius: 1 }] },
                             options: baseOptions
                         });
                     } else {
@@ -538,7 +462,7 @@ function buildTabs() {
                 loadOECD();
             }, 100);
         } else if (tab.id === 'education') {
-            // Construction de l'onglet Éducation (OCDE STEM)
+            // Onglet Éducation & STEM
             const selectorDiv = document.createElement('div');
             selectorDiv.className = 'selector';
             selectorDiv.innerHTML = `
@@ -587,16 +511,7 @@ function buildTabs() {
                         if (res.observations && res.observations.length > 0) {
                             new Chart(canvas, {
                                 type: 'line',
-                                data: {
-                                    labels: res.observations.map(o => o.date),
-                                    datasets: [{
-                                        label: ids[idx],
-                                        data: res.observations.map(o => o.value),
-                                        borderColor: '#8e44ad',
-                                        pointRadius: 0,
-                                        tension: 0.1
-                                    }]
-                                },
+                                data: { labels: res.observations.map(o => o.date), datasets: [{ label: ids[idx], data: res.observations.map(o => o.value), borderColor: '#8e44ad', pointRadius: 0, tension: 0.1 }] },
                                 options: baseOptions
                             });
                         } else {
@@ -613,6 +528,7 @@ function buildTabs() {
                 loadEdu();
             }, 100);
         } else {
+            // Onglets génériques (macro, demography, markets, trade)
             const grid = document.createElement('div');
             grid.className = 'grid';
             tab.charts.forEach((chartDef, chartIdx) => {
@@ -627,23 +543,18 @@ function buildTabs() {
     });
     activeTab = tabConfigs[0].id;
 }
+
 function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-    // Activer le bouton correspondant
     const targetTab = tabConfigs.find(t => t.id === tabId);
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        if (btn.textContent === targetTab.label) {
-            btn.classList.add('active');
-        }
+        if (btn.textContent === targetTab.label) btn.classList.add('active');
     });
-
     document.getElementById('tab-' + tabId).classList.add('active');
     activeTab = tabId;
 
-    // Réactiver les graphiques standards (onglets hors FMI/OCDE/commodities)
-    if (tabId !== 'commodities' && tabId !== 'imf' && tabId !== 'oecd') {
+    if (tabId !== 'commodities' && tabId !== 'imf' && tabId !== 'oecd' && tabId !== 'education') {
         const tabCfg = tabConfigs.find(t => t.id === tabId);
         if (tabCfg && tabCfg.charts) {
             tabCfg.charts.forEach((chartDef, i) => {
@@ -668,46 +579,34 @@ function renderCommodityChart(seriesKey, canvasOverride) {
     const names = { gold:'Or', oil:'Pétrole', steel:'Acier', copper:'Cuivre', cpi:'CPI', wages:'Salaires', productivity:'Productivité', loco_price:'Équipement industriel lourd' };
     new Chart(canvas, {
         type: 'line',
-        data: {
-            labels: series.map(o => o.year),
-            datasets: [{ label: names[seriesKey], data: series.map(o => o.value), borderColor: colors[seriesKey] || '#fff', pointRadius: 0, tension: 0.1 }]
-        },
+        data: { labels: series.map(o => o.year), datasets: [{ label: names[seriesKey], data: series.map(o => o.value), borderColor: colors[seriesKey] || '#fff', pointRadius: 0, tension: 0.1 }] },
         options: { ...baseOptions, scales: { y: { type: 'logarithmic' } } }
     });
 }
 
 // ==================== CHARGEMENT INITIAL ====================
-    (async () => {
-        try {
-            const res = await fetch(API_BASE + '/api/dashboard');
-            if (!res.ok) throw new Error('Erreur serveur ' + res.status);
-            
-            DASHBOARD_DATA = await res.json();
-            
-            buildTabs();
-
-            // Initialiser les graphiques du premier onglet (Macroéconomie)
-            const firstTab = tabConfigs[0];
-            if (firstTab && firstTab.charts) {
-                firstTab.charts.forEach((chartDef, i) => {
-                    const canvas = document.getElementById(`chart-${firstTab.id}-${i}`);
-                    if (canvas && typeof chartDef.render === 'function') {
-                        chartDef.render(DASHBOARD_DATA, canvas);
-                        canvas.chart = true;   // pour éviter de recréer plusieurs fois
-                    }
-                });
-            }
-
-            console.log('✅ Dashboard chargé avec succès');
-        } catch (err) {
-            console.error('Erreur de chargement du dashboard:', err);
-            document.getElementById('tabContents').innerHTML = 
-                `<p style="color:red; padding:20px; text-align:center;">
-                    Erreur de chargement des données.<br>
-                    Vérifiez que le serveur <strong>data.saju.be</strong> est bien en ligne.
-                </p>`;
+(async () => {
+    try {
+        const res = await fetch(API_BASE + '/api/dashboard');
+        if (!res.ok) throw new Error('Erreur serveur ' + res.status);
+        DASHBOARD_DATA = await res.json();
+        buildTabs();
+        const firstTab = tabConfigs[0];
+        if (firstTab && firstTab.charts) {
+            firstTab.charts.forEach((chartDef, i) => {
+                const canvas = document.getElementById(`chart-${firstTab.id}-${i}`);
+                if (canvas && typeof chartDef.render === 'function') {
+                    chartDef.render(DASHBOARD_DATA, canvas);
+                    canvas.chart = true;
+                }
+            });
         }
-    })();
+        console.log('✅ Dashboard chargé avec succès');
+    } catch (err) {
+        console.error('Erreur de chargement du dashboard:', err);
+        document.getElementById('tabContents').innerHTML = '<p style="color:red; padding:20px; text-align:center;">Erreur de chargement des données.<br>Vérifiez que le serveur <strong>data.saju.be</strong> est bien en ligne.</p>';
+    }
+})();
 </script>
 </body>
 </html>
